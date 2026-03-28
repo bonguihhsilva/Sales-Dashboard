@@ -19,6 +19,9 @@ export default async function MeuResultadoPage({
   const { data: profile } = await supabase
     .from('profiles').select('*').eq('id', user.id).single()
 
+  // ADM should never land here - redirect to dashboard
+  if (profile?.role === 'adm') redirect('/dashboard')
+
   if (!profile?.vendor_id) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>

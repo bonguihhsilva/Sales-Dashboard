@@ -11,10 +11,13 @@ export default async function Home() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, vendor_id')
     .eq('id', user.id)
     .single()
 
+  // ADM → dashboard
   if (profile?.role === 'adm') redirect('/dashboard')
+  
+  // Vendedor → meu-resultado
   redirect('/meu-resultado')
 }
