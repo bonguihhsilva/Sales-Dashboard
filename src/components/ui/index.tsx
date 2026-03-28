@@ -46,48 +46,8 @@ export function StorePill({ store }: { store: string }) {
   )
 }
 
-// ── Progress Bar ──────────────────────────────────────────────────────────
-interface ProgressBarProps {
-  sold: number
-  meta1: number
-  meta2: number
-  meta3: number
-  metaLevel: number
-}
-
-const META_COLORS = ['var(--muted)', 'var(--meta1)', 'var(--meta2)', 'var(--meta3)']
-
-export function ProgressBar({ sold, meta1, meta2, meta3, metaLevel }: ProgressBarProps) {
-  const scale = meta3
-  const barW  = Math.min(sold / scale * 100, 100).toFixed(1)
-  const m1pct = (meta1 / scale * 100).toFixed(1)
-  const m2pct = (meta2 / scale * 100).toFixed(1)
-  const m3pct = Math.min(meta3 / scale * 100, 99).toFixed(1)
-  const mc    = META_COLORS[metaLevel]
-
-  return (
-    <div>
-      <div style={{ position: 'relative', height: '12px', background: 'var(--surface2)', borderRadius: '8px', overflow: 'hidden' }}>
-        <div style={{ width: `${barW}%`, height: '100%', borderRadius: '8px', background: mc }} />
-      </div>
-      {/* Marker lines */}
-      <div style={{ position: 'relative', height: '26px', marginTop: '2px' }}>
-        {[
-          { pct: m1pct, label: `1ª ${fmtK(meta1)}`, color: metaLevel >= 1 ? 'var(--meta1)' : 'var(--muted)' },
-          { pct: m2pct, label: `2ª ${fmtK(meta2)}`, color: metaLevel >= 2 ? 'var(--meta2)' : 'var(--muted)' },
-          { pct: m3pct, label: `3ª ${fmtK(meta3)}`, color: metaLevel >= 3 ? 'var(--meta3)' : 'var(--muted)' },
-        ].map(({ pct, label, color }) => (
-          <div key={pct} style={{ position: 'absolute', left: `${pct}%`, transform: 'translateX(-50%)', textAlign: 'center' }}>
-            <div style={{ width: '1px', height: '5px', background: color, margin: '0 auto' }} />
-            <div style={{ fontSize: '0.56rem', fontFamily: 'DM Mono, monospace', color, whiteSpace: 'nowrap', marginTop: '1px' }}>
-              {label}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
+// ── Progress Bar (see ProgressBar.tsx) ────────────────────────────────────
+export { ProgressBar } from './ProgressBar'
 
 // ── Bonus Badge ───────────────────────────────────────────────────────────
 export function BonusBadge({ level, amount }: { level: number; amount: number }) {
