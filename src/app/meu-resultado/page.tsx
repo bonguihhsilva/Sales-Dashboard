@@ -4,7 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { fmtCurrency, fmtK, metaLevel, bonusAmount, STORE_COLORS } from '@/lib/utils'
 import { KpiCard, StorePill, ProgressBar, SectionTitle, LogoutButton } from '@/components/ui'
-import ClientsTab from '../dashboard/ClientsTab'
+import ClientsTabClient from './ClientsTabClient'
+import ChangePassword from '@/components/ui/ChangePassword'
 import type { Period } from '@/types'
 
 export default async function MeuResultadoPage({
@@ -44,6 +45,15 @@ export default async function MeuResultadoPage({
     .from('vendor_summary').select('*').eq('period_id', activePeriod).eq('vendor_id', profile.vendor_id).single()
 
   const { data: evolution } = await supabase.rpc('vendor_evolution', { p_vendor_id: profile.vendor_id })
+
+  // Fetch clients for carteira tab
+  const { data: clientsData } = await supabase
+    .from('client_portfolio')
+    .select('*')
+    .eq('period_id', activePeriod)
+    .eq('vendor_id', profile.vendor_id)
+    .order('total_spent', { ascending: false })
+    .limit(1000)
 
   const activePeriodLabel = (periods as Period[])?.find(p => p.id === activePeriod)?.label ?? ''
 
@@ -108,6 +118,7 @@ export default async function MeuResultadoPage({
               </a>
             ))}
           </div>
+          <ChangePassword />
           <LogoutButton />
         </div>
       </div>
@@ -178,7 +189,7 @@ export default async function MeuResultadoPage({
         )}
 
         {activeTab === 'carteira' && (
-          <ClientsTab periodId={activePeriod} vendorId={profile.vendor_id} />
+          <ClientsTabClient clients={(clientsData ?? []) as Parameters<typeof ClientsTabClient>[0]['clients']} color={col} />
         )}
 
         {activeTab === 'evolucao' && (
