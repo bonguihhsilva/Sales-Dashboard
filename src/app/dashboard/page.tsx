@@ -172,15 +172,25 @@ export default async function DashboardPage({
             <SectionTitle>Ranking de Vendedores</SectionTitle>
 
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.77rem', tableLayout: 'fixed' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['#','Vendedor','Loja','Clientes','Total Vendido','1ª Meta','2ª Meta','3ª Meta','Progresso','Bônus'].map((h, i) => (
+                    {[
+                        {h:'#',         w:'28px',  a:'left'},
+                        {h:'Vendedor',  w:'150px', a:'left'},
+                        {h:'Loja',      w:'68px',  a:'left'},
+                        {h:'Clientes',  w:'58px',  a:'right'},
+                        {h:'Total',     w:'88px',  a:'right'},
+                        {h:'1ª Meta',   w:'56px',  a:'right'},
+                        {h:'2ª Meta',   w:'56px',  a:'right'},
+                        {h:'3ª Meta',   w:'56px',  a:'right'},
+                        {h:'Progresso', w:'auto',  a:'left'},
+                        {h:'Bônus',     w:'54px',  a:'right'},
+                      ].map(({h,w,a}) => (
                       <th key={h} style={{
-                        fontFamily: 'DM Mono, monospace', fontSize: '0.63rem', color: 'var(--muted)',
-                        textTransform: 'uppercase', letterSpacing: '0.08em', padding: '6px 10px',
-                        textAlign: i >= 3 && i <= 8 ? 'right' : 'left', whiteSpace: 'nowrap',
-                        width: i === 0 ? '30px' : i === 8 ? '200px' : 'auto',
+                        fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: 'var(--muted)',
+                        textTransform: 'uppercase', letterSpacing: '0.07em', padding: '5px 6px',
+                        textAlign: a as 'left'|'right', whiteSpace: 'nowrap', width: w,
                       }}>{h}</th>
                     ))}
                   </tr>
@@ -194,22 +204,22 @@ export default async function DashboardPage({
                     const rankColors = ['#f5c842', '#a8abb2', '#cd7f32']
                     return (
                       <tr key={v.vendor_id} style={{ borderBottom: '1px solid var(--border)' }}>
-                        <td style={{ padding: '8px 10px', fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', color: i < 3 ? rankColors[i] : 'var(--muted)' }}>{i + 1}</td>
-                        <td style={{ padding: '8px 10px', fontWeight: 600 }}>
+                        <td style={{ padding: '7px 6px', fontFamily: 'DM Mono, monospace', fontSize: '0.66rem', color: i < 3 ? rankColors[i] : 'var(--muted)' }}>{i + 1}</td>
+                        <td style={{ padding: '7px 6px', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           <a href={`/dashboard/vendedor/${v.vendor_id}?period=${activePeriod}`} style={{ color: 'inherit', textDecoration: 'none' }}>
                             {v.vendor_name}
                           </a>
                         </td>
                         <td style={{ padding: '8px 10px' }}><StorePill store={v.store} /></td>
                         <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.78rem' }}>{Number(v.unique_clients).toLocaleString()}</td>
-                        <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontWeight: 700 }}>{fmtCurrency(sold)}</td>
-                        <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.78rem', color: lvl >= 1 ? 'var(--meta1)' : 'var(--muted)' }}>{fmtK(m1)}</td>
-                        <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.78rem', color: lvl >= 2 ? 'var(--meta2)' : 'var(--muted)' }}>{fmtK(m2)}</td>
-                        <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.78rem', color: lvl >= 3 ? 'var(--meta3)' : 'var(--muted)' }}>{fmtK(m3)}</td>
-                        <td style={{ padding: '8px 10px', minWidth: '200px' }}>
+                        <td style={{ padding: '7px 6px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontWeight: 700 }}>{fmtCurrency(sold)}</td>
+                        <td style={{ padding: '7px 6px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.72rem', color: lvl >= 1 ? 'var(--meta1)' : 'var(--muted)' }}>{fmtK(m1)}</td>
+                        <td style={{ padding: '7px 6px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.72rem', color: lvl >= 2 ? 'var(--meta2)' : 'var(--muted)' }}>{fmtK(m2)}</td>
+                        <td style={{ padding: '7px 6px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.72rem', color: lvl >= 3 ? 'var(--meta3)' : 'var(--muted)' }}>{fmtK(m3)}</td>
+                        <td style={{ padding: '7px 4px' }}>
                           <ProgressBar sold={sold} meta1={m1} meta2={m2} meta3={m3} metaLevel={lvl} />
                         </td>
-                        <td style={{ padding: '8px 10px', textAlign: 'right' }}><BonusBadge level={lvl} amount={b} /></td>
+                        <td style={{ padding: '7px 6px', textAlign: 'right' }}><BonusBadge level={lvl} amount={b} /></td>
                       </tr>
                     )
                   })}
