@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { fmtCurrency, fmtK, metaLevel, bonusAmount, STORE_COLORS, STORE_LABELS } from '@/lib/utils'
