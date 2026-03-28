@@ -8,6 +8,7 @@ import type { VendorSummary, Period } from '@/types'
 import UploadModal from './UploadModal'
 import PeriodSelector from './PeriodSelector'
 import ClientsTab from './ClientsTab'
+import ClientsTabClient from './ClientsTabClient'
 
 export default async function DashboardPage({
   searchParams,
@@ -39,6 +40,14 @@ export default async function DashboardPage({
     .select('*')
     .eq('period_id', activePeriod)
     .order('total_sold', { ascending: false })
+
+  // Fetch clients for interactive tab
+  const { data: allClients } = await supabase
+    .from('client_portfolio')
+    .select('*')
+    .eq('period_id', activePeriod)
+    .order('total_spent', { ascending: false })
+    .limit(2000)
 
   const filtered = activeStore === 'all'
     ? (summaries ?? [])
@@ -117,7 +126,7 @@ export default async function DashboardPage({
 
       <div style={{ padding: '1.5rem 2.5rem 3rem' }}>
         {activeTab === 'clientes' ? (
-          <ClientsTab periodId={activePeriod} vendorId={null} />
+          <ClientsTabClient clients={(allClients ?? []) as Parameters<typeof ClientsTabClient>[0]['clients']} />
         ) : (
           <>
             {/* KPIs */}
@@ -172,19 +181,41 @@ export default async function DashboardPage({
             <SectionTitle>Ranking de Vendedores</SectionTitle>
 
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', tableLayout: 'fixed' }}>
+                <colgroup>
+                  <col style={{ width: '3%' }} />
+                  <col style={{ width: '15%' }} />
+                  <col style={{ width: '7%' }} />
+                  <col style={{ width: '6%' }} />
+                  <col style={{ width: '9%' }} />
+                  <col style={{ width: '7%' }} />
+                  <col style={{ width: '7%' }} />
+                  <col style={{ width: '7%' }} />
+                  <col />
+                  <col style={{ width: '6%' }} />
+                </colgroup>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    <th style={{ fontFamily:'DM Mono,monospace', fontSize:'0.6rem', color:'var(--muted)', textTransform:'uppercase', letterSpacing:'0.07em', padding:'6px 8px', width:'32px' }}>#</th>
-                    <th style={{ fontFamily:'DM Mono,monospace', fontSize:'0.6rem', color:'var(--muted)', textTransform:'uppercase', letterSpacing:'0.07em', padding:'6px 8px' }}>Vendedor</th>
-                    <th style={{ fontFamily:'DM Mono,monospace', fontSize:'0.6rem', color:'var(--muted)', textTransform:'uppercase', letterSpacing:'0.07em', padding:'6px 8px', width:'76px' }}>Loja</th>
-                    <th style={{ fontFamily:'DM Mono,monospace', fontSize:'0.6rem', color:'var(--muted)', textTransform:'uppercase', letterSpacing:'0.07em', padding:'6px 8px', width:'68px', textAlign:'right' }}>Clientes</th>
-                    <th style={{ fontFamily:'DM Mono,monospace', fontSize:'0.6rem', color:'var(--muted)', textTransform:'uppercase', letterSpacing:'0.07em', padding:'6px 8px', width:'100px', textAlign:'right' }}>Total</th>
-                    <th style={{ fontFamily:'DM Mono,monospace', fontSize:'0.6rem', color:'var(--meta1)', textTransform:'uppercase', letterSpacing:'0.07em', padding:'6px 8px', width:'72px', textAlign:'right' }}>1ª Meta</th>
-                    <th style={{ fontFamily:'DM Mono,monospace', fontSize:'0.6rem', color:'var(--meta2)', textTransform:'uppercase', letterSpacing:'0.07em', padding:'6px 8px', width:'72px', textAlign:'right' }}>2ª Meta</th>
-                    <th style={{ fontFamily:'DM Mono,monospace', fontSize:'0.6rem', color:'var(--meta3)', textTransform:'uppercase', letterSpacing:'0.07em', padding:'6px 8px', width:'72px', textAlign:'right' }}>3ª Meta</th>
-                    <th style={{ fontFamily:'DM Mono,monospace', fontSize:'0.6rem', color:'var(--muted)', textTransform:'uppercase', letterSpacing:'0.07em', padding:'6px 8px', width:'200px' }}>Progresso</th>
-                    <th style={{ fontFamily:'DM Mono,monospace', fontSize:'0.6rem', color:'var(--muted)', textTransform:'uppercase', letterSpacing:'0.07em', padding:'6px 8px', width:'58px', textAlign:'right' }}>Bônus</th>
+                    {([
+                      { h:'#',         align:'left'  },
+                      { h:'Vendedor',  align:'left'  },
+                      { h:'Loja',      align:'left'  },
+                      { h:'Clientes',  align:'right' },
+                      { h:'Total',     align:'right' },
+                      { h:'1ª Meta',   align:'right', color:'var(--meta1)' },
+                      { h:'2ª Meta',   align:'right', color:'var(--meta2)' },
+                      { h:'3ª Meta',   align:'right', color:'var(--meta3)' },
+                      { h:'Progresso', align:'left'  },
+                      { h:'Bônus',     align:'right' },
+                    ] as {h:string;align:string;color?:string}[]).map(col => (
+                      <th key={col.h} style={{
+                        fontFamily: 'DM Mono, monospace', fontSize: '0.6rem',
+                        color: col.color ?? 'var(--muted)',
+                        textTransform: 'uppercase', letterSpacing: '0.07em',
+                        padding: '6px 10px', textAlign: col.align as 'left'|'right',
+                        whiteSpace: 'nowrap',
+                      }}>{col.h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
@@ -194,24 +225,25 @@ export default async function DashboardPage({
                     const lvl = metaLevel(sold, m1, m2, m3)
                     const b   = bonusAmount(lvl, Number(v.bonus1), Number(v.bonus2), Number(v.bonus3))
                     const rankColors = ['#f5c842', '#a8abb2', '#cd7f32']
+                    const td = { padding: '9px 10px' }
                     return (
                       <tr key={v.vendor_id} style={{ borderBottom: '1px solid var(--border)' }}>
-                        <td style={{ padding: '8px 8px', fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', color: i < 3 ? rankColors[i] : 'var(--muted)' }}>{i + 1}</td>
-                        <td style={{ padding: '8px 8px', fontWeight: 600 }}>
+                        <td style={{ ...td, fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', color: i < 3 ? rankColors[i] : 'var(--muted)' }}>{i + 1}</td>
+                        <td style={{ ...td, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           <a href={`/dashboard/vendedor/${v.vendor_id}?period=${activePeriod}`} style={{ color: 'inherit', textDecoration: 'none' }}>
                             {v.vendor_name}
                           </a>
                         </td>
-                        <td style={{ padding: '8px 8px' }}><StorePill store={v.store} /></td>
-                        <td style={{ padding: '8px 8px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem' }}>{Number(v.unique_clients).toLocaleString()}</td>
-                        <td style={{ padding: '8px 8px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontWeight: 700 }}>{fmtCurrency(sold)}</td>
-                        <td style={{ padding: '8px 8px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: lvl >= 1 ? 'var(--meta1)' : 'var(--muted)' }}>{fmtK(m1)}</td>
-                        <td style={{ padding: '8px 8px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: lvl >= 2 ? 'var(--meta2)' : 'var(--muted)' }}>{fmtK(m2)}</td>
-                        <td style={{ padding: '8px 8px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: lvl >= 3 ? 'var(--meta3)' : 'var(--muted)' }}>{fmtK(m3)}</td>
-                        <td style={{ padding: '8px 8px' }}>
+                        <td style={td}><StorePill store={v.store} /></td>
+                        <td style={{ ...td, textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.76rem' }}>{Number(v.unique_clients).toLocaleString()}</td>
+                        <td style={{ ...td, textAlign: 'right', fontFamily: 'DM Mono, monospace', fontWeight: 700 }}>{fmtCurrency(sold)}</td>
+                        <td style={{ ...td, textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.76rem', color: lvl >= 1 ? 'var(--meta1)' : 'var(--muted)' }}>{fmtK(m1)}</td>
+                        <td style={{ ...td, textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.76rem', color: lvl >= 2 ? 'var(--meta2)' : 'var(--muted)' }}>{fmtK(m2)}</td>
+                        <td style={{ ...td, textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.76rem', color: lvl >= 3 ? 'var(--meta3)' : 'var(--muted)' }}>{fmtK(m3)}</td>
+                        <td style={td}>
                           <ProgressBar sold={sold} meta1={m1} meta2={m2} meta3={m3} metaLevel={lvl} />
                         </td>
-                        <td style={{ padding: '8px 8px', textAlign: 'right' }}><BonusBadge level={lvl} amount={b} /></td>
+                        <td style={{ ...td, textAlign: 'right' }}><BonusBadge level={lvl} amount={b} /></td>
                       </tr>
                     )
                   })}
