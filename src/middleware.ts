@@ -24,7 +24,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
-  // Public routes
+  // Public routes - always allow
   if (pathname.startsWith('/login') || pathname.startsWith('/api')) {
     return supabaseResponse
   }
@@ -36,27 +36,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Fetch profile to check role
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  // Vendedor trying to access /dashboard → redirect to their view
-  if (pathname.startsWith('/dashboard') && profile?.role === 'vendedor') {
-    const url = request.nextUrl.clone()
-    url.pathname = '/meu-resultado'
-    return NextResponse.redirect(url)
-  }
-
-  // ADM trying to access /meu-resultado → redirect to dashboard
-  if (pathname.startsWith('/meu-resultado') && profile?.role === 'adm') {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
-  }
-
+  // Logged in - let the page handle role-based redirects
   return supabaseResponse
 }
 
