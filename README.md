@@ -80,3 +80,4 @@ Acessar `/dashboard/usuarios` como ADM para:
 - Criar novos usuários
 - Vincular usuário ao vendedor correspondente
 - Ativar/desativar acesso
+# Sat Mar 28 01:41:33 UTC 2026
