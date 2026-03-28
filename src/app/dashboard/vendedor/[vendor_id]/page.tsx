@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { fmtCurrency, fmtK, metaLevel, bonusAmount, STORE_COLORS } from '@/lib/utils'
 import { KpiCard, StorePill, ProgressBar, SectionTitle, LogoutButton } from '@/components/ui'
-import ClientsTab from '../ClientsTab'
+import ClientsTab from '../../ClientsTab'
 import EvolutionChart from './EvolutionChart'
 import type { Period } from '@/types'
 
