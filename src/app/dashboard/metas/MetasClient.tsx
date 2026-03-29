@@ -116,11 +116,34 @@ export default function MetasClient({ periods, goals }: { periods: Period[]; goa
 
       {/* Goals table */}
       <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', tableLayout: 'fixed' }}>
+          <colgroup>
+            <col style={{ width: '14%' }} />
+            <col style={{ width: '9%' }} />
+            <col style={{ width: '5%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '9%' }} />
+            <col style={{ width: '9%' }} />
+            <col style={{ width: '9%' }} />
+            <col style={{ width: '8%' }} />
+          </colgroup>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)' }}>
-              {['Vendedor','Loja','ID','1ª Meta ($)','2ª Meta ($)','3ª Meta ($)','Bônus 1','Bônus 2','Bônus 3',''].map(h => (
-                <th key={h} style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.07em', padding: '6px 10px', textAlign: h === 'Vendedor' || h === 'Loja' || h === '' ? 'left' : 'right', whiteSpace: 'nowrap' }}>{h}</th>
+              {([
+                { h: 'Vendedor',    a: 'left'  },
+                { h: 'Loja',        a: 'left'  },
+                { h: 'ID',          a: 'left'  },
+                { h: '1ª Meta ($)', a: 'right' },
+                { h: '2ª Meta ($)', a: 'right' },
+                { h: '3ª Meta ($)', a: 'right' },
+                { h: 'Bônus 1',    a: 'right' },
+                { h: 'Bônus 2',    a: 'right' },
+                { h: 'Bônus 3',    a: 'right' },
+                { h: '',            a: 'center'},
+              ] as {h:string;a:string}[]).map(col => (
+                <th key={col.h} style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.07em', padding: '6px 10px', textAlign: col.a as 'left'|'right'|'center', whiteSpace: 'nowrap' }}>{col.h}</th>
               ))}
             </tr>
           </thead>
@@ -135,11 +158,11 @@ export default function MetasClient({ periods, goals }: { periods: Period[]; goa
                 <td style={{ padding: '8px 10px', fontSize: '0.75rem', color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>{g.store}</td>
                 <td style={{ padding: '8px 10px', fontSize: '0.7rem', color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>{g.vendor_id}</td>
                 {(['meta1','meta2','meta3','bonus1','bonus2','bonus3'] as const).map(field => (
-                  <td key={field} style={{ padding: '6px 8px' }}>
+                  <td key={field} style={{ padding: '6px 8px', textAlign: 'right' }}>
                     <input
                       type="number" value={editGoals.find(eg => eg.id === g.id)?.[field] ?? g[field]}
                       onChange={e => updateGoal(g.id, field, e.target.value)}
-                      style={{ ...inputStyle, width: '90px' }}
+                      style={{ ...inputStyle, width: '100%' }}
                     />
                   </td>
                 ))}
