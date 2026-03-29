@@ -17,13 +17,29 @@ export default async function MapeamentoPage() {
   const { data: profiles } = await supabase
     .from('profiles').select('*').order('name')
 
-  // All vendor goals (to show which vendor_ids exist in the system)
+  // All vendor goals (vendor_ids that have metas defined)
   const { data: goals } = await supabase
     .from('goals').select('vendor_id, vendor_name, store').order('vendor_name')
 
-  // Deduplicate vendor_ids
+  // Vendor_ids from sales that are NOT in goals (appeared in HTML but never registered)
+  const { data: orphanSales } = await supabase
+    .from('sales_records')
+    .select('vendor_id, vendor_name, store')
+    .order('vendor_name')
+
+  // Deduplicate goals vendors
   const uniqueVendors = Array.from(
     new Map((goals ?? []).map(g => [g.vendor_id, g])).values()
+  ).sort((a, b) => a.vendor_name.localeCompare(b.vendor_name))
+
+  // Deduplicate orphan vendors (in sales but NOT in goals)
+  const goalIds = new Set((goals ?? []).map(g => g.vendor_id))
+  const orphanVendors = Array.from(
+    new Map(
+      (orphanSales ?? [])
+        .filter(s => !goalIds.has(s.vendor_id))
+        .map(s => [s.vendor_id, s])
+    ).values()
   ).sort((a, b) => a.vendor_name.localeCompare(b.vendor_name))
 
   return (
@@ -38,7 +54,11 @@ export default async function MapeamentoPage() {
         <LogoutButton />
       </div>
       <div style={{ padding: '1.5rem 2.5rem' }}>
-        <MapeamentoClient profiles={profiles ?? []} vendors={uniqueVendors} />
+        <MapeamentoClient
+          profiles={profiles ?? []}
+          vendors={uniqueVendors}
+          orphanVendors={orphanVendors}
+        />
       </div>
     </div>
   )
