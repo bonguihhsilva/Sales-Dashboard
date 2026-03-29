@@ -43,6 +43,12 @@ export default async function VendorDetailPage({
   const lvl = metaLevel(sold, m1, m2, m3)
   const b   = bonusAmount(lvl, Number(summary.bonus1), Number(summary.bonus2), Number(summary.bonus3))
   const commission = sold * Number(summary.commission_pct) + b
+
+  // How much is missing to reach the next meta
+  const nextMetaValue = lvl === 0 ? m1 : lvl === 1 ? m2 : lvl === 2 ? m3 : null
+  const nextMetaLabel = lvl === 0 ? '1ª meta' : lvl === 1 ? '2ª meta' : lvl === 2 ? '3ª meta' : null
+  const nextMetaDiff  = nextMetaValue !== null ? nextMetaValue - sold : null
+  const nextMetaPct   = nextMetaValue !== null ? Math.round(sold / nextMetaValue * 100) : 100
   const col = STORE_COLORS[summary.store] || 'var(--accent)'
 
   const activePeriodLabel = (periods as Period[])?.find(p => p.id === activePeriod)?.label ?? ''
@@ -120,9 +126,63 @@ export default async function VendorDetailPage({
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '1.25rem 1.5rem', marginBottom: '1.25rem' }}>
               <SectionTitle>Progresso das Metas</SectionTitle>
               <ProgressBar sold={sold} meta1={m1} meta2={m2} meta3={m3} metaLevel={lvl} />
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '8px' }}>
-                <span style={{ fontSize: '1.1rem', fontWeight: 800, color: ['var(--muted)','var(--meta1)','var(--meta2)','var(--meta3)'][lvl] }}>{pctLabel}%</span>
-                <span style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>{pctRef}</span>
+
+              {/* Current % + next meta gap */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                  <span style={{ fontSize: '1.1rem', fontWeight: 800, color: ['var(--muted)','var(--meta1)','var(--meta2)','var(--meta3)'][lvl] }}>{pctLabel}%</span>
+                  <span style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>{pctRef}</span>
+                </div>
+
+                {nextMetaDiff !== null && nextMetaDiff > 0 ? (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    background: 'var(--surface2)', borderRadius: '8px',
+                    padding: '8px 14px', border: '1px solid var(--border)',
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '0.58rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '2px' }}>
+                        Falta para {nextMetaLabel}
+                      </div>
+                      <div style={{ fontSize: '1rem', fontWeight: 800, color: ['var(--meta1)','var(--meta2)','var(--meta3)'][lvl] }}>
+                        {fmtCurrency(nextMetaDiff)}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.58rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '2px' }}>
+                        Progresso
+                      </div>
+                      <div style={{ fontSize: '1rem', fontWeight: 800, color: ['var(--meta1)','var(--meta2)','var(--meta3)'][lvl] }}>
+                        {nextMetaPct}%
+                      </div>
+                    </div>
+                    {/* Mini progress bar for next meta only */}
+                    <div style={{ width: '80px' }}>
+                      <div style={{ height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{
+                          height: '100%', borderRadius: '4px',
+                          width: `${Math.min(nextMetaPct, 100)}%`,
+                          background: ['var(--meta1)','var(--meta2)','var(--meta3)'][lvl],
+                          transition: 'width 0.4s ease',
+                        }} />
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3px' }}>
+                        <span style={{ fontSize: '0.5rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>{fmtK(sold)}</span>
+                        <span style={{ fontSize: '0.5rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>{fmtK(nextMetaValue!)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : lvl === 3 ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(245,167,66,0.08)', border: '1px solid rgba(245,167,66,0.3)', borderRadius: '8px', padding: '8px 14px' }}>
+                    <span style={{ fontSize: '1.2rem' }}>🏆</span>
+                    <div>
+                      <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--meta3)' }}>3ª meta atingida!</div>
+                      <div style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>
+                        +{fmtCurrency(sold - m3)} acima do teto
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
 
