@@ -9,6 +9,7 @@ import UploadModal from './UploadModal'
 import PeriodSelector from './PeriodSelector'
 import ClientsTab from './ClientsTab'
 import ClientsTabClient from './ClientsTabClient'
+import EvolucaoTab from './EvolucaoTab'
 
 export default async function DashboardPage({
   searchParams,
@@ -40,6 +41,11 @@ export default async function DashboardPage({
     .select('*')
     .eq('period_id', activePeriod)
     .order('total_sold', { ascending: false })
+
+  // Fetch daily evolution data grouped by store
+  const { data: evolutionData } = await supabase
+    .rpc('store_daily_evolution', { p_period_id: activePeriod })
+    .order('sale_date')
 
   // Fetch clients for interactive tab
   const { data: allClients } = await supabase
@@ -116,6 +122,19 @@ export default async function DashboardPage({
           </a>
         ))}
         <a
+          href={`/dashboard?period=${activePeriod}&store=${activeStore}&tab=evolucao`}
+          style={{
+            padding: '8px 20px', borderRadius: '6px 6px 0 0', fontSize: '0.8rem', fontWeight: 600,
+            border: '1px solid transparent', borderBottom: 'none', textDecoration: 'none', transition: 'all 0.15s',
+            background: activeTab === 'evolucao' ? 'var(--surface)' : 'transparent',
+            borderColor: activeTab === 'evolucao' ? 'var(--border)' : 'transparent',
+            color: activeTab === 'evolucao' ? 'var(--text)' : 'var(--muted)',
+            marginLeft: '8px',
+          }}
+        >
+          Evolução
+        </a>
+        <a
           href={`/dashboard?period=${activePeriod}&store=${activeStore}&tab=clientes`}
           style={{
             padding: '8px 20px', borderRadius: '6px 6px 0 0', fontSize: '0.8rem', fontWeight: 600,
@@ -131,7 +150,9 @@ export default async function DashboardPage({
       </div>
 
       <div style={{ padding: '1.5rem 2.5rem 3rem' }}>
-        {activeTab === 'clientes' ? (
+        {activeTab === 'evolucao' ? (
+          <EvolucaoTab data={(evolutionData ?? []) as Parameters<typeof EvolucaoTab>[0]['data']} />
+        ) : activeTab === 'clientes' ? (
           <ClientsTabClient clients={(allClients ?? []) as Parameters<typeof ClientsTabClient>[0]['clients']} />
         ) : (
           <>
