@@ -42,10 +42,10 @@ export default async function DashboardPage({
     .eq('period_id', activePeriod)
     .order('total_sold', { ascending: false })
 
-  // Fetch daily evolution data grouped by store
+  // Fetch daily evolution data for ALL periods (supports multi-period comparison)
+  const allPeriodIds = (periods ?? []).map(p => p.id)
   const { data: evolutionData } = await supabase
-    .rpc('store_daily_evolution', { p_period_id: activePeriod })
-    .order('sale_date')
+    .rpc('store_daily_evolution_multi', { p_period_ids: allPeriodIds })
 
   // Fetch clients for interactive tab
   const { data: allClients } = await supabase
@@ -151,7 +151,7 @@ export default async function DashboardPage({
 
       <div style={{ padding: '1.5rem 2.5rem 3rem' }}>
         {activeTab === 'evolucao' ? (
-          <EvolucaoTab data={(evolutionData ?? []) as Parameters<typeof EvolucaoTab>[0]['data']} />
+          <EvolucaoTab data={(evolutionData ?? []) as Parameters<typeof EvolucaoTab>[0]['data']} periods={(periods ?? []) as Parameters<typeof EvolucaoTab>[0]['periods']} />
         ) : activeTab === 'clientes' ? (
           <ClientsTabClient clients={(allClients ?? []) as Parameters<typeof ClientsTabClient>[0]['clients']} />
         ) : (
