@@ -55,9 +55,13 @@ export default async function DashboardPage({
     .order('total_spent', { ascending: false })
     .limit(2000)
 
+  // Only show vendors that are registered (have goals) — exclude orphans from HTML
+  const goalVendorIds = new Set((await supabase.from('goals').select('vendor_id').eq('period_id', activePeriod).then(r => r.data ?? [])).map(g => g.vendor_id))
+  const registeredSummaries = (summaries ?? []).filter(s => goalVendorIds.has(s.vendor_id))
+
   const filtered = activeStore === 'all'
-    ? (summaries ?? [])
-    : (summaries ?? []).filter(s => s.store === activeStore)
+    ? registeredSummaries
+    : registeredSummaries.filter(s => s.store === activeStore)
 
   const grandTotal   = filtered.reduce((s, v) => s + Number(v.total_sold), 0)
   const totalM1      = filtered.reduce((s, v) => s + Number(v.meta1), 0)
@@ -89,14 +93,8 @@ export default async function DashboardPage({
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <PeriodSelector periods={periods as Period[]} activePeriod={activePeriod} />
           <UploadModal periods={periods as Period[]} />
-          <a href="/dashboard/metas" style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', padding: '6px 12px', textDecoration: 'none' }}>
-            Metas
-          </a>
-          <a href="/dashboard/mapeamento" style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', padding: '6px 12px', textDecoration: 'none' }}>
-            Mapeamento
-          </a>
           <a href="/dashboard/usuarios" style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', padding: '6px 12px', textDecoration: 'none' }}>
-            Usuários
+            Gestão
           </a>
           <LogoutButton />
         </div>
@@ -211,15 +209,15 @@ export default async function DashboardPage({
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', tableLayout: 'fixed' }}>
                 <colgroup>
                   <col style={{ width: '3%' }} />
-                  <col style={{ width: '15%' }} />
+                  <col style={{ width: '14%' }} />
                   <col style={{ width: '7%' }} />
                   <col style={{ width: '6%' }} />
                   <col style={{ width: '9%' }} />
+                  <col style={{ width: '8%' }} />
+                  <col style={{ width: '8%' }} />
+                  <col style={{ width: '8%' }} />
+                  <col style={{ width: '30%' }} />
                   <col style={{ width: '7%' }} />
-                  <col style={{ width: '7%' }} />
-                  <col style={{ width: '7%' }} />
-                  <col />
-                  <col style={{ width: '6%' }} />
                 </colgroup>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
