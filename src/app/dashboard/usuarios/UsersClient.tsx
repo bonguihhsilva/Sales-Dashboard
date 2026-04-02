@@ -85,9 +85,18 @@ export default function UsersClient({ profiles, periods, goals, allVendors }: {
   // Linked vendor lookup
   const vendorById = Object.fromEntries(allVendors.map(v => [v.vendor_id, v]))
 
-  // Vendors that are NOT yet linked to any user (for create modal)
-  const linkedVendorIds = new Set(list.map(p => p.vendor_id).filter(Boolean))
-  const unlinkedVendors = allVendors.filter(v => !linkedVendorIds.has(v.vendor_id))
+  // Vendors not linked to any user
+  const linkedVendorIds = new Set(list.map(p => p.vendor_id).filter(Boolean) as string[])
+  // Sort: orphan vendors (no goals/name) first, then by name
+  const unlinkedVendors = allVendors
+    .filter(v => !linkedVendorIds.has(v.vendor_id))
+    .sort((a, b) => {
+      const aOrphan = a.vendor_name === `Vendedor ${a.vendor_id}` || a.store === 'Sem loja'
+      const bOrphan = b.vendor_name === `Vendedor ${b.vendor_id}` || b.store === 'Sem loja'
+      if (aOrphan && !bOrphan) return -1
+      if (!aOrphan && bOrphan) return 1
+      return a.vendor_name.localeCompare(b.vendor_name)
+    })
 
   const TAB_STYLE = (active: boolean) => ({
     padding:'8px 20px', borderRadius:'6px 6px 0 0', fontSize:'0.82rem', fontWeight:600 as const,
@@ -319,6 +328,17 @@ export default function UsersClient({ profiles, periods, goals, allVendors }: {
               <option value="">— Não vinculado —</option>
               {allVendors
                 .filter(v => !linkedVendorIds.has(v.vendor_id) || v.vendor_id === editUser.vendor_id)
+                .sort((a, b) => {
+                  // Current vendor first
+                  if (a.vendor_id === editUser.vendor_id) return -1
+                  if (b.vendor_id === editUser.vendor_id) return 1
+                  // Orphans (no name/store) second
+                  const aOrphan = a.vendor_name === `Vendedor ${a.vendor_id}` || a.store === 'Sem loja'
+                  const bOrphan = b.vendor_name === `Vendedor ${b.vendor_id}` || b.store === 'Sem loja'
+                  if (aOrphan && !bOrphan) return -1
+                  if (!aOrphan && bOrphan) return 1
+                  return a.vendor_name.localeCompare(b.vendor_name)
+                })
                 .map(v => (
                   <option key={v.vendor_id} value={v.vendor_id}>
                     {v.vendor_name === `Vendedor ${v.vendor_id}` ? `ID ${v.vendor_id} (sem nome)` : v.vendor_name} — ID {v.vendor_id}{v.store && v.store !== 'Sem loja' ? ` (${v.store})` : ''}
