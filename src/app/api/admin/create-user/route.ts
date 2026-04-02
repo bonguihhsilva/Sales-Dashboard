@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   const { data: profile } = await caller.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'adm') return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
-  const { email, password, name, role, vendor_id } = await req.json()
+  const { email, password, name, role, vendor_id, store } = await req.json()
   if (!email || !password || !name) {
     return NextResponse.json({ error: 'Campos obrigatórios: email, password, name' }, { status: 400 })
   }
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   // Update profile with role and vendor_id
   const { error: profileError } = await admin
     .from('profiles')
-    .update({ name, role: role ?? 'vendedor', vendor_id: vendor_id || null })
+    .update({ name, role: role ?? 'vendedor', vendor_id: vendor_id || null, store: store || null })
     .eq('id', newUser.user!.id)
 
   if (profileError) return NextResponse.json({ error: profileError.message }, { status: 400 })

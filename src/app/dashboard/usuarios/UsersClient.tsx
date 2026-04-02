@@ -16,7 +16,7 @@ export default function UsersClient({ profiles, periods, goals, allVendors }: {
   const [list, setList]         = useState<Profile[]>(profiles)
   const [editGoals, setEditGoals] = useState<Goal[]>(goals)
   const [showCreate, setShowCreate] = useState(false)
-  const [editUser, setEditUser] = useState<Profile & { email?: string; newPwd?: string } | null>(null)
+  const [editUser, setEditUser] = useState<Profile & { email?: string; newPwd?: string; store?: string | null } | null>(null)
   const [activePeriod, setActivePeriod] = useState(periods[0]?.id ?? 0)
   const [loading, setLoading]   = useState(false)
   const [saving, setSaving]     = useState<number | null>(null)
@@ -28,6 +28,7 @@ export default function UsersClient({ profiles, periods, goals, allVendors }: {
   const [newPwd, setNewPwd]       = useState('')
   const [newRole, setNewRole]     = useState<'adm'|'vendedor'>('vendedor')
   const [newVendor, setNewVendor] = useState('')
+  const [newStore, setNewStore]   = useState('')
 
   const s = { // shared styles
     input:  { background:'var(--surface2)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontFamily:'DM Mono,monospace', fontSize:'0.82rem', padding:'9px 12px', outline:'none', width:'100%', marginBottom:'0.85rem' } as React.CSSProperties,
@@ -45,10 +46,10 @@ export default function UsersClient({ profiles, periods, goals, allVendors }: {
 
   async function createUser() {
     setLoading(true)
-    const data = await api('/api/admin/create-user', { email:newEmail, password:newPwd, name:newName, role:newRole, vendor_id:newVendor||null })
+    const data = await api('/api/admin/create-user', { email:newEmail, password:newPwd, name:newName, role:newRole, vendor_id:newVendor||null, store:newStore||null })
     if (data.error) { flash(`Erro: ${data.error}`); setLoading(false); return }
     flash(`✓ Usuário ${newName} criado!`)
-    setShowCreate(false); setNewName(''); setNewEmail(''); setNewPwd(''); setNewVendor('')
+    setShowCreate(false); setNewName(''); setNewEmail(''); setNewPwd(''); setNewVendor(''); setNewStore('')
     setTimeout(() => window.location.reload(), 800)
     setLoading(false)
   }
@@ -56,12 +57,12 @@ export default function UsersClient({ profiles, periods, goals, allVendors }: {
   async function saveUser() {
     if (!editUser) return
     setLoading(true)
-    const body: Record<string, unknown> = { user_id: editUser.id, name: editUser.name, role: editUser.role, vendor_id: editUser.vendor_id || null, active: editUser.active }
+    const body: Record<string, unknown> = { user_id: editUser.id, name: editUser.name, role: editUser.role, vendor_id: editUser.vendor_id || null, active: editUser.active, store: editUser.store || null }
     if (editUser.email)  body.email    = editUser.email
     if (editUser.newPwd) body.password = editUser.newPwd
     const data = await api('/api/admin/update-user', body)
     if (data.error) { flash(`Erro: ${data.error}`); setLoading(false); return }
-    setList(l => l.map(p => p.id === editUser.id ? { ...p, name: editUser.name, role: editUser.role, vendor_id: editUser.vendor_id, active: editUser.active } : p))
+    setList(l => l.map(p => p.id === editUser.id ? { ...p, name: editUser.name, role: editUser.role, vendor_id: editUser.vendor_id, active: editUser.active, store: editUser.store } : p))
     flash('✓ Usuário atualizado!')
     setEditUser(null)
     setLoading(false)
@@ -251,12 +252,27 @@ export default function UsersClient({ profiles, periods, goals, allVendors }: {
               <option value="adm">ADM</option>
             </select>
             <label style={s.label}>Vincular ao vendedor (opcional)</label>
-            <select style={{ ...s.input }} value={newVendor} onChange={e => setNewVendor(e.target.value)}>
+            <select style={{ ...s.input }} value={newVendor} onChange={e => {
+              setNewVendor(e.target.value)
+              const v = allVendors.find(x => x.vendor_id === e.target.value)
+              if (v?.store && v.store !== 'Sem loja') setNewStore(v.store)
+            }}>
               <option value="">— Não vinculado por enquanto —</option>
               {unlinkedVendors.length === 0
                 ? <option disabled>Todos os vendedores já têm usuário</option>
-                : unlinkedVendors.map(v => <option key={v.vendor_id} value={v.vendor_id}>{v.vendor_name} ({v.store}) — ID {v.vendor_id}</option>)
+                : unlinkedVendors.map(v => (
+                    <option key={v.vendor_id} value={v.vendor_id}>
+                      {v.vendor_name === `Vendedor ${v.vendor_id}` ? `ID ${v.vendor_id} (sem nome)` : v.vendor_name} — ID {v.vendor_id}{v.store && v.store !== 'Sem loja' ? ` (${v.store})` : ''}
+                    </option>
+                  ))
               }
+            </select>
+            <label style={s.label}>Loja</label>
+            <select style={{ ...s.input }} value={newStore} onChange={e => setNewStore(e.target.value)}>
+              <option value="">— Selecionar loja —</option>
+              <option value="Jebai">Jebai</option>
+              <option value="Paje-MKT">Paje-MKT</option>
+              <option value="Paje-Caixa">Paje-Caixa</option>
             </select>
             <div style={{ display:'flex', gap:'10px', marginTop:'0.5rem' }}>
               <button onClick={() => setShowCreate(false)} style={{ ...s.btnS, flex:1 }}>Cancelar</button>
@@ -291,10 +307,29 @@ export default function UsersClient({ profiles, periods, goals, allVendors }: {
               <option value="adm">ADM</option>
             </select>
 
-            <label style={s.label}>Vendedor vinculado</label>
-            <select style={{ ...s.input }} value={editUser.vendor_id ?? ''} onChange={e => setEditUser(u => u ? {...u, vendor_id:e.target.value||null} : u)}>
+            <label style={s.label}>Vendedor vinculado (ID)</label>
+            <select style={{ ...s.input }} value={editUser.vendor_id ?? ''} onChange={e => {
+              const v = allVendors.find(x => x.vendor_id === e.target.value)
+              setEditUser(u => u ? {
+                ...u,
+                vendor_id: e.target.value || null,
+                store: v?.store && v.store !== 'Sem loja' ? v.store : (u.store ?? ''),
+              } : u)
+            }}>
               <option value="">— Não vinculado —</option>
-              {allVendors.map(v => <option key={v.vendor_id} value={v.vendor_id}>{v.vendor_name} ({v.store}) — ID {v.vendor_id}</option>)}
+              {allVendors.map(v => (
+                <option key={v.vendor_id} value={v.vendor_id}>
+                  {v.vendor_name === `Vendedor ${v.vendor_id}` ? `ID ${v.vendor_id} (sem nome)` : v.vendor_name} — ID {v.vendor_id}{v.store && v.store !== 'Sem loja' ? ` (${v.store})` : ''}
+                </option>
+              ))}
+            </select>
+
+            <label style={s.label}>Loja</label>
+            <select style={{ ...s.input }} value={editUser.store ?? ''} onChange={e => setEditUser(u => u ? {...u, store: e.target.value} : u)}>
+              <option value="">— Selecionar loja —</option>
+              <option value="Jebai">Jebai</option>
+              <option value="Paje-MKT">Paje-MKT</option>
+              <option value="Paje-Caixa">Paje-Caixa</option>
             </select>
 
             <label style={s.label}>Status</label>

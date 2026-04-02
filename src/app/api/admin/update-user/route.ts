@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   const { data: profile } = await caller.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'adm') return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
-  const { user_id, email, password, name, vendor_id, role, active } = await req.json()
+  const { user_id, email, password, name, vendor_id, role, active, store } = await req.json()
   if (!user_id) return NextResponse.json({ error: 'user_id obrigatório' }, { status: 400 })
 
   const admin = createClient(
@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
   if (vendor_id !== undefined) profileUpdate.vendor_id = vendor_id || null
   if (role !== undefined)      profileUpdate.role      = role
   if (active !== undefined)    profileUpdate.active    = active
+  if (store !== undefined)     profileUpdate.store     = store || null
 
   if (Object.keys(profileUpdate).length > 0) {
     const { error } = await admin.from('profiles').update(profileUpdate).eq('id', user_id)
