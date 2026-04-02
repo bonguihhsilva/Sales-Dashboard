@@ -84,6 +84,10 @@ export default function UsersClient({ profiles, periods, goals, allVendors }: {
   // Linked vendor lookup
   const vendorById = Object.fromEntries(allVendors.map(v => [v.vendor_id, v]))
 
+  // Vendors that are NOT yet linked to any user (for create modal)
+  const linkedVendorIds = new Set(list.map(p => p.vendor_id).filter(Boolean))
+  const unlinkedVendors = allVendors.filter(v => !linkedVendorIds.has(v.vendor_id))
+
   const TAB_STYLE = (active: boolean) => ({
     padding:'8px 20px', borderRadius:'6px 6px 0 0', fontSize:'0.82rem', fontWeight:600 as const,
     border:'1px solid transparent', borderBottom:'none', cursor:'pointer' as const,
@@ -249,7 +253,10 @@ export default function UsersClient({ profiles, periods, goals, allVendors }: {
             <label style={s.label}>Vincular ao vendedor (opcional)</label>
             <select style={{ ...s.input }} value={newVendor} onChange={e => setNewVendor(e.target.value)}>
               <option value="">— Não vinculado por enquanto —</option>
-              {allVendors.map(v => <option key={v.vendor_id} value={v.vendor_id}>{v.vendor_name} ({v.store}) — ID {v.vendor_id}</option>)}
+              {unlinkedVendors.length === 0
+                ? <option disabled>Todos os vendedores já têm usuário</option>
+                : unlinkedVendors.map(v => <option key={v.vendor_id} value={v.vendor_id}>{v.vendor_name} ({v.store}) — ID {v.vendor_id}</option>)
+              }
             </select>
             <div style={{ display:'flex', gap:'10px', marginTop:'0.5rem' }}>
               <button onClick={() => setShowCreate(false)} style={{ ...s.btnS, flex:1 }}>Cancelar</button>
