@@ -317,11 +317,14 @@ export default function UsersClient({ profiles, periods, goals, allVendors }: {
               } : u)
             }}>
               <option value="">— Não vinculado —</option>
-              {allVendors.map(v => (
-                <option key={v.vendor_id} value={v.vendor_id}>
-                  {v.vendor_name === `Vendedor ${v.vendor_id}` ? `ID ${v.vendor_id} (sem nome)` : v.vendor_name} — ID {v.vendor_id}{v.store && v.store !== 'Sem loja' ? ` (${v.store})` : ''}
-                </option>
-              ))}
+              {allVendors
+                .filter(v => !linkedVendorIds.has(v.vendor_id) || v.vendor_id === editUser.vendor_id)
+                .map(v => (
+                  <option key={v.vendor_id} value={v.vendor_id}>
+                    {v.vendor_name === `Vendedor ${v.vendor_id}` ? `ID ${v.vendor_id} (sem nome)` : v.vendor_name} — ID {v.vendor_id}{v.store && v.store !== 'Sem loja' ? ` (${v.store})` : ''}
+                  </option>
+                ))
+              }
             </select>
 
             <label style={s.label}>Loja</label>
