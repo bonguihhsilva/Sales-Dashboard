@@ -17,13 +17,28 @@ export default async function UsersPage() {
   const { data: periods }  = await supabase.from('periods').select('*').order('year', { ascending: false }).order('month', { ascending: false })
   const { data: goals }    = await supabase.from('goals').select('*').order('vendor_name')
 
-  // All unique vendors from goals (across all periods)
+  // All unique vendors: from goals + from sales_records (orphans not in goals)
+  // This ensures even unregistered vendors show up for linking
+  const { data: salesVendors } = await supabase
+    .from('sales_records')
+    .select('vendor_id, vendor_name, store')
+    .order('vendor_name')
+
   const vendorMap = new Map<string, { vendor_id: string; vendor_name: string; store: string }>()
+  
+  // First add from goals (have store/name properly set)
   ;(goals ?? []).forEach(g => {
     if (!vendorMap.has(g.vendor_id)) {
       vendorMap.set(g.vendor_id, { vendor_id: g.vendor_id, vendor_name: g.vendor_name, store: g.store })
     }
   })
+  // Then add any from sales that aren't in goals yet
+  ;(salesVendors ?? []).forEach(s => {
+    if (!vendorMap.has(s.vendor_id)) {
+      vendorMap.set(s.vendor_id, { vendor_id: s.vendor_id, vendor_name: s.vendor_name, store: s.store })
+    }
+  })
+
   const allVendors = [...vendorMap.values()].sort((a, b) => a.vendor_name.localeCompare(b.vendor_name))
 
   return (
