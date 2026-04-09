@@ -6,9 +6,8 @@ export async function POST(req: NextRequest) {
   const caller = await createServerClient()
   const { data: { user } } = await caller.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-
-  const { data: profile } = await caller.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'adm') return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+  const { data: callerProfile } = await caller.from('profiles').select('role').eq('id', user.id).single()
+  if (callerProfile?.role !== 'adm') return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
   const { user_id, email, password, name, vendor_id, role, active, store } = await req.json()
   if (!user_id) return NextResponse.json({ error: 'user_id obrigatório' }, { status: 400 })
@@ -28,7 +27,11 @@ export async function POST(req: NextRequest) {
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   }
 
-  // 2. Update profile
+  // 2. Get current profile to know the vendor_id we're working with
+  const { data: currentProfile } = await admin
+    .from('profiles').select('vendor_id, name, store').eq('id', user_id).single()
+
+  // 3. Update profile
   const profileUpdate: Record<string, unknown> = {}
   if (name !== undefined)      profileUpdate.name      = name
   if (vendor_id !== undefined) profileUpdate.vendor_id = vendor_id || null
@@ -41,35 +44,37 @@ export async function POST(req: NextRequest) {
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   }
 
-  // 3. If vendor_id or store or name changed — propagate to sales_records and goals
-  // Get the final vendor_id to update (either the new one or fetch current)
-  const finalVendorId = vendor_id !== undefined
-    ? (vendor_id || null)
-    : (await admin.from('profiles').select('vendor_id').eq('id', user_id).single()).data?.vendor_id
+  // 4. Propagate name + store to sales_records and goals
+  // Use the new vendor_id if changing, otherwise use the existing one
+  const finalVendorId = (vendor_id !== undefined ? vendor_id : currentProfile?.vendor_id) || null
+  const finalName     = name  !== undefined ? name  : currentProfile?.name
+  const finalStore    = store !== undefined ? store : currentProfile?.store
 
-  if (finalVendorId) {
-    // Build what needs to be updated in sales_records
-    const salesUpdate: Record<string, string> = {}
-    if (store && store !== 'Sem loja') salesUpdate.store = store
-    if (name)                          salesUpdate.vendor_name = name
+  if (finalVendorId && (name !== undefined || store !== undefined || vendor_id !== undefined)) {
+    const propagate: Record<string, string> = {}
+    if (finalName)                                             propagate.vendor_name = finalName
+    if (finalStore && finalStore !== '' && finalStore !== 'Sem loja') propagate.store = finalStore
 
-    if (Object.keys(salesUpdate).length > 0) {
-      await admin
+    if (Object.keys(propagate).length > 0) {
+      // Update sales_records
+      const { error: srError } = await admin
         .from('sales_records')
-        .update(salesUpdate)
+        .update(propagate)
         .eq('vendor_id', finalVendorId)
+      if (srError) console.error('sales_records propagation error:', srError)
+
+      // Update goals
+      const { error: gError } = await admin
+        .from('goals')
+        .update(propagate)
+        .eq('vendor_id', finalVendorId)
+      if (gError) console.error('goals propagation error:', gError)
     }
 
-    // Build what needs to be updated in goals
-    const goalsUpdate: Record<string, string> = {}
-    if (store && store !== 'Sem loja') goalsUpdate.store = store
-    if (name)                          goalsUpdate.vendor_name = name
-
-    if (Object.keys(goalsUpdate).length > 0) {
-      await admin
-        .from('goals')
-        .update(goalsUpdate)
-        .eq('vendor_id', finalVendorId)
+    // If vendor_id changed, also propagate to OLD vendor's sales (remove the old link)
+    if (vendor_id !== undefined && currentProfile?.vendor_id && currentProfile.vendor_id !== vendor_id) {
+      // Old vendor_id sales should keep their original name — nothing to do
+      // But make sure new vendor's sales are properly named
     }
   }
 
