@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { fmtCurrency, fmtK, metaLevel, bonusAmount, STORE_COLORS, STORE_LABELS } from '@/lib/utils'
 import { KpiCard, StorePill, ProgressBar, BonusBadge, SectionTitle, LogoutButton } from '@/components/ui'
@@ -56,7 +57,8 @@ export default async function DashboardPage({
     .limit(2000)
 
   // Only show vendors that are registered (have goals) — exclude orphans from HTML
-  const goalVendorIds = new Set((await supabase.from('goals').select('vendor_id').eq('period_id', activePeriod).then(r => r.data ?? [])).map(g => g.vendor_id))
+  const adminDb = createAdminClient()
+  const goalVendorIds = new Set((await adminDb.from('goals').select('vendor_id').eq('period_id', activePeriod).then(r => r.data ?? [])).map(g => g.vendor_id))
   const registeredSummaries = (summaries ?? []).filter(s => goalVendorIds.has(s.vendor_id))
 
   const filtered = activeStore === 'all'

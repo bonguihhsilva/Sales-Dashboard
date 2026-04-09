@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { LogoutButton } from '@/components/ui'
 import UsersClient from './UsersClient'
@@ -13,12 +14,14 @@ export default async function UsersPage() {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'adm') redirect('/meu-resultado')
 
-  const { data: profiles } = await supabase.from('profiles').select('*').order('name')
-  const { data: periods }  = await supabase.from('periods').select('*').order('year', { ascending: false }).order('month', { ascending: false })
-  const { data: goals }    = await supabase.from('goals').select('*').order('vendor_name')
+  // Use admin client for data fetches to bypass RLS restrictions
+  const admin = createAdminClient()
+  const { data: profiles } = await admin.from('profiles').select('*').order('name')
+  const { data: periods }  = await admin.from('periods').select('*').order('year', { ascending: false }).order('month', { ascending: false })
+  const { data: goals }    = await admin.from('goals').select('*').order('vendor_name')
 
   // Use the all_vendors view which deduplicates across goals + sales_records
-  const { data: vendorRows } = await supabase
+  const { data: vendorRows } = await admin
     .from('all_vendors')
     .select('vendor_id, vendor_name, store, has_goals, linked_user')
     .order('vendor_name')
