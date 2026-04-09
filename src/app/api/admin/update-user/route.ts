@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 
-  // Update auth (email/password)
+  // 1. Update auth (email/password)
   const authUpdate: Record<string, string> = {}
   if (email)    authUpdate.email    = email
   if (password) authUpdate.password = password
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   }
 
-  // Update profile (name, vendor_id, role, active)
+  // 2. Update profile
   const profileUpdate: Record<string, unknown> = {}
   if (name !== undefined)      profileUpdate.name      = name
   if (vendor_id !== undefined) profileUpdate.vendor_id = vendor_id || null
@@ -39,6 +39,38 @@ export async function POST(req: NextRequest) {
   if (Object.keys(profileUpdate).length > 0) {
     const { error } = await admin.from('profiles').update(profileUpdate).eq('id', user_id)
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  }
+
+  // 3. If vendor_id or store or name changed — propagate to sales_records and goals
+  // Get the final vendor_id to update (either the new one or fetch current)
+  const finalVendorId = vendor_id !== undefined
+    ? (vendor_id || null)
+    : (await admin.from('profiles').select('vendor_id').eq('id', user_id).single()).data?.vendor_id
+
+  if (finalVendorId) {
+    // Build what needs to be updated in sales_records
+    const salesUpdate: Record<string, string> = {}
+    if (store && store !== 'Sem loja') salesUpdate.store = store
+    if (name)                          salesUpdate.vendor_name = name
+
+    if (Object.keys(salesUpdate).length > 0) {
+      await admin
+        .from('sales_records')
+        .update(salesUpdate)
+        .eq('vendor_id', finalVendorId)
+    }
+
+    // Build what needs to be updated in goals
+    const goalsUpdate: Record<string, string> = {}
+    if (store && store !== 'Sem loja') goalsUpdate.store = store
+    if (name)                          goalsUpdate.vendor_name = name
+
+    if (Object.keys(goalsUpdate).length > 0) {
+      await admin
+        .from('goals')
+        .update(goalsUpdate)
+        .eq('vendor_id', finalVendorId)
+    }
   }
 
   return NextResponse.json({ success: true })
