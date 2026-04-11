@@ -11,6 +11,7 @@ import PeriodSelector from './PeriodSelector'
 import ClientsTab from './ClientsTab'
 import ClientsTabClient from './ClientsTabClient'
 import EvolucaoTab from './EvolucaoTab'
+import ExportButton from './ExportButton'
 
 export default async function DashboardPage({
   searchParams,
@@ -95,6 +96,7 @@ export default async function DashboardPage({
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <PeriodSelector periods={periods as Period[]} activePeriod={activePeriod} />
           <UploadModal periods={periods as Period[]} />
+          <ExportButton periods={periods as Period[]} />
           <a href="/dashboard/usuarios" style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', padding: '6px 12px', textDecoration: 'none' }}>
             Gestão
           </a>
