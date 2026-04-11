@@ -1,4 +1,4 @@
-# Da Silva Dashboard.
+# Da Silva Dashboard
 
 Painel de vendas e metas — Next.js + Supabase + Vercel
 
