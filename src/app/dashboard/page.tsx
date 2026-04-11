@@ -97,7 +97,7 @@ export default async function DashboardPage({
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <PeriodSelector periods={periods as Period[]} activePeriod={activePeriod} />
           <UploadModal periods={periods as Period[]} />
-          <ExportButton periods={periods as Period[]} />
+          <ExportButton />
           <a href="/dashboard/usuarios" style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', padding: '6px 12px', textDecoration: 'none' }}>
             Gestão
           </a>
