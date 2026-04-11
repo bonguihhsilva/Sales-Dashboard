@@ -26,8 +26,10 @@ export default async function DashboardPage({
     .from('profiles').select('role, name').eq('id', user.id).single()
   if (profile?.role !== 'adm') redirect('/meu-resultado')
 
+  const adminDb = createAdminClient()
+
   // Load periods
-  const { data: periods } = await supabase
+  const { data: periods } = await adminDb
     .from('periods').select('*').order('year', { ascending: false }).order('month', { ascending: false })
 
   const params = await searchParams
@@ -38,7 +40,7 @@ export default async function DashboardPage({
   const activeTab   = params.tab   || 'ranking'
 
   // Load vendor summaries for this period
-  const { data: summaries } = await supabase
+  const { data: summaries } = await adminDb
     .from('vendor_summary')
     .select('*')
     .eq('period_id', activePeriod)
@@ -46,11 +48,11 @@ export default async function DashboardPage({
 
   // Fetch daily evolution data for ALL periods (supports multi-period comparison)
   const allPeriodIds = (periods ?? []).map(p => p.id)
-  const { data: evolutionData } = await supabase
+  const { data: evolutionData } = await adminDb
     .rpc('store_daily_evolution_multi', { p_period_ids: allPeriodIds })
 
   // Fetch clients for interactive tab
-  const { data: allClients } = await supabase
+  const { data: allClients } = await adminDb
     .from('client_portfolio')
     .select('*')
     .eq('period_id', activePeriod)
@@ -58,7 +60,6 @@ export default async function DashboardPage({
     .limit(2000)
 
   // Only show vendors that are registered (have goals) — exclude orphans from HTML
-  const adminDb = createAdminClient()
   const goalVendorIds = new Set((await adminDb.from('goals').select('vendor_id').eq('period_id', activePeriod).then(r => r.data ?? [])).map(g => g.vendor_id))
   const registeredSummaries = (summaries ?? []).filter(s => goalVendorIds.has(s.vendor_id))
 
