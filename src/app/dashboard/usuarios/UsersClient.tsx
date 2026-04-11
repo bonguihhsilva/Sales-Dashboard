@@ -62,7 +62,8 @@ export default function UsersClient({ profiles, periods, goals, allVendors }: {
     if (editUser.newPwd) body.password = editUser.newPwd
     const data = await api('/api/admin/update-user', body)
     if (data.error) { flash(`Erro: ${data.error}`); setLoading(false); return }
-    setList(l => l.map(p => p.id === editUser.id ? { ...p, name: editUser.name, role: editUser.role, vendor_id: editUser.vendor_id, active: editUser.active, store: editUser.store } : p))
+    const savedStore = editUser.store ?? null
+    setList(l => l.map(p => p.id === editUser!.id ? { ...p, name: editUser!.name, role: editUser!.role, vendor_id: editUser!.vendor_id, active: editUser!.active, store: savedStore } : p))
     flash('✓ Usuário atualizado!')
     setEditUser(null)
     setLoading(false)
@@ -160,7 +161,7 @@ export default function UsersClient({ profiles, periods, goals, allVendors }: {
                         <span style={{ fontFamily:'DM Mono,monospace', fontSize:'0.63rem', padding:'2px 7px', borderRadius:'4px', background: p.active?'rgba(200,245,66,0.1)':'rgba(107,111,122,0.15)', color: p.active?'var(--meta1)':'var(--muted)' }}>{p.active?'ativo':'inativo'}</span>
                       </td>
                       <td style={{ padding:'9px 10px' }}>
-                        <button onClick={() => setEditUser({ ...p, email:'', newPwd:'' })} style={{ background:'transparent', border:'1px solid var(--border)', borderRadius:'5px', color:'var(--muted)', fontFamily:'DM Mono,monospace', fontSize:'0.65rem', padding:'3px 10px', cursor:'pointer' }}>
+                        <button onClick={() => setEditUser({ ...p, email:'', newPwd:'', store: p.store ?? vendorById[p.vendor_id ?? '']?.store ?? '' })} style={{ background:'transparent', border:'1px solid var(--border)', borderRadius:'5px', color:'var(--muted)', fontFamily:'DM Mono,monospace', fontSize:'0.65rem', padding:'3px 10px', cursor:'pointer' }}>
                           Editar
                         </button>
                       </td>
