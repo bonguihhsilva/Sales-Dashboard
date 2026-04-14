@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Da Silva · Dashboard',
+  title: 'GDS - Frame · Dashboard',
   description: 'Painel de vendas e metas',
 }
 

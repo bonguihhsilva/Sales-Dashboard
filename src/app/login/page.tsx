@@ -47,7 +47,7 @@ export default function LoginPage() {
             borderRadius: '10px', padding: '8px 16px', marginBottom: '1rem'
           }}>
             <span style={{ color: '#0e0f11', fontWeight: 800, fontSize: '1rem', letterSpacing: '-0.5px' }}>
-              DA SILVA
+              GDS - FRAME
             </span>
           </div>
           <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)' }}>

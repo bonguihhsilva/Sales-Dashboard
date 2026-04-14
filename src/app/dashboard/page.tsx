@@ -91,7 +91,7 @@ export default async function DashboardPage({
             Sales Dashboard <span style={{ color: 'var(--accent)' }}>// {activePeriodLabel}</span>
           </h1>
           <p style={{ fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '3px' }}>
-            DA SILVA · ADM · {profile?.name}
+            GDS - FRAME · ADM · {profile?.name}
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

@@ -91,7 +91,7 @@ export default async function MeuResultadoPage({
       <div style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <div style={{ display: 'inline-block', background: 'var(--accent)', borderRadius: '6px', padding: '3px 10px', marginBottom: '6px' }}>
-            <span style={{ color: '#0e0f11', fontWeight: 800, fontSize: '0.75rem' }}>DA SILVA</span>
+            <span style={{ color: '#0e0f11', fontWeight: 800, fontSize: '0.75rem' }}>GDS - FRAME</span>
           </div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>
             Olá, <span style={{ color: col }}>{profile.name}</span>
