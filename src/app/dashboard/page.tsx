@@ -51,6 +51,12 @@ export default async function DashboardPage({
   const { data: evolutionData } = await adminDb
     .rpc('store_daily_evolution_multi', { p_period_ids: allPeriodIds })
 
+  // Fetch vendor summaries for ALL periods (for multi-period vendor evolution view)
+  const { data: allVendorSummaries } = await adminDb
+    .from('vendor_summary')
+    .select('vendor_id, vendor_name, store, period_id, total_sold, unique_clients, avg_ticket, total_orders')
+    .in('period_id', allPeriodIds)
+
   // Fetch clients for interactive tab
   const { data: allClients } = await adminDb
     .from('client_portfolio')
@@ -154,7 +160,11 @@ export default async function DashboardPage({
 
       <div style={{ padding: '1.5rem 2.5rem 3rem' }}>
         {activeTab === 'evolucao' ? (
-          <EvolucaoTab data={(evolutionData ?? []) as Parameters<typeof EvolucaoTab>[0]['data']} periods={(periods ?? []) as Parameters<typeof EvolucaoTab>[0]['periods']} />
+          <EvolucaoTab
+            data={(evolutionData ?? []) as Parameters<typeof EvolucaoTab>[0]['data']}
+            periods={(periods ?? []) as Parameters<typeof EvolucaoTab>[0]['periods']}
+            vendorSummaries={(allVendorSummaries ?? []) as Parameters<typeof EvolucaoTab>[0]['vendorSummaries']}
+          />
         ) : activeTab === 'clientes' ? (
           <ClientsTabClient clients={(allClients ?? []) as Parameters<typeof ClientsTabClient>[0]['clients']} />
         ) : (
