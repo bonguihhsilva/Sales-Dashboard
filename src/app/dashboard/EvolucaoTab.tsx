@@ -76,6 +76,160 @@ const VENDOR_METRIC_FIELD: Record<Metric, keyof VendorPeriodSummary> = {
   transactions: 'total_orders',
 }
 
+// ── Per-store overlay mini-chart ─────────────────────────────────────────
+
+type ChartSeries = { id: string; label: string; color: string; points: { x: number | string; value: number }[] }
+
+function OverlayMiniChart({
+  store, storeSeries, metric, activePeriods,
+}: {
+  store: string
+  storeSeries: ChartSeries[]
+  metric: Metric
+  activePeriods: Period[]
+}) {
+  const [tooltip, setTooltip] = useState<{
+    xi: number; values: { id: string; label: string; color: string; value: number }[]
+  } | null>(null)
+
+  const xValues = useMemo(() => {
+    const all = storeSeries.flatMap(s => s.points.map(p => p.x))
+    return [...new Set(all)].sort((a, b) => String(a).localeCompare(String(b)))
+  }, [storeSeries])
+
+  const allVals = storeSeries.flatMap(s => s.points.map(p => p.value))
+  const maxVal  = Math.max(...allVals, 1)
+
+  const W = 920, H = 200
+  const PADL = 72, PADR = 16, PADT = 14, PADB = 36
+  const innerW = W - PADL - PADR
+  const innerH = H - PADT - PADB
+
+  function xPos(xi: number) { return PADL + (xi / Math.max(xValues.length - 1, 1)) * innerW }
+  function yPos(v: number)  { return PADT + innerH - (v / maxVal) * innerH }
+
+  const yTicks  = Array.from({ length: 5 }, (_, i) => maxVal * (i / 4))
+  const xStep   = Math.ceil(xValues.length / 14)
+  const xLabels = xValues.filter((_, i) => i % xStep === 0 || i === xValues.length - 1)
+
+  function fmtTick(v: number) {
+    if (metric === 'total' || metric === 'avg_ticket') {
+      if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`
+      if (v >= 1_000)     return `$${(v / 1_000).toFixed(0)}k`
+      return `$${v.toFixed(0)}`
+    }
+    return v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(Math.round(v))
+  }
+  function fmtX(x: number | string) {
+    if (typeof x === 'number') return `D${x}`
+    const d = new Date(x + 'T12:00:00')
+    return `${d.getDate()}/${d.getMonth() + 1}`
+  }
+
+  function handleMouseMove(e: React.MouseEvent<SVGSVGElement>) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const svgX   = (e.clientX - rect.left) * (W / rect.width)
+    const innerX = svgX - PADL
+    if (innerX < 0 || innerX > innerW || xValues.length === 0) { setTooltip(null); return }
+    const xi = Math.round((innerX / innerW) * (xValues.length - 1))
+    const x  = xValues[Math.min(xi, xValues.length - 1)]
+    const values = storeSeries.map(s => {
+      const pt = s.points.find(p => p.x === x) ?? { x, value: 0 }
+      return { id: s.id, label: s.label, color: s.color, value: pt.value }
+    })
+    setTooltip({ xi, values })
+  }
+
+  const col = STORE_COLORS[store] ?? '#999'
+  const firstPid = activePeriods.slice().sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month)[0]?.id
+
+  return (
+    <div style={{ background: 'var(--surface)', border: `1px solid ${col}28`, borderRadius: '12px', padding: '1rem', overflow: 'hidden', borderLeft: `3px solid ${col}` }}>
+      {/* Store header + legend */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }}>
+        <span style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: col, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700 }}>
+          {STORE_LABELS[store] ?? store}
+        </span>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          {storeSeries.map(s => (
+            <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>
+              <svg width={20} height={6}>
+                <line x1={0} y1={3} x2={20} y2={3} stroke={s.color} strokeWidth={2}
+                  strokeDasharray={s.id.split('-').pop() !== String(firstPid) ? '5,3' : undefined} />
+              </svg>
+              {s.label.replace(`${store} (`, '').replace(')', '')}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', cursor: 'crosshair' }}
+        onMouseMove={handleMouseMove} onMouseLeave={() => setTooltip(null)}>
+        {yTicks.map((v, i) => (
+          <g key={i}>
+            <line x1={PADL} y1={yPos(v)} x2={W - PADR} y2={yPos(v)} stroke="rgba(255,255,255,0.05)" strokeWidth={1} />
+            <text x={PADL - 6} y={yPos(v) + 4} textAnchor="end" fontSize={9} fill="rgba(255,255,255,0.3)" fontFamily="DM Mono, monospace">{fmtTick(v)}</text>
+          </g>
+        ))}
+        {xLabels.map(x => {
+          const xi = xValues.indexOf(x)
+          return (
+            <text key={String(x)} x={xPos(xi)} y={H - PADB + 14} textAnchor="middle" fontSize={9} fill="rgba(255,255,255,0.3)" fontFamily="DM Mono, monospace">
+              {fmtX(x)}
+            </text>
+          )
+        })}
+        {storeSeries.map(s => {
+          if (s.points.length < 2) return null
+          const pts = s.points.map(p => `${xPos(xValues.indexOf(p.x))},${yPos(p.value)}`).join(' ')
+          const fx  = xPos(xValues.indexOf(s.points[0].x))
+          const lx  = xPos(xValues.indexOf(s.points[s.points.length - 1].x))
+          return <polygon key={`a-${s.id}`} points={`${fx},${yPos(0)} ${pts} ${lx},${yPos(0)}`} fill={s.color} opacity={0.06} />
+        })}
+        {storeSeries.map(s => {
+          if (s.points.length < 2) return null
+          const d = s.points.map((p, i) => {
+            const xi = xValues.indexOf(p.x)
+            return `${i === 0 ? 'M' : 'L'}${xPos(xi)},${yPos(p.value)}`
+          }).join(' ')
+          const isCurrent = s.id.split('-').pop() === String(firstPid)
+          return <path key={`l-${s.id}`} d={d} fill="none" stroke={s.color}
+            strokeWidth={isCurrent ? 2.5 : 1.5} strokeLinejoin="round" strokeLinecap="round"
+            strokeDasharray={isCurrent ? undefined : '6,3'} />
+        })}
+        {tooltip && <line x1={xPos(tooltip.xi)} y1={PADT} x2={xPos(tooltip.xi)} y2={H - PADB} stroke="rgba(255,255,255,0.2)" strokeWidth={1} strokeDasharray="4,3" />}
+        {tooltip && storeSeries.map(s => {
+          const x  = xValues[tooltip.xi]
+          const pt = s.points.find(p => p.x === x)
+          if (!pt) return null
+          return <circle key={s.id} cx={xPos(xValues.indexOf(x))} cy={yPos(pt.value)} r={4} fill={s.color} stroke="var(--bg)" strokeWidth={2} />
+        })}
+      </svg>
+
+      {tooltip && (
+        <div style={{ marginTop: '6px', padding: '8px 12px', background: 'var(--surface2)', borderRadius: '8px', border: '1px solid var(--border)', display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.63rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>
+            {fmtX(xValues[tooltip.xi])}
+          </span>
+          {tooltip.values.filter(v => v.value > 0).map(v => (
+            <div key={v.id} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: v.color }} />
+              <span style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>
+                {v.label.replace(`${store} (`, '').replace(')', '')}:
+              </span>
+              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: v.color }}>
+                {(metric === 'total' || metric === 'avg_ticket') ? fmtCurrency(v.value) : v.value.toLocaleString()}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Main component ────────────────────────────────────────────────────────
+
 export default function EvolucaoTab({ data, periods, vendorSummaries }: Props) {
   const [metric, setMetric]             = useState<Metric>('total')
   const [activeStores, setActiveStores] = useState<Set<string>>(new Set(STORES))
@@ -427,82 +581,101 @@ export default function EvolucaoTab({ data, periods, vendorSummaries }: Props) {
             )
           })}
 
-          {/* Chart */}
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1rem', overflow: 'hidden', marginBottom: '1.5rem' }}>
-            <svg
-              viewBox={`0 0 ${W} ${H}`}
-              style={{ width: '100%', height: 'auto', cursor: 'crosshair' }}
-              onMouseMove={handleMouseMove}
-              onMouseLeave={() => setTooltip(null)}
-            >
-              {yTicks.map((v, i) => (
-                <g key={i}>
-                  <line x1={PADL} y1={yPos(v)} x2={W - PADR} y2={yPos(v)} stroke="rgba(255,255,255,0.05)" strokeWidth={1} />
-                  <text x={PADL - 6} y={yPos(v) + 4} textAnchor="end" fontSize={9} fill="rgba(255,255,255,0.3)" fontFamily="DM Mono, monospace">{fmtTick(v)}</text>
-                </g>
-              ))}
-              {xLabels.map(x => {
-                const xi = xValues.indexOf(x)
+          {/* Chart — overlay mode: one per store; other modes: single combined */}
+          {viewMode === 'overlay' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '1.5rem' }}>
+              {STORES.filter(s => activeStores.has(s)).map(store => {
+                const storeSeries = series.filter(s => s.id.startsWith(store + '-'))
+                if (storeSeries.length === 0) return null
                 return (
-                  <text key={String(x)} x={xPos(xi)} y={H - PADB + 14} textAnchor="middle" fontSize={9} fill="rgba(255,255,255,0.3)" fontFamily="DM Mono, monospace">
-                    {fmtX(x)}
-                  </text>
+                  <OverlayMiniChart
+                    key={store}
+                    store={store}
+                    storeSeries={storeSeries}
+                    metric={metric}
+                    activePeriods={activePeriods}
+                  />
                 )
               })}
-              {series.map(s => {
-                if (s.points.length < 2) return null
-                const pts = s.points.map(p => `${xPos(xValues.indexOf(p.x))},${yPos(p.value)}`).join(' ')
-                const fx  = xPos(xValues.indexOf(s.points[0].x))
-                const lx  = xPos(xValues.indexOf(s.points[s.points.length - 1].x))
-                return <polygon key={`a-${s.id}`} points={`${fx},${yPos(0)} ${pts} ${lx},${yPos(0)}`} fill={s.color} opacity={0.05} />
-              })}
-              {series.map(s => {
-                if (s.points.length < 2) return null
-                const d = s.points.map((p, i) => {
-                  const xi = xValues.indexOf(p.x)
-                  return `${i === 0 ? 'M' : 'L'}${xPos(xi)},${yPos(p.value)}`
-                }).join(' ')
-                return <path key={`l-${s.id}`} d={d} fill="none" stroke={s.color} strokeWidth={activePeriods.length > 1 ? 1.5 : 2} strokeLinejoin="round" strokeLinecap="round" strokeDasharray={s.id.includes('-') && s.id.split('-').pop() !== String(activePeriods[0]?.id) ? '5,3' : undefined} />
-              })}
-              {tooltip && <line x1={xPos(tooltip.xi)} y1={PADT} x2={xPos(tooltip.xi)} y2={H - PADB} stroke="rgba(255,255,255,0.2)" strokeWidth={1} strokeDasharray="4,3" />}
-              {tooltip && series.map(s => {
-                const x  = xValues[tooltip.xi]
-                const pt = s.points.find(p => p.x === x)
-                if (!pt) return null
-                const xi = xValues.indexOf(x)
-                return <circle key={s.id} cx={xPos(xi)} cy={yPos(pt.value)} r={4} fill={s.color} stroke="var(--bg)" strokeWidth={2} />
-              })}
-            </svg>
+            </div>
+          ) : (
+            <>
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1rem', overflow: 'hidden', marginBottom: '1.5rem' }}>
+                <svg
+                  viewBox={`0 0 ${W} ${H}`}
+                  style={{ width: '100%', height: 'auto', cursor: 'crosshair' }}
+                  onMouseMove={handleMouseMove}
+                  onMouseLeave={() => setTooltip(null)}
+                >
+                  {yTicks.map((v, i) => (
+                    <g key={i}>
+                      <line x1={PADL} y1={yPos(v)} x2={W - PADR} y2={yPos(v)} stroke="rgba(255,255,255,0.05)" strokeWidth={1} />
+                      <text x={PADL - 6} y={yPos(v) + 4} textAnchor="end" fontSize={9} fill="rgba(255,255,255,0.3)" fontFamily="DM Mono, monospace">{fmtTick(v)}</text>
+                    </g>
+                  ))}
+                  {xLabels.map(x => {
+                    const xi = xValues.indexOf(x)
+                    return (
+                      <text key={String(x)} x={xPos(xi)} y={H - PADB + 14} textAnchor="middle" fontSize={9} fill="rgba(255,255,255,0.3)" fontFamily="DM Mono, monospace">
+                        {fmtX(x)}
+                      </text>
+                    )
+                  })}
+                  {series.map(s => {
+                    if (s.points.length < 2) return null
+                    const pts = s.points.map(p => `${xPos(xValues.indexOf(p.x))},${yPos(p.value)}`).join(' ')
+                    const fx  = xPos(xValues.indexOf(s.points[0].x))
+                    const lx  = xPos(xValues.indexOf(s.points[s.points.length - 1].x))
+                    return <polygon key={`a-${s.id}`} points={`${fx},${yPos(0)} ${pts} ${lx},${yPos(0)}`} fill={s.color} opacity={0.05} />
+                  })}
+                  {series.map(s => {
+                    if (s.points.length < 2) return null
+                    const d = s.points.map((p, i) => {
+                      const xi = xValues.indexOf(p.x)
+                      return `${i === 0 ? 'M' : 'L'}${xPos(xi)},${yPos(p.value)}`
+                    }).join(' ')
+                    return <path key={`l-${s.id}`} d={d} fill="none" stroke={s.color} strokeWidth={activePeriods.length > 1 ? 1.5 : 2} strokeLinejoin="round" strokeLinecap="round" />
+                  })}
+                  {tooltip && <line x1={xPos(tooltip.xi)} y1={PADT} x2={xPos(tooltip.xi)} y2={H - PADB} stroke="rgba(255,255,255,0.2)" strokeWidth={1} strokeDasharray="4,3" />}
+                  {tooltip && series.map(s => {
+                    const x  = xValues[tooltip.xi]
+                    const pt = s.points.find(p => p.x === x)
+                    if (!pt) return null
+                    return <circle key={s.id} cx={xPos(xValues.indexOf(x))} cy={yPos(pt.value)} r={4} fill={s.color} stroke="var(--bg)" strokeWidth={2} />
+                  })}
+                </svg>
 
-            {tooltip && (
-              <div style={{ marginTop: '8px', padding: '10px 14px', background: 'var(--surface2)', borderRadius: '8px', border: '1px solid var(--border)', display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginRight: '2px' }}>
-                  {fmtX(xValues[tooltip.xi])}
-                </span>
-                {tooltip.values.filter(v => v.value > 0).map(v => (
-                  <div key={v.id} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: v.color, flexShrink: 0 }} />
-                    <span style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>{v.label}:</span>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: v.color }}>
-                      {(metric === 'total' || metric === 'avg_ticket') ? fmtCurrency(v.value) : v.value.toLocaleString()}
+                {tooltip && (
+                  <div style={{ marginTop: '8px', padding: '10px 14px', background: 'var(--surface2)', borderRadius: '8px', border: '1px solid var(--border)', display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginRight: '2px' }}>
+                      {fmtX(xValues[tooltip.xi])}
                     </span>
+                    {tooltip.values.filter(v => v.value > 0).map(v => (
+                      <div key={v.id} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: v.color, flexShrink: 0 }} />
+                        <span style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>{v.label}:</span>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: v.color }}>
+                          {(metric === 'total' || metric === 'avg_ticket') ? fmtCurrency(v.value) : v.value.toLocaleString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Legend */}
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+                {series.map(s => (
+                  <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>
+                    <svg width={24} height={8}>
+                      <line x1={0} y1={4} x2={24} y2={4} stroke={s.color} strokeWidth={2} />
+                    </svg>
+                    {s.label}
                   </div>
                 ))}
               </div>
-            )}
-          </div>
-
-          {/* Legend */}
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
-            {series.map(s => (
-              <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>
-                <svg width={24} height={8}>
-                  <line x1={0} y1={4} x2={24} y2={4} stroke={s.color} strokeWidth={2} strokeDasharray={viewMode === 'overlay' && s.id.split('-').pop() !== String(activePeriods[0]?.id) ? '5,3' : undefined} />
-                </svg>
-                {s.label}
-              </div>
-            ))}
-          </div>
+            </>
+          )}
 
           {/* Daily table */}
           {activePeriods.length === 1 && (
