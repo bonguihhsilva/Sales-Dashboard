@@ -32,6 +32,7 @@ export interface Goal {
   bonus2: number
   bonus3: number
   commission_pct: number
+  history_months: number | null
 }
 
 export interface VendorSummary {
@@ -102,4 +103,74 @@ export const STORE_LABELS: Record<string, string> = {
   'Jebai': 'Jebai',
   'Paje-MKT': 'Pajé 1',
   'Paje-Caixa': 'Pajé 2',
+}
+
+// ─── HR Module ────────────────────────────────────────────────────────────────
+
+export type HRFreeDayStatus = 'available' | 'used' | 'expired' | 'deducted';
+export type HRAbsenceType   = 'deduct_free_day' | 'justified' | 'no_balance';
+export type HRPermissionType   = 'medical_certificate' | 'appointment' | 'document';
+export type HRPermissionStatus = 'pending' | 'approved' | 'denied';
+
+export interface HRFreeDay {
+  id: string;
+  user_id: string;
+  issued_at: string;      // date as ISO string
+  expires_at: string;     // date as ISO string
+  status: HRFreeDayStatus;
+  used_at: string | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  // joined
+  user_name?: string;
+}
+
+export interface HRAbsence {
+  id: string;
+  user_id: string;
+  absence_date: string;   // date as ISO string
+  type: HRAbsenceType;
+  free_day_id: string | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  // joined
+  user_name?: string;
+}
+
+export interface HRVacation {
+  id: string;
+  user_id: string;
+  start_date: string;     // date as ISO string
+  end_date: string;       // date as ISO string
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  // joined
+  user_name?: string;
+}
+
+export interface HRPermission {
+  id: string;
+  user_id: string;
+  type: HRPermissionType;
+  requested_date: string; // date as ISO string
+  status: HRPermissionStatus;
+  requested_by: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  notes: string | null;
+  created_at: string;
+  // joined
+  user_name?: string;
+}
+
+export interface HRUserFreeDaySummary {
+  user_id: string;
+  user_name: string;
+  available: number;
+  expired: number;
+  used: number;
+  next_expiry: string | null; // date as ISO string
 }
