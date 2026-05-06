@@ -156,6 +156,19 @@ export default async function DashboardPage({
         >
           Clientes
         </a>
+        <a
+          href="/dashboard/rh"
+          style={{
+            padding: '8px 20px', borderRadius: '6px 6px 0 0', fontSize: '0.8rem', fontWeight: 600,
+            border: '1px solid transparent', borderBottom: 'none', textDecoration: 'none', transition: 'all 0.15s',
+            background: 'transparent',
+            borderColor: 'transparent',
+            color: 'var(--muted)',
+            marginLeft: '4px',
+          }}
+        >
+          RH
+        </a>
       </div>
 
       <div style={{ padding: '1.5rem 2.5rem 3rem' }}>
