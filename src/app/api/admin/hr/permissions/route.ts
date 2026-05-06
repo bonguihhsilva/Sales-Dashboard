@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
 
   let query = admin
     .from('hr_permissions')
-    .select('*, profiles!user_id(full_name)')
+    .select('*, profiles!user_id(name)')
     .order('created_at', { ascending: false })
 
   if (statusFilter) {
@@ -31,9 +31,9 @@ export async function GET(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-  const rows = (data ?? []).map((row: Record<string, unknown> & { profiles?: { full_name?: string } }) => ({
+  const rows = (data ?? []).map((row: Record<string, unknown> & { profiles?: { name?: string } }) => ({
     ...row,
-    user_name: row.profiles?.full_name ?? '',
+    user_name: row.profiles?.name ?? '',
     profiles: undefined,
   }))
 
