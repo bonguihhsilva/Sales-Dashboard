@@ -38,30 +38,6 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-  // Copy goals from the most recent previous period (if exists)
-  const { data: prevPeriod } = await admin
-    .from('periods')
-    .select('id')
-    .lt('year', year)
-    .or(`year.lt.${year},and(year.eq.${year},month.lt.${month})`)
-    .order('year', { ascending: false })
-    .order('month', { ascending: false })
-    .limit(1)
-    .single()
-
-  if (prevPeriod) {
-    const { data: prevGoals } = await admin
-      .from('goals')
-      .select('vendor_id, vendor_name, store, meta1, meta2, meta3, bonus1, bonus2, bonus3, commission_pct')
-      .eq('period_id', prevPeriod.id)
-
-    if (prevGoals && prevGoals.length > 0) {
-      await admin.from('goals').insert(
-        prevGoals.map(g => ({ ...g, period_id: created!.id }))
-      )
-    }
-  }
-
   const { error: rpcError } = await admin.rpc('calculate_vendor_goals', { p_period_id: created!.id })
   if (rpcError) console.error('calculate_vendor_goals error:', rpcError)
 
