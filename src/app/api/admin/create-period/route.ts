@@ -16,7 +16,15 @@ export async function POST(req: NextRequest) {
   )
 
   const { year, month, label, start_date, end_date } = await req.json()
-  const { error } = await admin.from('periods').insert({ year, month, label, start_date, end_date })
+  const { data: period, error } = await admin
+    .from('periods')
+    .insert({ year, month, label, start_date, end_date })
+    .select('id')
+    .single()
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+  const { error: rpcError } = await admin.rpc('calculate_vendor_goals', { p_period_id: period.id })
+  if (rpcError) console.error('calculate_vendor_goals error:', rpcError)
+
   return NextResponse.json({ success: true })
 }

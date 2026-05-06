@@ -62,5 +62,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  const { error: rpcError } = await admin.rpc('calculate_vendor_goals', { p_period_id: created!.id })
+  if (rpcError) console.error('calculate_vendor_goals error:', rpcError)
+
   return NextResponse.json({ id: created!.id, label: created!.label, created: true })
 }
