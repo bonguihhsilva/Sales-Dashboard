@@ -3,18 +3,26 @@
 import { useState } from 'react'
 
 interface Period { id: number; label: string; year: number; month: number; start_date: string; end_date: string; closed: boolean }
-interface Goal { id: number; period_id: number; vendor_id: string; vendor_name: string; store: string; meta1: number; meta2: number; meta3: number; bonus1: number; bonus2: number; bonus3: number }
+interface Goal { id: number; period_id: number; vendor_id: string; vendor_name: string; store: string; meta1: number; meta2: number; meta3: number; bonus1: number; bonus2: number; bonus3: number; history_months: number | null }
 
 const STORES = ['Jebai', 'Paje-MKT', 'Paje-Caixa']
 const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
 
+const inputStyle = {
+  background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '6px',
+  color: 'var(--text)', fontFamily: 'DM Mono, monospace', fontSize: '0.8rem',
+  padding: '6px 8px', outline: 'none', width: '100%', textAlign: 'left' as const,
+}
+const labelStyle = {
+  display: 'block' as const, fontSize: '0.62rem', fontFamily: 'DM Mono, monospace',
+  color: 'var(--muted)', textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginBottom: '4px',
+}
+
 export default function MetasClient({ periods, goals }: { periods: Period[]; goals: Goal[] }) {
   const [activePeriod, setActivePeriod] = useState<number>(periods[0]?.id ?? 0)
-  const [editGoals, setEditGoals]       = useState<Goal[]>(goals)
   const [showNewPeriod, setShowNewPeriod] = useState(false)
   const [showNewVendor, setShowNewVendor] = useState(false)
-  const [saving, setSaving]             = useState<number | null>(null)
-  const [msg, setMsg]                   = useState('')
+  const [msg, setMsg] = useState('')
 
   // New period form
   const [npYear,  setNpYear]  = useState(new Date().getFullYear())
@@ -24,22 +32,11 @@ export default function MetasClient({ periods, goals }: { periods: Period[]; goa
   const [nvId,    setNvId]    = useState('')
   const [nvName,  setNvName]  = useState('')
   const [nvStore, setNvStore] = useState('Jebai')
-  const [nvM1,    setNvM1]    = useState('')
-  const [nvM2,    setNvM2]    = useState('')
-  const [nvM3,    setNvM3]    = useState('')
 
-  const periodGoals = editGoals.filter(g => g.period_id === activePeriod)
+  const periodGoals = goals.filter(g => g.period_id === activePeriod)
 
-  async function saveGoal(goal: Goal) {
-    setSaving(goal.id); setMsg('')
-    const res = await fetch('/api/admin/update-goals', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: goal.id, meta1: goal.meta1, meta2: goal.meta2, meta3: goal.meta3, bonus1: goal.bonus1, bonus2: goal.bonus2, bonus3: goal.bonus3 }),
-    })
-    const data = await res.json()
-    if (data.error) setMsg(`Erro: ${data.error}`)
-    else { setMsg(`✓ Meta de ${goal.vendor_name} salva!`); setTimeout(() => setMsg(''), 3000) }
-    setSaving(null)
+  function fmt(n: number) {
+    return n.toLocaleString('pt-BR')
   }
 
   async function createPeriod() {
@@ -63,7 +60,7 @@ export default function MetasClient({ periods, goals }: { periods: Period[]; goa
       body: JSON.stringify({
         create: true, period_id: activePeriod,
         vendor_id: nvId, vendor_name: nvName, store: nvStore,
-        meta1: Number(nvM1), meta2: Number(nvM2), meta3: Number(nvM3),
+        meta1: 0, meta2: 0, meta3: 0,
         bonus1: 100, bonus2: 150, bonus3: 200,
       }),
     })
@@ -71,22 +68,8 @@ export default function MetasClient({ periods, goals }: { periods: Period[]; goa
     if (data.error) { setMsg(`Erro: ${data.error}`); return }
     setMsg(`✓ ${nvName} adicionado!`)
     setShowNewVendor(false)
-    setNvId(''); setNvName(''); setNvM1(''); setNvM2(''); setNvM3('')
+    setNvId(''); setNvName(''); setNvStore('Jebai')
     setTimeout(() => window.location.reload(), 1000)
-  }
-
-  function updateGoal(id: number, field: keyof Goal, value: string) {
-    setEditGoals(gs => gs.map(g => g.id === id ? { ...g, [field]: Number(value) } : g))
-  }
-
-  const inputStyle = {
-    background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '6px',
-    color: 'var(--text)', fontFamily: 'DM Mono, monospace', fontSize: '0.8rem',
-    padding: '6px 8px', outline: 'none', width: '100%', textAlign: 'right' as const,
-  }
-  const labelStyle = {
-    display: 'block' as const, fontSize: '0.62rem', fontFamily: 'DM Mono, monospace',
-    color: 'var(--muted)', textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginBottom: '4px',
   }
 
   return (
@@ -114,20 +97,25 @@ export default function MetasClient({ periods, goals }: { periods: Period[]; goa
         </div>
       )}
 
+      {/* Info banner */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', borderRadius: '8px', marginBottom: '1.25rem', fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', background: 'rgba(255,255,255,0.03)', color: 'var(--muted)', border: '1px solid var(--border)' }}>
+        <span style={{ fontSize: '0.9rem' }}>ℹ</span>
+        <span>Metas calculadas automaticamente: média dos 3 meses anteriores × 1,20 / 1,44 / 1,73</span>
+      </div>
+
       {/* Goals table */}
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', tableLayout: 'fixed' }}>
           <colgroup>
-            <col style={{ width: '14%' }} />
-            <col style={{ width: '9%' }} />
-            <col style={{ width: '5%' }} />
+            <col style={{ width: '20%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '6%' }} />
             <col style={{ width: '10%' }} />
             <col style={{ width: '10%' }} />
             <col style={{ width: '10%' }} />
             <col style={{ width: '9%' }} />
             <col style={{ width: '9%' }} />
             <col style={{ width: '9%' }} />
-            <col style={{ width: '8%' }} />
           </colgroup>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)' }}>
@@ -135,13 +123,12 @@ export default function MetasClient({ periods, goals }: { periods: Period[]; goa
                 { h: 'Vendedor',    a: 'left'  },
                 { h: 'Loja',        a: 'left'  },
                 { h: 'ID',          a: 'left'  },
-                { h: '1ª Meta ($)', a: 'right' },
-                { h: '2ª Meta ($)', a: 'right' },
-                { h: '3ª Meta ($)', a: 'right' },
+                { h: '1ª Meta',    a: 'right' },
+                { h: '2ª Meta',    a: 'right' },
+                { h: '3ª Meta',    a: 'right' },
                 { h: 'Bônus 1',    a: 'right' },
                 { h: 'Bônus 2',    a: 'right' },
                 { h: 'Bônus 3',    a: 'right' },
-                { h: '',            a: 'center'},
               ] as {h:string;a:string}[]).map(col => (
                 <th key={col.h} style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.07em', padding: '6px 10px', textAlign: col.a as 'left'|'right'|'center', whiteSpace: 'nowrap' }}>{col.h}</th>
               ))}
@@ -149,34 +136,33 @@ export default function MetasClient({ periods, goals }: { periods: Period[]; goa
           </thead>
           <tbody>
             {periodGoals.length === 0 ? (
-              <tr><td colSpan={10} style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>
-                Nenhuma meta cadastrada para este período. Clique em "+ Adicionar Vendedor".
+              <tr><td colSpan={9} style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>
+                Nenhuma meta cadastrada para este período. Clique em &quot;+ Adicionar Vendedor&quot;.
               </td></tr>
-            ) : periodGoals.map(g => (
-              <tr key={g.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                <td style={{ padding: '8px 10px', fontWeight: 600 }}>{g.vendor_name}</td>
-                <td style={{ padding: '8px 10px', fontSize: '0.75rem', color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>{g.store}</td>
-                <td style={{ padding: '8px 10px', fontSize: '0.7rem', color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>{g.vendor_id}</td>
-                {(['meta1','meta2','meta3','bonus1','bonus2','bonus3'] as const).map(field => (
-                  <td key={field} style={{ padding: '6px 8px', textAlign: 'right' }}>
-                    <input
-                      type="number" value={editGoals.find(eg => eg.id === g.id)?.[field] ?? g[field]}
-                      onChange={e => updateGoal(g.id, field, e.target.value)}
-                      style={{ ...inputStyle, width: '100%' }}
-                    />
+            ) : periodGoals.map(g => {
+              const awaitingHistory = g.history_months !== null && g.history_months < 3
+              return (
+                <tr key={g.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                  <td style={{ padding: '8px 10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <span style={{ fontWeight: 600 }}>{g.vendor_name}</span>
+                      {awaitingHistory && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', background: 'rgba(251,146,60,0.15)', color: '#fb923c', border: '1px solid rgba(251,146,60,0.35)', borderRadius: '4px', padding: '2px 6px', fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', whiteSpace: 'nowrap' }}>
+                          Aguardando histórico ({g.history_months ?? 0}/3 meses)
+                        </span>
+                      )}
+                    </div>
                   </td>
-                ))}
-                <td style={{ padding: '6px 8px' }}>
-                  <button
-                    onClick={() => saveGoal(editGoals.find(eg => eg.id === g.id) ?? g)}
-                    disabled={saving === g.id}
-                    style={{ background: 'var(--accent)', color: '#0e0f11', fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.72rem', border: 'none', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', opacity: saving === g.id ? 0.6 : 1, whiteSpace: 'nowrap' }}
-                  >
-                    {saving === g.id ? '...' : 'Salvar'}
-                  </button>
-                </td>
-              </tr>
-            ))}
+                  <td style={{ padding: '8px 10px', fontSize: '0.75rem', color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>{g.store}</td>
+                  <td style={{ padding: '8px 10px', fontSize: '0.7rem', color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>{g.vendor_id}</td>
+                  {(['meta1','meta2','meta3','bonus1','bonus2','bonus3'] as const).map(field => (
+                    <td key={field} style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.8rem', color: awaitingHistory ? 'var(--muted)' : 'var(--text)' }}>
+                      {awaitingHistory ? '—' : fmt(g[field])}
+                    </td>
+                  ))}
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
@@ -187,9 +173,9 @@ export default function MetasClient({ periods, goals }: { periods: Period[]; goa
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '14px', padding: '2rem', width: '100%', maxWidth: '380px' }}>
             <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.25rem' }}>Novo Período</h2>
             <label style={labelStyle}>Ano</label>
-            <input type="number" value={npYear} onChange={e => setNpYear(Number(e.target.value))} style={{ ...inputStyle, textAlign: 'left', marginBottom: '0.85rem' }} />
+            <input type="number" value={npYear} onChange={e => setNpYear(Number(e.target.value))} style={{ ...inputStyle, marginBottom: '0.85rem' }} />
             <label style={labelStyle}>Mês</label>
-            <select value={npMonth} onChange={e => setNpMonth(Number(e.target.value))} style={{ ...inputStyle, textAlign: 'left', marginBottom: '1.25rem', cursor: 'pointer' }}>
+            <select value={npMonth} onChange={e => setNpMonth(Number(e.target.value))} style={{ ...inputStyle, marginBottom: '1.25rem', cursor: 'pointer' }}>
               {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
             </select>
             <div style={{ display: 'flex', gap: '10px' }}>
@@ -204,26 +190,21 @@ export default function MetasClient({ periods, goals }: { periods: Period[]; goa
       {showNewVendor && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '14px', padding: '2rem', width: '100%', maxWidth: '420px' }}>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.25rem' }}>Adicionar Vendedor ao Período</h2>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem' }}>Adicionar Vendedor ao Período</h2>
+            <p style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginBottom: '1.25rem' }}>
+              As metas serão calculadas automaticamente após 3 meses de histórico.
+            </p>
             <label style={labelStyle}>ID do vendedor (número do HTML)</label>
-            <input value={nvId} onChange={e => setNvId(e.target.value)} placeholder="Ex: 35" style={{ ...inputStyle, textAlign: 'left', marginBottom: '0.85rem' }} />
+            <input value={nvId} onChange={e => setNvId(e.target.value)} placeholder="Ex: 35" style={{ ...inputStyle, marginBottom: '0.85rem' }} />
             <label style={labelStyle}>Nome completo</label>
-            <input value={nvName} onChange={e => setNvName(e.target.value)} placeholder="Ex: Tania Velazquez" style={{ ...inputStyle, textAlign: 'left', marginBottom: '0.85rem' }} />
+            <input value={nvName} onChange={e => setNvName(e.target.value)} placeholder="Ex: Tania Velazquez" style={{ ...inputStyle, marginBottom: '0.85rem' }} />
             <label style={labelStyle}>Loja</label>
-            <select value={nvStore} onChange={e => setNvStore(e.target.value)} style={{ ...inputStyle, textAlign: 'left', marginBottom: '0.85rem', cursor: 'pointer' }}>
+            <select value={nvStore} onChange={e => setNvStore(e.target.value)} style={{ ...inputStyle, marginBottom: '1.25rem', cursor: 'pointer' }}>
               {STORES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '0.85rem' }}>
-              {[['1ª Meta', nvM1, setNvM1], ['2ª Meta', nvM2, setNvM2], ['3ª Meta', nvM3, setNvM3]].map(([label, val, set]) => (
-                <div key={label as string}>
-                  <label style={labelStyle}>{label as string} ($)</label>
-                  <input type="number" value={val as string} onChange={e => (set as (v:string)=>void)(e.target.value)} style={inputStyle} />
-                </div>
-              ))}
-            </div>
             <div style={{ display: 'flex', gap: '10px' }}>
               <button onClick={() => setShowNewVendor(false)} style={{ flex: 1, background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--muted)', fontFamily: 'Syne, sans-serif', fontWeight: 600, fontSize: '0.85rem', padding: '10px', cursor: 'pointer' }}>Cancelar</button>
-              <button onClick={addVendorGoal} disabled={!nvId || !nvName || !nvM1} style={{ flex: 2, background: 'var(--accent)', color: '#0e0f11', fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.85rem', border: 'none', borderRadius: '8px', padding: '10px', cursor: 'pointer', opacity: (!nvId || !nvName || !nvM1) ? 0.6 : 1 }}>Adicionar</button>
+              <button onClick={addVendorGoal} disabled={!nvId || !nvName} style={{ flex: 2, background: 'var(--accent)', color: '#0e0f11', fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.85rem', border: 'none', borderRadius: '8px', padding: '10px', cursor: 'pointer', opacity: (!nvId || !nvName) ? 0.6 : 1 }}>Adicionar</button>
             </div>
           </div>
         </div>
