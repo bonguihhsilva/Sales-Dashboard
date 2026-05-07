@@ -5,8 +5,9 @@ import { redirect } from 'next/navigation'
 import { fmtCurrency, fmtK, metaLevel, bonusAmount, STORE_COLORS } from '@/lib/utils'
 import { KpiCard, StorePill, ProgressBar, SectionTitle, LogoutButton } from '@/components/ui'
 import ClientsTabClient from './ClientsTabClient'
+import MeuRHTab from './MeuRHTab'
 import ChangePassword from '@/components/ui/ChangePassword'
-import type { Period } from '@/types'
+import type { Period, HRFreeDay, HRAbsence, HRVacation, HRPermission } from '@/types'
 
 export default async function MeuResultadoPage({
   searchParams,
@@ -55,9 +56,22 @@ export default async function MeuResultadoPage({
     .order('total_spent', { ascending: false })
     .limit(1000)
 
+  // Fetch HR data for Meu RH tab (must be before the !summary early return)
+  const [
+    { data: hrFreeDays },
+    { data: hrAbsences },
+    { data: hrVacations },
+    { data: hrPermissions },
+  ] = await Promise.all([
+    supabase.from('hr_free_days').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+    supabase.from('hr_absences').select('*').eq('user_id', user.id).order('absence_date', { ascending: false }),
+    supabase.from('hr_vacations').select('*').eq('user_id', user.id).order('start_date', { ascending: false }),
+    supabase.from('hr_permissions').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+  ])
+
   const activePeriodLabel = (periods as Period[])?.find(p => p.id === activePeriod)?.label ?? ''
 
-  if (!summary) {
+  if (!summary && activeTab !== 'meu-rh') {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '2rem' }}>
         <p style={{ color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>Sem dados para este período.</p>
@@ -65,16 +79,18 @@ export default async function MeuResultadoPage({
     )
   }
 
-  const sold = Number(summary.total_sold)
-  const m1 = Number(summary.meta1), m2 = Number(summary.meta2), m3 = Number(summary.meta3)
-  const lvl = metaLevel(sold, m1, m2, m3)
-  const b   = bonusAmount(lvl, Number(summary.bonus1), Number(summary.bonus2), Number(summary.bonus3))
-  const commission = sold * Number(summary.commission_pct) + b
-  const col = STORE_COLORS[summary.store] || 'var(--accent)'
+  const sold = summary ? Number(summary.total_sold) : 0
+  const m1 = summary ? Number(summary.meta1) : 0
+  const m2 = summary ? Number(summary.meta2) : 0
+  const m3 = summary ? Number(summary.meta3) : 0
+  const lvl = summary ? metaLevel(sold, m1, m2, m3) : 0
+  const b   = summary ? bonusAmount(lvl, Number(summary.bonus1), Number(summary.bonus2), Number(summary.bonus3)) : 0
+  const commission = sold * (summary ? Number(summary.commission_pct) : 0) + b
+  const col = summary ? (STORE_COLORS[summary.store] || 'var(--accent)') : 'var(--accent)'
   const META_COL = ['var(--muted)','var(--meta1)','var(--meta2)','var(--meta3)'][lvl]
 
   const pctBase  = lvl === 0 ? m1 : lvl === 1 ? m1 : lvl === 2 ? m2 : m3
-  const pctLabel = Math.round(sold / pctBase * 100)
+  const pctLabel = pctBase > 0 ? Math.round(sold / pctBase * 100) : 0
   const pctRef   = lvl === 0 ? `da 1ª meta (${fmtK(m1)})`
                  : lvl === 1 ? `da 1ª meta atingida (${fmtK(m1)})`
                  : lvl === 2 ? `da 2ª meta atingida (${fmtK(m2)})`
@@ -130,6 +146,7 @@ export default async function MeuResultadoPage({
             { key: 'performance', label: 'Performance' },
             { key: 'carteira',    label: 'Minha Carteira' },
             { key: 'evolucao',    label: 'Minha Evolução' },
+            { key: 'meu-rh',      label: 'Meu RH' },
           ].map(tab => (
             <a key={tab.key}
               href={`/meu-resultado?period=${activePeriod}&tab=${tab.key}`}
@@ -190,6 +207,15 @@ export default async function MeuResultadoPage({
 
         {activeTab === 'carteira' && (
           <ClientsTabClient clients={(clientsData ?? []) as Parameters<typeof ClientsTabClient>[0]['clients']} color={col} />
+        )}
+
+        {activeTab === 'meu-rh' && (
+          <MeuRHTab
+            freeDays={(hrFreeDays ?? []) as HRFreeDay[]}
+            absences={(hrAbsences ?? []) as HRAbsence[]}
+            vacations={(hrVacations ?? []) as HRVacation[]}
+            permissions={(hrPermissions ?? []) as HRPermission[]}
+          />
         )}
 
         {activeTab === 'evolucao' && (
