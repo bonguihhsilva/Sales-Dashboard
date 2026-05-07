@@ -88,6 +88,11 @@ export default function UploadModal({ periods }: { periods: Period[] }) {
         setMessage(`Período "${data.label}" ${data.created ? 'criado' : 'encontrado'}. Importando...`)
       }
 
+      // Fetch excluded vendors and filter them out completely
+      const { data: exclusions } = await supabase.from('vendor_exclusions').select('vendor_id')
+      const excludedIds = new Set((exclusions ?? []).map(e => e.vendor_id))
+      const filteredTransactions = transactions.filter(t => !excludedIds.has(t.vendor_id))
+
       // Build vendor map from goals (may be empty — that's OK)
       const { data: goals } = await supabase
         .from('goals').select('vendor_id, vendor_name, store').eq('period_id', periodId)
@@ -96,7 +101,7 @@ export default function UploadModal({ periods }: { periods: Period[] }) {
       )
 
       // Build rows — if no goals for a vendor, use name/store from the HTML data itself
-      const rows = transactions.map(t => ({
+      const rows = filteredTransactions.map(t => ({
         period_id:   periodId!,
         vendor_id:   t.vendor_id,
         vendor_name: vendorMap[t.vendor_id]?.name ?? `Vendedor ${t.vendor_id}`,
@@ -109,6 +114,25 @@ export default function UploadModal({ periods }: { periods: Period[] }) {
         valor:       t.valor,
         quantity:    t.quantity,
       }))
+
+      // Auto-register vendors that have no goal for this period
+      const goalVendorIds = new Set((goals ?? []).map(g => g.vendor_id))
+      const newVendorIds = [...new Set(rows.map(r => r.vendor_id))].filter(id => !goalVendorIds.has(id))
+      if (newVendorIds.length > 0) {
+        const placeholders = newVendorIds.map(vendor_id => {
+          const sample = rows.find(r => r.vendor_id === vendor_id)!
+          return {
+            period_id: periodId!,
+            vendor_id,
+            vendor_name: sample.vendor_name,
+            store: sample.store,
+            meta1: 0, meta2: 0, meta3: 0,
+            bonus1: 100, bonus2: 150, bonus3: 200,
+            commission_pct: 0.003,
+          }
+        })
+        await supabase.from('goals').insert(placeholders)
+      }
 
       let inserted = 0
       let skipped  = 0

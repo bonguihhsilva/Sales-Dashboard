@@ -38,8 +38,40 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
+  // Try auto-calculating goals from historical average
   const { error: rpcError } = await admin.rpc('calculate_vendor_goals', { p_period_id: created!.id })
   if (rpcError) console.error('calculate_vendor_goals error:', rpcError)
+
+  // Check if any goals were created by the RPC
+  const { count: goalsCreated } = await admin
+    .from('goals')
+    .select('id', { count: 'exact', head: true })
+    .eq('period_id', created!.id)
+
+  // Fallback: copy goals from the most recent previous period if RPC created none
+  if (!goalsCreated || goalsCreated === 0) {
+    const { data: prevPeriod } = await admin
+      .from('periods')
+      .select('id')
+      .or(`year.lt.${year},and(year.eq.${year},month.lt.${month})`)
+      .order('year', { ascending: false })
+      .order('month', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (prevPeriod) {
+      const { data: prevGoals } = await admin
+        .from('goals')
+        .select('vendor_id, vendor_name, store, meta1, meta2, meta3, bonus1, bonus2, bonus3, commission_pct')
+        .eq('period_id', prevPeriod.id)
+
+      if (prevGoals && prevGoals.length > 0) {
+        await admin.from('goals').insert(
+          prevGoals.map(g => ({ ...g, period_id: created!.id }))
+        )
+      }
+    }
+  }
 
   return NextResponse.json({ id: created!.id, label: created!.label, created: true })
 }

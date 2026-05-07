@@ -65,9 +65,13 @@ export default async function DashboardPage({
     .order('total_spent', { ascending: false })
     .limit(2000)
 
-  // Only show vendors that are registered (have goals) — exclude orphans from HTML
-  const goalVendorIds = new Set((await adminDb.from('goals').select('vendor_id').eq('period_id', activePeriod).then(r => r.data ?? [])).map(g => g.vendor_id))
-  const registeredSummaries = (summaries ?? []).filter(s => goalVendorIds.has(s.vendor_id))
+  // Only show vendors linked to a user account
+  const { data: linkedProfiles } = await adminDb
+    .from('profiles')
+    .select('vendor_id')
+    .not('vendor_id', 'is', null)
+  const linkedVendorIds = new Set((linkedProfiles ?? []).map(p => p.vendor_id as string))
+  const registeredSummaries = (summaries ?? []).filter(s => linkedVendorIds.has(s.vendor_id))
 
   const filtered = activeStore === 'all'
     ? registeredSummaries
