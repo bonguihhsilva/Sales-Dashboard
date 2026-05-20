@@ -119,20 +119,68 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 a FOUND-07 | Phase 1 (Sprint 0) | Pending |
-| SCHEMA-01 a SCHEMA-10 | Phase 2 (Sprint 1) | Pending |
-| AUTH-01 a AUTH-06 | Phase 3 (Sprint 2) | Pending |
-| IMPORT-01 a IMPORT-09 | Phase 4 (Sprint 3) | Pending |
-| COMM-01 a COMM-05 | Phase 5 (Sprint 4) | Pending |
-| DASH-01 a DASH-06 | Phase 6 (Sprint 5) | Pending |
-| LMS-01 a LMS-09 | Phase 7 (Sprint 6) | Pending |
-| DEPLOY-01 a DEPLOY-04 | Phase 8 (Sprint 7) | Pending |
+| FOUND-01 | Phase 1 — Foundation | Pending |
+| FOUND-02 | Phase 1 — Foundation | Pending |
+| FOUND-03 | Phase 1 — Foundation | Pending |
+| FOUND-04 | Phase 1 — Foundation | Pending |
+| FOUND-05 | Phase 1 — Foundation | Pending |
+| FOUND-06 | Phase 1 — Foundation | Pending |
+| FOUND-07 | Phase 1 — Foundation | Pending |
+| SCHEMA-01 | Phase 2 — Schema v2 | Pending |
+| SCHEMA-02 | Phase 2 — Schema v2 | Pending |
+| SCHEMA-03 | Phase 2 — Schema v2 | Pending |
+| SCHEMA-04 | Phase 2 — Schema v2 | Pending |
+| SCHEMA-05 | Phase 2 — Schema v2 | Pending |
+| SCHEMA-06 | Phase 2 — Schema v2 | Pending |
+| SCHEMA-07 | Phase 2 — Schema v2 | Pending |
+| SCHEMA-08 | Phase 2 — Schema v2 | Pending |
+| SCHEMA-09 | Phase 2 — Schema v2 | Pending |
+| SCHEMA-10 | Phase 2 — Schema v2 | Pending |
+| AUTH-01 | Phase 3 — Auth & Users | Pending |
+| AUTH-02 | Phase 3 — Auth & Users | Pending |
+| AUTH-03 | Phase 3 — Auth & Users | Pending |
+| AUTH-04 | Phase 3 — Auth & Users | Pending |
+| AUTH-05 | Phase 3 — Auth & Users | Pending |
+| AUTH-06 | Phase 3 — Auth & Users | Pending |
+| IMPORT-01 | Phase 4 — Import CEC + Sales | Pending |
+| IMPORT-02 | Phase 4 — Import CEC + Sales | Pending |
+| IMPORT-03 | Phase 4 — Import CEC + Sales | Pending |
+| IMPORT-04 | Phase 4 — Import CEC + Sales | Pending |
+| IMPORT-05 | Phase 4 — Import CEC + Sales | Pending |
+| IMPORT-06 | Phase 4 — Import CEC + Sales | Pending |
+| IMPORT-07 | Phase 4 — Import CEC + Sales | Pending |
+| IMPORT-08 | Phase 4 — Import CEC + Sales | Pending |
+| IMPORT-09 | Phase 4 — Import CEC + Sales | Pending |
+| COMM-01 | Phase 5 — Commission Engine | Pending |
+| COMM-02 | Phase 5 — Commission Engine | Pending |
+| COMM-03 | Phase 5 — Commission Engine | Pending |
+| COMM-04 | Phase 5 — Commission Engine | Pending |
+| COMM-05 | Phase 5 — Commission Engine | Pending |
+| DASH-01 | Phase 6 — Dashboard Widgets | Pending |
+| DASH-02 | Phase 6 — Dashboard Widgets | Pending |
+| DASH-03 | Phase 6 — Dashboard Widgets | Pending |
+| DASH-04 | Phase 6 — Dashboard Widgets | Pending |
+| DASH-05 | Phase 6 — Dashboard Widgets | Pending |
+| DASH-06 | Phase 6 — Dashboard Widgets | Pending |
+| LMS-01 | Phase 7 — LMS Training | Pending |
+| LMS-02 | Phase 7 — LMS Training | Pending |
+| LMS-03 | Phase 7 — LMS Training | Pending |
+| LMS-04 | Phase 7 — LMS Training | Pending |
+| LMS-05 | Phase 7 — LMS Training | Pending |
+| LMS-06 | Phase 7 — LMS Training | Pending |
+| LMS-07 | Phase 7 — LMS Training | Pending |
+| LMS-08 | Phase 7 — LMS Training | Pending |
+| LMS-09 | Phase 7 — LMS Training | Pending |
+| DEPLOY-01 | Phase 8 — Docker + Deploy | Pending |
+| DEPLOY-02 | Phase 8 — Docker + Deploy | Pending |
+| DEPLOY-03 | Phase 8 — Docker + Deploy | Pending |
+| DEPLOY-04 | Phase 8 — Docker + Deploy | Pending |
 
 **Coverage:**
 - v1 requirements: 50 total
 - Mapped to phases: 50
-- Unmapped: 0 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-05-19*
-*Last updated: 2026-05-19 after initial definition*
+*Last updated: 2026-05-19 — traceability expanded to individual rows after roadmap creation*
