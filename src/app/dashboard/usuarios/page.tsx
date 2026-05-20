@@ -33,7 +33,7 @@ export default async function UsersPage() {
         <div>
           <a href="/dashboard" style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textDecoration: 'none' }}>← Voltar ao dashboard</a>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '4px' }}>
-            Usuários <span style={{ color: 'var(--accent)' }}>// Gestão de Acesso</span>
+            Usuários <span style={{ color: 'var(--accent)' }}>{'// '}Gestão de Acesso</span>
           </h1>
         </div>
         <LogoutButton />

@@ -49,7 +49,6 @@ export default async function VendorDetailPage({
   const { data: allSummaries } = await supabase
     .from('vendor_summary').select('vendor_id, total_sold').eq('period_id', activePeriod).order('total_sold', { ascending: false })
   const rankAll   = (allSummaries ?? []).findIndex(s => s.vendor_id === vendor_id) + 1
-  const rankStore = (allSummaries ?? []).filter(s => {}).findIndex(s => s.vendor_id === vendor_id) + 1
 
   const pctRef = lvl === 0
     ? `da 1ª meta (${fmtK(m1)})`

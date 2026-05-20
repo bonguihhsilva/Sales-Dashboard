@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { fmtCurrency, fmtK, metaLevel, bonusAmount, STORE_COLORS, STORE_LABELS } from '@/lib/utils'
+import { fmtCurrency, fmtK, metaLevel, bonusAmount, STORE_COLORS } from '@/lib/utils'
 import { KpiCard, StorePill, ProgressBar, BonusBadge, SectionTitle, LogoutButton } from '@/components/ui'
-import type { VendorSummary, Period } from '@/types'
+import type { Period } from '@/types'
 import UploadModal from './UploadModal'
 import PeriodSelector from './PeriodSelector'
 import ClientsTab from './ClientsTab'
@@ -63,7 +63,7 @@ export default async function DashboardPage({
       }}>
         <div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.5px' }}>
-            Sales Dashboard <span style={{ color: 'var(--accent)' }}>// {activePeriodLabel}</span>
+            Sales Dashboard <span style={{ color: 'var(--accent)' }}>{'// '}{activePeriodLabel}</span>
           </h1>
           <p style={{ fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '3px' }}>
             DA SILVA · ADM · {profile?.name}
