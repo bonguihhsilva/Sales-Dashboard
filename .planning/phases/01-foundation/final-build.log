@@ -1,0 +1,39 @@
+
+> da-silva-dashboard@0.1.0 build
+> next build
+
+   ▲ Next.js 15.2.4
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/9) ...
+   Generating static pages (2/9) 
+   Generating static pages (4/9) 
+   Generating static pages (6/9) 
+ ✓ Generating static pages (9/9)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                      140 B         101 kB
+├ ○ /_not-found                            986 B         102 kB
+├ ƒ /api/admin/create-user                 140 B         101 kB
+├ ƒ /dashboard                           2.56 kB         230 kB
+├ ƒ /dashboard/usuarios                  2.42 kB         230 kB
+├ ƒ /dashboard/vendedor/[vendor_id]       100 kB         267 kB
+├ ○ /login                               1.44 kB         163 kB
+└ ƒ /meu-resultado                         172 B         167 kB
++ First Load JS shared by all             101 kB
+  ├ chunks/4bd1b696-532fb941512da3f0.js  53.3 kB
+  ├ chunks/684-0e47b983cc6d2dc0.js       45.8 kB
+  └ other shared chunks (total)          2.11 kB
+
+
+ƒ Middleware                             84.8 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

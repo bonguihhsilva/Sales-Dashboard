@@ -1,0 +1,33 @@
+
+> da-silva-dashboard@0.1.0 build
+> next build
+
+   ▲ Next.js 15.2.4
+
+   Creating an optimized production build ...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (215kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/9) ...
+   Generating static pages (2/9) 
+   Generating static pages (4/9) 
+   Generating static pages (6/9) 
+Error occurred prerendering page "/login". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at rQ (C:\Projetos\da-silva-dashboard\.next\server\chunks\431.js:37:55866)
+    at n (C:\Projetos\da-silva-dashboard\.next\server\app\login\page.js:1:5805)
+    at a (C:\Projetos\da-silva-dashboard\.next\server\app\login\page.js:1:2787)
+    at nL (C:\Projetos\da-silva-dashboard\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:76:46773)
+    at nF (C:\Projetos\da-silva-dashboard\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:76:48548)
+    at nq (C:\Projetos\da-silva-dashboard\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:76:67434)
+    at nH (C:\Projetos\da-silva-dashboard\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:76:65009)
+    at nU (C:\Projetos\da-silva-dashboard\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:76:47125)
+    at nF (C:\Projetos\da-silva-dashboard\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:76:48594)
+    at nF (C:\Projetos\da-silva-dashboard\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:76:64360)
+Export encountered an error on /login/page: /login, exiting the build.
+ ⨯ Next.js build worker exited with code: 1 and signal: null
