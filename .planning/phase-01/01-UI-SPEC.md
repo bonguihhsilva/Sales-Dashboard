@@ -63,7 +63,8 @@ Exceptions:
 - Sidebar width expanded: 240px (fixed layout constraint, not a spacing token)
 - Mobile touch targets: minimum 44px height on all interactive elements (WCAG 2.5.5)
 - Topbar height: 56px (14px multiple, standard topbar proportion)
-- Scrollbar width: 6px (inherited from existing globals.css — preserve)
+
+> **Implementation note:** Scrollbar width is 6px — inherited from existing globals.css (aesthetic only, not a spacing token).
 
 ---
 
@@ -74,16 +75,16 @@ Two fonts only. Body uses Syne; data/labels/numbers use DM Mono.
 | Role | Font | Size | Weight | Line Height | Usage |
 |------|------|------|--------|-------------|-------|
 | Display | Syne | 28px | 700 | 1.2 | Page titles, hero values in stat-card |
-| Heading | Syne | 20px | 600 | 1.25 | Section headings, page-header title |
+| Heading | Syne | 20px | 700 | 1.25 | Section headings, page-header title |
 | Body | Syne | 16px | 400 | 1.5 | Navigation labels, button text, descriptions |
-| Label | DM Mono | 12px | 400 | 1.4 | Stat-card labels, table headers, badge text, breadcrumbs, metadata |
-| Mono data | DM Mono | 14px | 400 | 1.4 | Table cell values, numeric data, period labels |
+| Label | DM Mono | 12px | 400 | 1.4 | Stat-card labels, table headers, badge text, breadcrumbs, metadata, table cell values, numeric data, period labels |
 
 Rules:
-- Never use Syne below 14px
-- Never use DM Mono above 14px
-- All monetary/numeric values: DM Mono 14px weight 400
+- Never use Syne below 16px
+- Never use DM Mono above 12px
+- All monetary/numeric values: DM Mono 12px weight 400
 - All section labels and uppercase metadata: DM Mono 12px, `letter-spacing: 0.08em`, `text-transform: uppercase`
+- Data-table body rows: Label (DM Mono 12px) for all cell content including numeric values
 
 ---
 
@@ -184,8 +185,8 @@ File: `src/components/ui/data-table.tsx`
 |---------|------|
 | Container | full-width, `card` background, `border` border, `border-radius: 8px` |
 | Header row | DM Mono 12px uppercase letter-spacing 0.08em, `muted-foreground`, sortable columns show chevron icon |
-| Body rows | Syne 14px `foreground`, row height 48px, hover: `muted` background |
-| Numeric cells | DM Mono 14px, right-aligned |
+| Body rows | DM Mono 12px weight 400, `foreground`, row height 48px, hover: `muted` background |
+| Numeric cells | DM Mono 12px, right-aligned |
 | Pagination | shadcn Pagination component, `sm` spacing |
 | Empty state | delegates to empty-state component |
 | Sticky header | yes — `position: sticky top-0` with `card` background |
@@ -198,7 +199,7 @@ File: `src/components/ui/period-selector.tsx`
 
 | Element | Spec |
 |---------|------|
-| Trigger | shadcn Select trigger, DM Mono 14px, `border` border |
+| Trigger | shadcn Select trigger, DM Mono 12px, `border` border |
 | Options | period label format: `Mmm YYYY` (e.g. "Jan 2025") using DM Mono |
 | Width | 160px fixed on desktop, full-width on mobile |
 | Placement | topbar right section, also usable inline in page contexts |
@@ -213,7 +214,7 @@ File: `src/components/ui/loja-badge.tsx`
 |---------|------|
 | Container | inline-flex, `border-radius: 6px`, padding `4px 8px` (xs sm) |
 | Background | store color at 15% opacity (`{storeColor}26`) |
-| Text | store color at 100% opacity, DM Mono 11px weight 500, uppercase |
+| Text | store color at 100% opacity, DM Mono 12px weight 400, uppercase |
 | Jebai | bg `#9333ea26`, text `#9333ea` |
 | Pajé 1 | bg `#06b6d426`, text `#06b6d4` |
 | Pajé 2 | bg `#f9731626`, text `#f97316` |
@@ -229,7 +230,7 @@ File: `src/components/ui/progress-ring.tsx`
 | SVG size | 64px × 64px (default), accepts `size` prop |
 | Track | `muted` color, stroke-width 5px |
 | Fill | `accent` color when value >= 100%, `paje1` (ciano) for 70-99%, `muted-foreground` for < 70% |
-| Center text | DM Mono 14px weight 400, `foreground`, shows percentage |
+| Center text | DM Mono 12px weight 400, `foreground`, shows percentage |
 | Animation | CSS transition on stroke-dashoffset, duration 400ms ease-out |
 
 Props: `value: number` (0-100+), `size?: number`, `label?: string`.
@@ -242,8 +243,8 @@ File: `src/components/ui/empty-state.tsx`
 |---------|------|
 | Container | centered flex-col, padding `2xl` (48px) top/bottom |
 | Icon | Lucide icon, 40px, `muted-foreground` |
-| Heading | Syne 16px weight 600, `foreground` |
-| Body | Syne 14px weight 400, `muted-foreground`, max-width 320px, centered |
+| Heading | Syne 16px weight 400, `foreground` |
+| Body | Syne 16px weight 400, `muted-foreground`, max-width 320px, centered |
 | CTA (optional) | shadcn Button variant="outline" |
 
 ### 7. page-header
@@ -253,7 +254,7 @@ File: `src/components/ui/page-header.tsx`
 | Element | Spec |
 |---------|------|
 | Container | flex row, align-items baseline, padding-bottom `md` (16px), `border-b` border |
-| Title | Syne 20px weight 600, `foreground` |
+| Title | Syne 20px weight 700, `foreground` |
 | Breadcrumb | DM Mono 12px, `muted-foreground`, separator `/`, current page at `foreground` |
 | Actions slot | right-aligned flex row, gap `sm` (8px) |
 | Responsive | on mobile (<768px): breadcrumb hidden, actions move below title |
@@ -273,7 +274,7 @@ File: `src/components/ui/page-header.tsx`
 |---------|------|
 | Background | `--background` (#0e0f11) — same as page, differentiated by right border |
 | Right border | 1px `--border` |
-| Nav items | padding `sm md` (8px 16px), `border-radius: 8px`, Syne 14px weight 400 |
+| Nav items | padding `sm md` (8px 16px), `border-radius: 8px`, Syne 16px weight 400 |
 | Nav item active | `--accent` left border 3px + `--accent`/10% background |
 | Nav item hover | `--muted` background |
 | Icons | Lucide, 18px, `muted-foreground`; active: `--accent` |
@@ -399,6 +400,7 @@ No third-party registries in this phase.
 4. **next-themes:** Install `next-themes` for theme toggle. Wrap layout in `ThemeProvider` with `attribute="class"` and `defaultTheme="dark"`.
 5. **Sidebar state:** Collapsed/expanded state stored in `localStorage` via a custom hook — not URL state. Mobile sheet state is local React `useState`.
 6. **Tailwind config update:** Replace old color tokens (`bg`, `surface`, `surface2`, `jebai: #7b61ff`, `mkt`, `caixa`, `meta1-3`) with shadcn-compatible CSS var references (`background: 'hsl(var(--background))'` pattern).
+7. **Scrollbar width:** Keep `6px` scrollbar from existing `globals.css` as-is. This is an aesthetic detail, not a design system token.
 
 ---
 
