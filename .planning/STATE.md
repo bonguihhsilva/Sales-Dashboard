@@ -3,10 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 1 executed (PARTIAL — schema dump pending human TTY auth)
-last_updated: "2026-05-20T12:00:00.000Z"
-last_activity: 2026-05-20 — Phase 1 Foundation 9/11 tasks done, build+lint green
+stopped_at: Phase 1 executed (PARTIAL — T02 schema dump + T10 visual sign-off pending human action)
+last_updated: "2026-05-21T01:16:06.376Z"
+last_activity: 2026-05-21 -- Phase 02 execution started
 progress:
+  total_phases: 8
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 1
   percent: 12
 ---
 
@@ -17,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-19)
 
 **Core value:** Gerentes enxergam performance real de cada vendedor e calculam comissoes corretamente — e vendedores sabem exatamente o que precisam aprender para vender mais.
-**Current focus:** Phase 1 — Foundation
+**Current focus:** Phase 02 — schema-v2
 
 ## Current Position
 
-Phase: 1 of 8 (Foundation) — PARTIAL COMPLETE
-Plan: 1 of 1 in current phase
-Status: Phase 1 executed; pending human action for FOUND-01 schema dump + T10 visual sign-off
-Last activity: 2026-05-20 — Phase 1 Foundation: 9/11 tasks, build+lint green, 8 commits
+Phase: 02 (schema-v2) — EXECUTING
+Plan: 1 of 1
+Status: Executing Phase 02
+Last activity: 2026-05-21 -- Phase 02 execution started
 
 Progress: [█░░░░░░░░░] 12%
 
