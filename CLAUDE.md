@@ -56,6 +56,15 @@ SUPABASE_SERVICE_ROLE_KEY=    # server-only (admin routes)
 - **Roles**: distinção entre `usuarios/`, `vendedor/` e `admin/` — cada um tem acesso via RLS
 - **UploadModal**: faz parse client-side via `src/app/api/parser.ts` antes de inserir no Supabase
 
+## Segurança — Regras Obrigatórias
+
+- **NUNCA commitar credenciais reais** — nenhum valor real de API key, token, senha ou URL de projeto deve aparecer em qualquer arquivo commitado (README, .env.example, código, comentários, docs). Usar sempre placeholders do tipo `<descrição>`.
+- **README.md**: seção de variáveis de ambiente usa SOMENTE placeholders — ex: `<anon key — Supabase → Settings → API>`. Nunca valores reais.
+- **Arquivos de ambiente**: `.env.local`, `.env.production`, `.env*.local` estão no `.gitignore` — NUNCA remover essas entradas.
+- **Antes de qualquer commit**: verificar se o diff contém padrões como `eyJ`, `sb_publishable_`, `service_role`, `ghp_`, `sk_`, `re_` — se sim, PARAR e revisar.
+- **Histórico git**: se credencial vazar em commit, usar `git filter-repo --replace-text` ANTES de configurar remote ou fazer push.
+- **Rotação obrigatória**: qualquer chave exposta publicamente (mesmo que anon) deve ser rotacionada no painel da plataforma imediatamente.
+
 <!-- GSD:project-start source:PROJECT.md -->
 ## Project
 
