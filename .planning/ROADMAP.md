@@ -57,7 +57,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Gerente cria convite em /dashboard/usuarios, link /convite/[token] e-mail e abre pagina de definicao de senha
   4. Novo usuario define senha via link, faz login e tem role + loja pre-configurados automaticamente
   5. Tabela de usuarios mostra nome, numero vendedor, loja, role, ativo, ultimo acesso com filtros e acoes inline
-**Plans**: TBD
+**Plans**: 6 plans
+- [ ] 03-01-PLAN.md — Migration de schema (4 roles + rename ativo), tipos TypeScript e middleware RBAC via app_metadata
+- [ ] 03-02-PLAN.md — Redesign da pagina /login com componentes shadcn
+- [ ] 03-03-PLAN.md — Utilitario de roles e backend de criacao de convites (POST /api/admin/invite)
+- [ ] 03-04-PLAN.md — Pagina /convite/[token] e backend de aceite (POST /api/admin/accept-invite)
+- [ ] 03-05-PLAN.md — Edge Function send-invite-email (Resend) e integracao no route de convite
+- [ ] 03-06-PLAN.md — Tabela de usuarios v2: DataTable, filtros, Sheet de edicao e Sheet de convite
 **UI hint**: yes
 
 ### Phase 4: Import CEC + Sales
@@ -133,7 +139,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 |-------|----------------|--------|-----------|
 | 1. Foundation | 0/? | Not started | - |
 | 2. Schema v2 | 1/1 | Complete (verified) | 2026-05-22 |
-| 3. Auth & Users | 0/? | Not started | - |
+| 3. Auth & Users | 0/6 | Planned | - |
 | 4. Import CEC + Sales | 0/? | Not started | - |
 | 5. Commission Engine | 0/? | Not started | - |
 | 6. Dashboard Widgets | 0/? | Not started | - |
