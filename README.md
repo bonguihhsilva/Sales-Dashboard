@@ -25,9 +25,9 @@ npm run dev
 
 ### .env.local (desenvolvimento)
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://zsczxblhtdhpdqvkpuwz.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=SUPABASE_ANON_KEY_PLACEHOLDER
-SUPABASE_SERVICE_ROLE_KEY=<pegar no painel Supabase → Settings → API>
+NEXT_PUBLIC_SUPABASE_URL=<Project URL — Supabase → Settings → API>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon/public key — Supabase → Settings → API>
+SUPABASE_SERVICE_ROLE_KEY=<service_role key — Supabase → Settings → API>
 ```
 
 ### Vercel (produção)
