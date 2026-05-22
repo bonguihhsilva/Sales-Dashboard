@@ -46,8 +46,8 @@ export default function UsersClient({
   }
 
   async function toggleActive(profile: Profile) {
-    await supabase.from('profiles').update({ active: !profile.active }).eq('id', profile.id)
-    setList(l => l.map(p => p.id === profile.id ? { ...p, active: !p.active } : p))
+    await supabase.from('profiles').update({ ativo: !profile.ativo }).eq('id', profile.id)
+    setList(l => l.map(p => p.id === profile.id ? { ...p, ativo: !p.ativo } : p))
   }
 
   const inputStyle = {
@@ -93,7 +93,7 @@ export default function UsersClient({
           </thead>
           <tbody>
             {list.map(p => (
-              <tr key={p.id} style={{ borderBottom: '1px solid var(--border)', opacity: p.active ? 1 : 0.5 }}>
+              <tr key={p.id} style={{ borderBottom: '1px solid var(--border)', opacity: p.ativo ? 1 : 0.5 }}>
                 <td style={{ padding: '9px 10px', fontWeight: 600 }}>{p.name}</td>
                 <td style={{ padding: '9px 10px' }}>
                   <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px', background: p.role === 'adm' ? 'rgba(200,245,66,0.15)' : 'rgba(66,217,245,0.12)', color: p.role === 'adm' ? 'var(--meta1)' : 'var(--mkt)' }}>
@@ -107,8 +107,8 @@ export default function UsersClient({
                   {vendorOptions.find(v => v.vendor_id === p.vendor_id)?.store ?? '—'}
                 </td>
                 <td style={{ padding: '9px 10px' }}>
-                  <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px', background: p.active ? 'rgba(200,245,66,0.1)' : 'rgba(107,111,122,0.15)', color: p.active ? 'var(--meta1)' : 'var(--muted)' }}>
-                    {p.active ? 'ativo' : 'inativo'}
+                  <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px', background: p.ativo ? 'rgba(200,245,66,0.1)' : 'rgba(107,111,122,0.15)', color: p.ativo ? 'var(--meta1)' : 'var(--muted)' }}>
+                    {p.ativo ? 'ativo' : 'inativo'}
                   </span>
                 </td>
                 <td style={{ padding: '9px 10px' }}>
@@ -116,7 +116,7 @@ export default function UsersClient({
                     onClick={() => toggleActive(p)}
                     style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '5px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', padding: '3px 10px', cursor: 'pointer' }}
                   >
-                    {p.active ? 'Desativar' : 'Ativar'}
+                    {p.ativo ? 'Desativar' : 'Ativar'}
                   </button>
                 </td>
               </tr>
