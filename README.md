@@ -21,11 +21,6 @@ cp .env.example .env.local
 npm run dev
 ```
 
-## Variáveis de ambiente
-
-### .env.local (desenvolvimento)
-```
-
 ```
 
 ### Vercel (produção)
