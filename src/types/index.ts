@@ -1,12 +1,16 @@
-export type UserRole = 'adm' | 'vendedor'
+export type UserRole = 'vendedor' | 'adm' | 'gerente' | 'super_admin'
 
 export interface Profile {
   id: string
   name: string
   role: UserRole
   vendor_id: string | null
+  numero_vendedor: string | null
   store: string | null
-  active: boolean
+  tenant_id: string | null
+  data_admissao: string | null
+  ativo: boolean
+  created_at: string
 }
 
 export interface Period {
@@ -100,6 +104,6 @@ export const STORE_COLORS: Record<string, string> = {
 
 export const STORE_LABELS: Record<string, string> = {
   'Jebai': 'Jebai',
-  'Paje-MKT': 'Pajé 1',
-  'Paje-Caixa': 'Pajé 2',
+  'Paje-MKT': 'Paje 1',
+  'Paje-Caixa': 'Paje 2',
 }

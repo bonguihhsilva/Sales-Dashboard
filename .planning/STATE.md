@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 3 UI-SPEC approved
-last_updated: "2026-05-22T02:03:54.078Z"
-last_activity: 2026-05-22 -- Phase 02 verified (passed)
+status: executing
+stopped_at: Phase 3 Plan 01+02 executed — awaiting migration apply
+last_updated: "2026-05-22T02:28:22.000Z"
+last_activity: 2026-05-22 -- Phase 03 Plans 01+02 executed (types, middleware, login)
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 0
-  completed_plans: 2
-  percent: 25
+  completed_plans: 4
+  percent: 40
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: 02 (schema-v2) — VERIFIED (passed, 4/4)
-Plan: 1 of 1 complete
-Status: Phase 02 closed — ready for /gsd-secure-phase 2, then Phase 03 planning
-Last activity: 2026-05-22 -- Phase 02 verified (passed)
+Phase: 03 (auth-users) — IN PROGRESS
+Plan: 03-01 (Wave 1) + 03-02 (Wave 2) DONE
+Status: Migration 0014 criada — aplicar no Supabase manualmente. Plans 03-03+ pendentes.
+Last activity: 2026-05-22 -- Plans 03-01 e 03-02 executados
 
 Progress: [██░░░░░░░░] 25%
 
@@ -79,4 +79,4 @@ None yet.
 
 Last session: 2026-05-22T02:03:54.075Z
 Stopped at: Phase 3 UI-SPEC approved
-Resume file: .planning/phases/03-auth-users/03-UI-SPEC.md
+Resume file: .planning/phases/03-auth-users/03-01-SUMMARY.md

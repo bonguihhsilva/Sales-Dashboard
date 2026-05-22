@@ -746,6 +746,15 @@ gerente       — subgerente — acesso limitado (sem gestão de usuários)
 vendedor      — acesso apenas a /meu-resultado e /treinamento
 ```
 
+> ⚠️ **ENUM constraint (Phase 2):** `profiles.role` é `user_role` ENUM com apenas `adm` e `vendedor`.
+> `gerente` e `super_admin` NÃO existem no banco ainda. Antes de usar qualquer um desses roles
+> em SQL, policies ou código, executar:
+> ```sql
+> ALTER TYPE user_role ADD VALUE 'gerente';
+> ALTER TYPE user_role ADD VALUE 'super_admin';
+> ```
+> Via migration (ex: `0014_extend_role_enum.sql`) — não executar diretamente.
+
 ### Fluxo de convite
 ```
 1. Gerente acessa /dashboard/usuarios → cria convite (email + role + loja)
@@ -863,9 +872,11 @@ Criar uma migration por grupo de tabelas:
 
 **S1.2 — RLS Policies**
 Para cada tabela nova, implementar RLS:
-- `tenant_id = auth.jwt() ->> 'tenant_id'` para isolamento multi-tenant
+- `(SELECT tenant_id FROM profiles WHERE id = auth.uid())` para isolamento multi-tenant
+  > ⚠️ **NÃO usar** `auth.jwt() ->> 'tenant_id'` — JWT custom claim não configurado (requer Auth Hook no plano atual). Ver §16 Decisões Phase 2.
 - Vendedor só lê os próprios dados em progresso_usuario, quiz_resultados, gamificacao
 - Gerente lê todos do tenant, escreve em regras_comissao, convites, metas
+  > ⚠️ **`gerente` não existe no ENUM** `user_role` ainda. Policies que verificam role usam `role = 'adm'` até o ENUM ser estendido.
 - Super_admin bypassa RLS com service role
 
 **S1.3 — Seed de dados iniciais**
@@ -1202,10 +1213,18 @@ export default async function Page() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
   
+  // tenant_id NÃO está no JWT — buscar via profiles
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single()
+  if (!profile?.tenant_id) redirect('/login')
+
   const { data } = await supabase
     .from('tabela')
     .select('*')
-    .eq('tenant_id', user.user_metadata.tenant_id)
+    .eq('tenant_id', profile.tenant_id)
   
   return <MeuComponente data={data} />
 }
@@ -1247,6 +1266,62 @@ NEXT_PUBLIC_APP_URL=https://gds-frame.com
 
 ---
 
+---
+
+## 16. DECISÕES DE IMPLEMENTAÇÃO — PHASE 2 (maio 2026)
+
+> Registradas após execução das migrations 0001–0013. Críticas para fases 3+.
+
+### D-P2.1 — `periodo_id` é INTEGER, não UUID
+`periods.id` é `serial` (integer) no schema original (migration 0001).
+Todas as FKs que referenciam `periods` devem ser `integer`, não `uuid`.
+- **Afeta:** Sprint 3 (import CEC), Sprint 4 (comissão)
+- **Arquivos:** `0004_vendas_itens.sql`, `0005_motor_comissao.sql`
+- **Erro se errar:** `foreign key constraint violation` em insert de vendas/comissoes
+
+### D-P2.2 — RLS usa profiles, não JWT claim
+`auth.jwt() ->> 'tenant_id'` **não funciona** — JWT custom claim não configurado.
+Padrão correto em todas as policies:
+```sql
+(SELECT tenant_id FROM profiles WHERE id = auth.uid())
+```
+No código TypeScript (RSC), buscar `tenant_id` via query na tabela `profiles` — não via `user.user_metadata`.
+
+### D-P2.3 — `profiles.role` é ENUM com 2 valores apenas
+Tipo: `user_role` ENUM. Valores válidos: **`adm`** e **`vendedor`** apenas.
+`gerente` e `super_admin` **não existem** — qualquer SQL com esses valores lança `invalid input value for enum user_role`.
+Para adicionar: criar migration `ALTER TYPE user_role ADD VALUE '...'` antes de usar.
+
+### D-P2.4 — UUIDs fixos dos seeds
+| Entidade | UUID |
+|----------|------|
+| tenant `gds-interno` | `aaaaaaaa-0000-0000-0000-000000000001` |
+| trilha "Vendas no Varejo CDE" | `11111111-0000-0000-0000-000000000001` |
+| módulo 1..8 | `22222222-0000-0000-0000-0000000000{01..08}` |
+
+### D-P2.5 — `supabase gen types` requer `2>/dev/null`
+Sem o redirect, CLI imprime `Initialising login role...` no stdout junto ao TypeScript, corrompendo o arquivo.
+```bash
+# Correto:
+npx supabase gen types typescript --linked 2>/dev/null > src/types/supabase.ts
+```
+
+### D-P2.6 — Migration 0001 reparada (não re-executada)
+Schema v1 já existia no banco remoto antes do GSD Workflow.
+`supabase migration repair --status applied 20250101000000` foi usado para sincronizar histórico.
+Re-executar causaria `ERROR: policy already exists` (CREATE POLICY sem IF NOT EXISTS).
+
+### D-P2.7 — `widget_types` sem `tenant_id`
+Global por design — sem dados sensíveis. RLS permite SELECT para qualquer `authenticated`.
+**Não adicionar `tenant_id`** a esta tabela sem revisão da arquitetura.
+
+### D-P2.8 — `trilhas.tenant_id` nullable
+`NULL` = conteúdo global (acessível a todos os tenants).
+`tenant_id NOT NULL` = conteúdo exclusivo do tenant.
+A trilha seed "Vendas no Varejo CDE" tem `tenant_id = NULL` (global).
+
+---
+
 *Documento gerado em: maio 2026*
-*Versão: 1.1 — decisões finalizadas*
-*Próxima revisão: após Sprint 0*
+*Versão: 1.2 — Phase 2 decisions adicionadas*
+*Próxima revisão: após Sprint 3*

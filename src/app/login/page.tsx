@@ -3,6 +3,10 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 
 export default function LoginPage() {
   const [email, setEmail]       = useState('')
@@ -30,97 +34,97 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center',
-      justifyContent: 'center', background: 'var(--bg)', padding: '1rem'
-    }}>
-      <div style={{
-        width: '100%', maxWidth: '380px',
-        background: 'var(--surface)', border: '1px solid var(--border)',
-        borderRadius: '16px', padding: '2.5rem 2rem',
-      }}>
-        {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{
-            display: 'inline-block', background: 'var(--accent)',
-            borderRadius: '10px', padding: '8px 16px', marginBottom: '1rem'
-          }}>
-            <span style={{ color: '#0e0f11', fontWeight: 800, fontSize: '1rem', letterSpacing: '-0.5px' }}>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-[380px] border-border">
+        <CardHeader className="items-center pb-6 pt-8 px-8">
+          {/* Wordmark */}
+          <div className="inline-block bg-primary rounded-[10px] px-4 py-2 mb-4">
+            <span
+              className="text-primary-foreground font-bold text-base"
+              style={{ fontFamily: 'var(--font-syne)', letterSpacing: '-0.5px' }}
+            >
               DA SILVA
             </span>
           </div>
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)' }}>
+          <h1
+            className="text-xl font-bold text-foreground"
+            style={{ fontFamily: 'var(--font-syne)' }}
+          >
             Painel de Vendas
           </h1>
-          <p style={{ fontSize: '0.75rem', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', marginTop: '4px' }}>
+          <p
+            className="text-xs text-muted-foreground mt-1"
+            style={{ fontFamily: 'var(--font-dm-mono)' }}
+          >
             Entre com suas credenciais
           </p>
-        </div>
+        </CardHeader>
 
-        <form onSubmit={handleLogin}>
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-              style={{
-                width: '100%', background: 'var(--surface2)',
-                border: '1px solid var(--border)', borderRadius: '8px',
-                color: 'var(--text)', fontFamily: 'DM Mono, monospace',
-                fontSize: '0.85rem', padding: '10px 12px', outline: 'none',
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
-              Senha
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-              style={{
-                width: '100%', background: 'var(--surface2)',
-                border: '1px solid var(--border)', borderRadius: '8px',
-                color: 'var(--text)', fontFamily: 'DM Mono, monospace',
-                fontSize: '0.85rem', padding: '10px 12px', outline: 'none',
-              }}
-            />
-          </div>
-
-          {error && (
-            <div style={{
-              background: 'rgba(245,92,66,0.1)', border: '1px solid rgba(245,92,66,0.3)',
-              borderRadius: '8px', padding: '10px 12px', marginBottom: '1rem',
-              fontSize: '0.78rem', color: '#f55c42', fontFamily: 'DM Mono, monospace',
-            }}>
-              {error}
+        <CardContent className="px-8 pb-8">
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label
+                htmlFor="email"
+                className="text-xs text-muted-foreground uppercase tracking-[0.08em]"
+                style={{ fontFamily: 'var(--font-dm-mono)' }}
+              >
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+                className="font-mono text-sm"
+              />
             </div>
-          )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: '100%', background: 'var(--accent)', color: '#0e0f11',
-              fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.9rem',
-              border: 'none', borderRadius: '8px', padding: '12px',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.7 : 1, transition: 'opacity 0.15s',
-            }}
-          >
-            {loading ? 'Entrando...' : 'Entrar'}
-          </button>
-        </form>
-      </div>
+            <div className="space-y-1.5">
+              <Label
+                htmlFor="password"
+                className="text-xs text-muted-foreground uppercase tracking-[0.08em]"
+                style={{ fontFamily: 'var(--font-dm-mono)' }}
+              >
+                Senha
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+                className="font-mono text-sm"
+              />
+            </div>
+
+            {error && (
+              <div
+                className="rounded-lg px-3 py-2.5 text-xs"
+                style={{
+                  background: 'rgba(245,92,66,0.1)',
+                  border: '1px solid rgba(245,92,66,0.3)',
+                  color: '#f55c42',
+                  fontFamily: 'var(--font-dm-mono)',
+                }}
+              >
+                {error}
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full font-bold text-sm mt-2"
+              style={{ fontFamily: 'var(--font-syne)' }}
+            >
+              {loading ? 'Entrando...' : 'Entrar'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }

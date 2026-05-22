@@ -34,7 +34,7 @@ Não inclui: OAuth, auto-cadastro, configurações de tenant, importação de da
 ### Tabela de Usuários
 
 - **D-08:** Ação "editar usuário": abre Sheet lateral com todos os campos editáveis: nome, role, loja, ativo. Não inline dropdown.
-- **D-09:** Desativar usuário: chama `admin.updateUserById({ banned: true })` via service role — invalida sessões ativas imediatamente. Mais seguro para caso de demissão.
+- **D-09:** Desativar usuário: chama `admin.updateUserById({ ban_duration: '876600h' })` via service role — invalida sessões ativas imediatamente. (~100 anos = ban permanente efetivo). Mais seguro para caso de demissão. _API atualizada conforme RESEARCH.md: o SDK JS v2 não aceita `banned: true` — o parâmetro correto é `ban_duration` (string); usar `'none'` para reativar o usuário._
 
 ### Claude's Discretion
 
