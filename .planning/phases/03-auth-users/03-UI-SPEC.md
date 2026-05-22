@@ -61,13 +61,18 @@ All text uses CSS variables already declared in `globals.css`.
 | Display | 28px (md:text-[28px]) | 700 | 1.2 | Syne | Page headings (PageHeader h1), section titles |
 | Heading | 20px | 700 | 1.2 | Syne | Login "Painel de Vendas", Sheet titles, Dialog titles |
 | Body | 16px | 400 | 1.5 | Syne | Descriptions, sheet field labels (visible text), button labels |
-| Label/Data | 12px | 400 | 1.4 | DM Mono | Table headers, form field labels (uppercase + tracking), badge content, meta text |
+| Label/Data | 12px | 400 | 1.4 | DM Mono | Table headers, table cell values, form field labels (uppercase + tracking), badge content, meta text, inline status badges |
 
 Additional rules:
 - All form field labels: 12px DM Mono, `text-muted-foreground`, uppercase, `letter-spacing: 0.08em`
-- Table cell values (name, role, loja): 14px Syne weight 400 except `nome` column at weight 600
-- Inline status badges: 11px DM Mono weight 400 (fits within badge padding)
-- "DA SILVA" wordmark on login: 16px Syne weight 800, `letter-spacing: -0.5px`, color `--primary-foreground` (#0e0f11 on accent bg)
+- Table cell values (name, role, loja, último acesso): 12px — `nome` column at weight 700 for emphasis
+- Inline status badges: 12px DM Mono weight 400 (fits within badge padding)
+- "DA SILVA" wordmark on login: 16px Syne weight 700, `letter-spacing: -0.5px`, color `--primary-foreground` (#0e0f11 on accent bg)
+
+Primary visual anchor per screen:
+- `/login`: "DA SILVA" wordmark chip (accent background, top center)
+- `/dashboard/usuarios`: "Convidar usuário" CTA button (accent, top right of PageHeader)
+- `/convite/[token]`: "Definir senha" submit button (accent, full width, bottom of card)
 
 ---
 
@@ -110,10 +115,12 @@ Loja color system (pre-existing via `loja-badge.tsx`):
 
 **Layout:** Full-viewport centered flex. Background `--background`. Card: max-width 380px, `--card` background, `border border-border`, `rounded-2xl`, padding `xl` (32px) horizontal / `2xl` (48px) vertical equivalent.
 
+**Primary visual anchor:** "DA SILVA" wordmark chip (accent background, top center of card).
+
 **Component map (shadcn):**
 - Outer container: plain div with Tailwind `min-h-screen flex items-center justify-center bg-background`
 - Card: shadcn `Card` + `CardContent` (replaces inline div)
-- Logo chip: `<span>` with `bg-primary text-primary-foreground rounded-lg px-4 py-2 font-sans font-extrabold text-base`
+- Logo chip: `<span>` with `bg-primary text-primary-foreground rounded-lg px-4 py-2 font-sans font-bold text-base`
 - Email field: shadcn `Label` + `Input` (type="email", autoComplete="email")
 - Password field: shadcn `Label` + `Input` (type="password", autoComplete="current-password")
 - Submit: shadcn `Button` variant="default" (maps to `bg-primary text-primary-foreground`) full width
@@ -133,6 +140,8 @@ Loja color system (pre-existing via `loja-badge.tsx`):
 
 **Layout:** Standard dashboard layout (sidebar + topbar from Phase 1 foundation). Page content area uses `PageHeader` component with title "Usuários" and `actions` slot containing "Convidar usuário" button.
 
+**Primary visual anchor:** "Convidar usuário" button (accent color, top right of PageHeader actions slot).
+
 **Component map (shadcn):**
 - Page title: `PageHeader` with title="Usuários", subtitle="Gerencie acessos e convites da equipe"
 - Filters row: two `Select` dropdowns (Role, Loja) side by side, left-aligned, gap-sm (8px)
@@ -147,13 +156,13 @@ Loja color system (pre-existing via `loja-badge.tsx`):
 
 | Column | Source | Font | Notes |
 |--------|--------|------|-------|
-| Nome | profiles.name | Syne 14px weight 600 | With `Avatar` initials (24px) if no photo |
+| Nome | profiles.name | Syne 12px weight 700 | With `Avatar` initials (24px) if no photo |
 | N° Vendedor | profiles.numero_vendedor | DM Mono 12px | `—` when null |
 | Loja | lojas.nome via loja_id | `LojaBadge` component | Pre-existing component |
 | Role | profiles.role | Badge (role color system above) | 4 roles: vendedor, gerente, adm, super_admin |
 | Ativo | profiles.ativo | Badge: ativo (#c8f542 tint) / inativo (muted tint) | |
-| Último acesso | auth.users.last_sign_in_at | DM Mono 11px muted | Formatted as "Há X dias" or "Nunca" |
-| Ações | — | Icon buttons | Edit (Pencil icon), more actions via DropdownMenu |
+| Último acesso | auth.users.last_sign_in_at | DM Mono 12px muted | Formatted as "Há X dias" or "Nunca" |
+| Ações | — | Icon buttons | Edit (Pencil icon, `aria-label="Editar {nome}"`), more actions via DropdownMenu |
 
 **Filter behavior:** Role filter and Loja filter update URL searchParams (consistent with project pattern). Filters apply server-side (page re-fetches). "Limpar filtros" link appears when any filter is active.
 
@@ -169,13 +178,13 @@ Loja color system (pre-existing via `loja-badge.tsx`):
 - Title: "Editar usuário" (Syne 20px weight 700)
 - Fields: Nome (Input), Role (Select), Loja (Select), Ativo (Switch with label)
 - Save button: "Salvar alterações" — `Button` variant="default" (accent), full width
-- Cancel: "Cancelar" — `Button` variant="outline", full width above save (or footer row)
+- Cancel: "Descartar alterações" — `Button` variant="outline", full width above save (or footer row)
 - No password change in this sheet (out of scope)
 
 **Disable User Dialog:**
 - Title: "Desativar usuário"
 - Body: "Isso encerrará a sessão ativa de {nome} imediatamente. Esta ação pode ser revertida reativando o usuário."
-- Buttons: "Cancelar" (outline) + "Desativar" (`variant="destructive"`)
+- Buttons: "Manter usuário ativo" (outline) + "Desativar" (`variant="destructive"`)
 
 **Empty state (no users match filters):**
 - `EmptyState` component, icon: `Users` (lucide), title: "Nenhum usuário encontrado", description: "Tente ajustar os filtros ou convide um novo membro."
@@ -188,6 +197,8 @@ Loja color system (pre-existing via `loja-badge.tsx`):
 ### Screen 3: /convite/[token]
 
 **Layout:** Full-viewport centered flex (same shell as /login). No sidebar, no topbar. Public route — unauthenticated.
+
+**Primary visual anchor:** "Definir senha" submit button (accent color, full width, bottom of card).
 
 **Component map (shadcn):**
 - Outer: `min-h-screen flex items-center justify-center bg-background px-4`
@@ -233,7 +244,7 @@ Loja color system (pre-existing via `loja-badge.tsx`):
 | Password label | Senha |
 | Primary CTA | Entrar |
 | Loading CTA | Entrando... |
-| Auth error | Email ou senha incorretos. |
+| Auth error | Email ou senha incorretos. Verifique e tente novamente. |
 
 ### /dashboard/usuarios
 
@@ -262,11 +273,11 @@ Loja color system (pre-existing via `loja-badge.tsx`):
 | Edit loja label | Loja |
 | Edit ativo label | Usuário ativo |
 | Edit save CTA | Salvar alterações |
-| Edit cancel | Cancelar |
+| Edit cancel | Descartar alterações |
 | Disable Dialog title | Desativar usuário |
 | Disable Dialog body | Isso encerrará a sessão ativa de {nome} imediatamente. Esta ação pode ser revertida reativando o usuário. |
 | Disable confirm CTA | Desativar |
-| Disable cancel | Cancelar |
+| Disable cancel | Manter usuário ativo |
 | Empty state (filtered): heading | Nenhum usuário encontrado |
 | Empty state (filtered): body | Tente ajustar os filtros ou convide um novo membro. |
 | Column: último acesso — never | Nunca |
@@ -344,6 +355,7 @@ Loja color system (pre-existing via `loja-badge.tsx`):
 - Skeleton loading: wrapping div with `aria-label="Carregando usuários..."` and `aria-busy="true"`
 - Color is never the sole indicator of status: badges use text label AND color tint
 - Table: `<thead>` with `scope="col"` on `<th>` elements
+- Edit action icon button: `aria-label="Editar {nome}"` (dynamic, interpolated per row)
 
 ---
 
