@@ -70,10 +70,35 @@ export async function POST(req: NextRequest) {
     ?? req.nextUrl.origin
   const link = `${appUrl}/convite/${convite.token}`
 
+  // Envio de email — opcional (D-05). Disparado so se o convite tem email.
+  // Falha de email NUNCA quebra a criacao do convite.
+  let emailSent = false
+  if (email) {
+    // Nome de quem convidou, para o corpo do email
+    const { data: senderProfile } = await admin
+      .from('profiles')
+      .select('name')
+      .eq('id', user.id)
+      .single()
+
+    try {
+      const { data: fnData, error: fnError } = await admin.functions.invoke(
+        'send-invite-email',
+        { body: { to: email, inviteLink: link, senderName: senderProfile?.name ?? 'Sua equipe' } },
+      )
+      // A Edge Function retorna { sent: boolean }; sem RESEND_API_KEY vem sent:false
+      emailSent = !fnError && fnData?.sent === true
+    } catch {
+      // Edge Function indisponivel/nao deployada — convite segue valido pelo link
+      emailSent = false
+    }
+  }
+
   return NextResponse.json({
     link,
     token: convite.token,
     expira_em: convite.expira_em,
     email_requested: !!email,
+    email_sent: emailSent,
   })
 }
