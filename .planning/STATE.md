@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 1 executed (PARTIAL — T02 schema dump + T10 visual sign-off pending human action)
-last_updated: "2026-05-21T01:16:06.376Z"
-last_activity: 2026-05-21 -- Phase 02 execution started
+stopped_at: Phase 2 verified — passed (4/4 must-haves). Next: /gsd-secure-phase 2
+last_updated: "2026-05-22T00:59:52.483Z"
+last_activity: 2026-05-22 -- Phase 02 verified (passed)
 progress:
   total_phases: 8
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 1
-  percent: 12
+  completed_phases: 1
+  total_plans: 2
+  completed_plans: 2
+  percent: 25
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-19)
 
 **Core value:** Gerentes enxergam performance real de cada vendedor e calculam comissoes corretamente — e vendedores sabem exatamente o que precisam aprender para vender mais.
-**Current focus:** Phase 02 — schema-v2
+**Current focus:** Phase 03 — Auth & Users (Phase 02 verified)
 
 ## Current Position
 
-Phase: 02 (schema-v2) — EXECUTING
-Plan: 1 of 1
-Status: Executing Phase 02
-Last activity: 2026-05-21 -- Phase 02 execution started
+Phase: 02 (schema-v2) — VERIFIED (passed, 4/4)
+Plan: 1 of 1 complete
+Status: Phase 02 closed — ready for /gsd-secure-phase 2, then Phase 03 planning
+Last activity: 2026-05-22 -- Phase 02 verified (passed)
 
-Progress: [█░░░░░░░░░] 12%
+Progress: [██░░░░░░░░] 25%
 
 ## Performance Metrics
 
@@ -73,9 +73,10 @@ None yet.
 
 - Codebase atual usa 100% inline styles — Phase 1 deve migrar para shadcn sem quebrar funcionalidade existente
 - Schema nao versionado — Phase 1/2 extrai schema atual antes de aplicar migrations incrementais
+- Banco Supabase zsczxblhtdhpdqvkpuwz e COMPARTILHADO com app de teste de petshop (13 tabelas: bookings, pets, organizations, hr_*, financial_*, etc.). Nao e defeito da Phase 2, mas: src/types/supabase.ts inclui essas tabelas e a migration 0010 sobrescreveu handle_new_user globalmente. Recomendacao: dar projeto Supabase proprio ao petshop antes de retoma-lo.
 
 ## Session Continuity
 
-Last session: 2026-05-20T12:00:00.000Z
-Stopped at: Phase 1 executed (PARTIAL — T02 schema dump + T10 visual sign-off pending human action)
-Resume file: .planning/phases/01-foundation/VERIFICATION.md
+Last session: 2026-05-22T00:59:52.483Z
+Stopped at: Phase 2 verified — passed (4/4 must-haves)
+Resume file: .planning/phases/02-schema-v2/02-VERIFICATION.md

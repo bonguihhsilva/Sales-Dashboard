@@ -13,7 +13,7 @@ Upgrade do dashboard interno da familia Da Silva de um codebase com inline style
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Foundation** - Fundacao tecnica: design system, componentes base e layout v2
-- [ ] **Phase 2: Schema v2** - Migrations versionadas, RLS multi-tenant, seeds e types TypeScript
+- [x] **Phase 2: Schema v2** - Migrations versionadas, RLS multi-tenant, seeds e types TypeScript
 - [ ] **Phase 3: Auth & Users** - Middleware por role, login redesenhado, fluxo de convites e gestao de usuarios
 - [ ] **Phase 4: Import CEC + Sales** - Parsers multi-formato, UI de importacao, historico e analise de vendas
 - [ ] **Phase 5: Commission Engine** - Motor de comissao server-side, condition builder visual e aprovacao por periodo
@@ -132,7 +132,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 0/? | Not started | - |
-| 2. Schema v2 | 0/? | Not started | - |
+| 2. Schema v2 | 1/1 | Complete (verified) | 2026-05-22 |
 | 3. Auth & Users | 0/? | Not started | - |
 | 4. Import CEC + Sales | 0/? | Not started | - |
 | 5. Commission Engine | 0/? | Not started | - |
