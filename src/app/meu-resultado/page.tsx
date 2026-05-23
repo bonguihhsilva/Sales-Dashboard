@@ -18,11 +18,12 @@ export default async function MeuResultadoPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // JWT role — mesma fonte do middleware, evita redirect loop (D-04)
+  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
+  if (jwtRole !== 'vendedor') redirect('/dashboard')
+
   const { data: profile } = await supabase
     .from('profiles').select('*').eq('id', user.id).single()
-
-  // ADM should never land here - redirect to dashboard
-  if (profile?.role === 'adm') redirect('/dashboard')
 
   if (!profile?.vendor_id) {
     return (

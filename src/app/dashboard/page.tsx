@@ -22,9 +22,12 @@ export default async function DashboardPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // JWT role — mesma fonte do middleware (D-04)
+  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
+  if (jwtRole === 'vendedor') redirect('/meu-resultado')
+
   const { data: profile } = await supabase
     .from('profiles').select('role, name').eq('id', user.id).single()
-  if (profile?.role !== 'adm') redirect('/meu-resultado')
 
   const adminDb = createAdminClient()
 
