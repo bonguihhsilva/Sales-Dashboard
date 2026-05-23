@@ -2,31 +2,78 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg:       #0e0f11;
-  --surface:  #16181c;
-  --surface2: #1e2026;
-  --border:   rgba(255,255,255,0.07);
-  --text:     #f0f0ee;
-  --muted:    #6b6f7a;
-  --accent:   #c8f542;
-  --jebai:    #7b61ff;
-  --mkt:      #42d9f5;
-  --caixa:    #f5a742;
-  --meta1:    #c8f542;
-  --meta2:    #42d9f5;
-  --meta3:    #f5a742;
+@layer base {
+  :root {
+    /* shadcn-compatible tokens — HSL channels (space-separated, no hsl() wrapper) */
+    --background:        220 8% 7%;     /* #0e0f11 */
+    --foreground:        240 5% 96%;    /* #f4f4f5 */
+    --card:              225 7% 9%;     /* #141517 */
+    --card-foreground:   240 5% 96%;
+    --popover:           225 7% 9%;
+    --popover-foreground: 240 5% 96%;
+    --primary:           74 89% 62%;    /* #c8f542 — accent doubles as primary */
+    --primary-foreground: 220 8% 7%;
+    --secondary:         225 6% 14%;    /* #1a1b1e */
+    --secondary-foreground: 240 5% 96%;
+    --muted:             225 6% 14%;    /* #1a1b1e */
+    --muted-foreground:  240 5% 46%;    /* #71717a */
+    --accent:            74 89% 62%;    /* #c8f542 */
+    --accent-foreground: 220 8% 7%;
+    --destructive:       0 84% 60%;     /* #ef4444 */
+    --destructive-foreground: 240 5% 96%;
+    --border:            240 4% 15%;    /* #27272a */
+    --input:             240 4% 15%;
+    --ring:              74 89% 62%;
+    --radius: 0.5rem;
+
+    /* GDS store colors — raw RGB triplets for rgb(var(--x) / opacity) usage */
+    --jebai: 147 51 234;   /* #9333ea */
+    --paje1: 6 182 212;    /* #06b6d4 */
+    --paje2: 249 115 22;   /* #f97316 */
+
+    /* === Legacy aliases for existing inline-styled components (MITIGATES T-01-02) === */
+    --bg:       hsl(var(--background));
+    --text:     hsl(var(--foreground));
+    --surface:  hsl(var(--card));
+    --surface2: hsl(var(--muted));
+    --meta1:    hsl(var(--accent));
+    --meta2:    rgb(var(--paje1));
+    --meta3:    rgb(var(--paje2));
+  }
+
+  .light {
+    --background:        210 17% 98%;   /* #f8f9fa */
+    --foreground:        220 8% 7%;
+    --card:              0 0% 100%;
+    --card-foreground:   220 8% 7%;
+    --popover:           0 0% 100%;
+    --popover-foreground: 220 8% 7%;
+    --primary:           142 76% 36%;   /* #16a34a */
+    --primary-foreground: 0 0% 100%;
+    --secondary:         210 40% 96%;
+    --secondary-foreground: 220 8% 7%;
+    --muted:             210 40% 96%;   /* #f1f5f9 */
+    --muted-foreground:  215 16% 47%;   /* #64748b */
+    --accent:            142 76% 36%;
+    --accent-foreground: 0 0% 100%;
+    --destructive:       0 72% 51%;     /* #dc2626 */
+    --destructive-foreground: 0 0% 100%;
+    --border:            214 32% 91%;   /* #e2e8f0 */
+    --input:             214 32% 91%;
+    --ring:              142 76% 36%;
+  }
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Syne', sans-serif;
-  min-height: 100vh;
+@layer base {
+  * { @apply border-border; box-sizing: border-box; }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-syne), 'Syne', sans-serif;
+    min-height: 100vh;
+  }
 }
 
+/* Scrollbar — preserve aesthetic from previous globals.css */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--surface); }
-::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 3px; }
+::-webkit-scrollbar-track { background: hsl(var(--card)); }
+::-webkit-scrollbar-thumb { background: hsl(var(--muted)); border-radius: 3px; }
