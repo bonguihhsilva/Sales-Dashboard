@@ -39,7 +39,7 @@ export default function LoginPage() {
         <CardContent className="p-8">
           <div className="text-center mb-8">
             <span className="inline-block bg-primary text-primary-foreground rounded-lg px-4 py-2 font-bold text-base">
-              DA SILVA
+              GDS - Frame
             </span>
             <h1 className="text-xl font-bold mt-4">Painel de Vendas</h1>
             <p className="text-[12px] text-muted-foreground font-mono mt-1">
