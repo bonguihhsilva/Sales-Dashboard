@@ -9,15 +9,9 @@ export default async function Home() {
 
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, vendor_id')
-    .eq('id', user.id)
-    .single()
+  // Usa JWT app_metadata — mesma fonte que o middleware (D-04)
+  const role = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
 
-  // ADM → dashboard
-  if (profile?.role === 'adm') redirect('/dashboard')
-  
-  // Vendedor → meu-resultado
-  redirect('/meu-resultado')
+  if (role === 'vendedor') redirect('/meu-resultado')
+  redirect('/dashboard')
 }
