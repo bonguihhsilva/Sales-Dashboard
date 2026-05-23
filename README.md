@@ -1,4 +1,4 @@
-# Da Silva Dashboard.
+# Da Silva Dashboard
 
 Painel de vendas e metas — Next.js + Supabase + Vercel
 
@@ -21,6 +21,13 @@ cp .env.example .env.local
 npm run dev
 ```
 
+## Variáveis de ambiente
+
+### .env.local (desenvolvimento)
+```
+NEXT_PUBLIC_SUPABASE_URL=<Project URL — Supabase → Settings → API>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon/public key — Supabase → Settings → API>
+SUPABASE_SERVICE_ROLE_KEY=<service_role key — Supabase → Settings → API>
 ```
 
 ### Vercel (produção)
@@ -73,4 +80,3 @@ Acessar `/dashboard/usuarios` como ADM para:
 - Criar novos usuários
 - Vincular usuário ao vendedor correspondente
 - Ativar/desativar acesso
-# Sat Mar 28 01:41:33 UTC 2026

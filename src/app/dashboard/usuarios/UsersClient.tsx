@@ -1,376 +1,679 @@
 'use client'
 
-import { useState } from 'react'
-import type { Profile } from '@/types'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import {
+  Users,
+  UserPlus,
+  Pencil,
+  MoreHorizontal,
+  Copy,
+  Check,
+} from 'lucide-react'
+import { DataTable, type Column } from '@/components/ui/data-table'
+import { PageHeader } from '@/components/ui/page-header'
+import { LojaBadge, type LojaName } from '@/components/ui/loja-badge'
+import { EmptyState } from '@/components/ui/empty-state'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+} from '@/components/ui/sheet'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select'
+import { ASSIGNABLE_ROLES } from '@/lib/auth/roles'
+import { STORE_LABELS } from '@/types'
+import type { UserRow } from './page'
 
-interface Vendor   { vendor_id: string; vendor_name: string; store: string }
-interface Period   { id: number; label: string; year: number; month: number }
-interface Goal     { id: number; period_id: number; vendor_id: string; vendor_name: string; store: string; meta1: number; meta2: number; meta3: number; bonus1: number; bonus2: number; bonus3: number }
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-const STORES = ['Jebai', 'Paje-MKT', 'Paje-Caixa']
+const ROLE_LABELS: Record<string, string> = {
+  vendedor: 'Vendedor',
+  adm: 'ADM',
+  gerente: 'Gerente',
+  super_admin: 'Super Admin',
+}
 
-export default function UsersClient({ profiles, periods, goals, allVendors }: {
-  profiles: Profile[]; periods: Period[]; goals: Goal[]; allVendors: Vendor[]
+const STORE_OPTIONS = [
+  { value: 'Jebai', label: 'Jebai' },
+  { value: 'Paje-MKT', label: 'Paje 1' },
+  { value: 'Paje-Caixa', label: 'Paje 2' },
+]
+
+function formatLastSeen(dateStr: string | null): string {
+  if (!dateStr) return 'Nunca'
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000)
+  if (diff === 0) return 'Hoje'
+  if (diff === 1) return 'Ha 1 dia'
+  return `Ha ${diff} dias`
+}
+
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? '')
+    .join('')
+}
+
+// ── Componente principal ────────────────────────────────────────────────────
+
+export default function UsersClient({
+  users,
+  activeRole,
+  activeLoja,
+}: {
+  users: UserRow[]
+  activeRole: string | null
+  activeLoja: string | null
 }) {
-  const [tab, setTab]           = useState<'usuarios' | 'metas'>('usuarios')
-  const [list, setList]         = useState<Profile[]>(profiles)
-  const [editGoals, setEditGoals] = useState<Goal[]>(goals)
-  const [showCreate, setShowCreate] = useState(false)
-  const [editUser, setEditUser] = useState<Profile & { email?: string; newPwd?: string; store?: string | null } | null>(null)
-  const [activePeriod, setActivePeriod] = useState(periods[0]?.id ?? 0)
-  const [loading, setLoading]   = useState(false)
-  const [saving, setSaving]     = useState<number | null>(null)
-  const [msg, setMsg]           = useState('')
+  const router = useRouter()
 
-  // Create form
-  const [newName, setNewName]     = useState('')
-  const [newEmail, setNewEmail]   = useState('')
-  const [newPwd, setNewPwd]       = useState('')
-  const [newRole, setNewRole]     = useState<'adm'|'vendedor'>('vendedor')
-  const [newVendor, setNewVendor] = useState('')
-  const [newStore, setNewStore]   = useState('')
+  // Estados de UI principal
+  const [inviteOpen, setInviteOpen] = useState(false)
+  const [editingUser, setEditingUser] = useState<UserRow | null>(null)
+  const [disablingUser, setDisablingUser] = useState<UserRow | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const s = { // shared styles
-    input:  { background:'var(--surface2)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontFamily:'DM Mono,monospace', fontSize:'0.82rem', padding:'9px 12px', outline:'none', width:'100%', marginBottom:'0.85rem' } as React.CSSProperties,
-    label:  { display:'block' as const, fontSize:'0.62rem', fontFamily:'DM Mono,monospace', color:'var(--muted)', textTransform:'uppercase' as const, letterSpacing:'0.08em', marginBottom:'5px' },
-    btnP:   { background:'var(--accent)', color:'#0e0f11', fontFamily:'Syne,sans-serif', fontWeight:700, fontSize:'0.85rem', border:'none', borderRadius:'8px', padding:'10px', cursor:'pointer' } as React.CSSProperties,
-    btnS:   { background:'transparent', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--muted)', fontFamily:'Syne,sans-serif', fontWeight:600, fontSize:'0.85rem', padding:'10px', cursor:'pointer' } as React.CSSProperties,
-  }
+  // Estados do Sheet de convite
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState(ASSIGNABLE_ROLES[0])
+  const [inviteLoja, setInviteLoja] = useState(STORE_OPTIONS[0].value)
+  const [inviteLink, setInviteLink] = useState<string | null>(null)
+  const [inviteEmailSent, setInviteEmailSent] = useState(false)
+  const [copied, setCopied] = useState(false)
 
-  function flash(m: string) { setMsg(m); setTimeout(() => setMsg(''), 4000) }
+  // Estados do Sheet de edicao
+  const [editName, setEditName] = useState('')
+  const [editRole, setEditRole] = useState(ASSIGNABLE_ROLES[0])
+  const [editStore, setEditStore] = useState(STORE_OPTIONS[0].value)
+  const [editAtivo, setEditAtivo] = useState(true)
 
-  async function api(url: string, body: Record<string, unknown>) {
-    const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) })
-    return r.json()
-  }
+  // Sincronizar campos do Sheet de edicao quando editingUser mudar
+  useEffect(() => {
+    if (editingUser) {
+      setEditName(editingUser.name)
+      setEditRole(
+        (ASSIGNABLE_ROLES as string[]).includes(editingUser.role)
+          ? editingUser.role
+          : ASSIGNABLE_ROLES[0]
+      )
+      setEditStore(editingUser.store ?? STORE_OPTIONS[0].value)
+      setEditAtivo(editingUser.ativo)
+      setError(null)
+    }
+  }, [editingUser])
 
-  async function createUser() {
+  // ── Handlers de convite ────────────────────────────────────────────────
+
+  async function handleGerarConvite() {
     setLoading(true)
-    const data = await api('/api/admin/create-user', { email:newEmail, password:newPwd, name:newName, role:newRole, vendor_id:newVendor||null, store:newStore||null })
-    if (data.error) { flash(`Erro: ${data.error}`); setLoading(false); return }
-    flash(`✓ Usuário ${newName} criado!`)
-    setShowCreate(false); setNewName(''); setNewEmail(''); setNewPwd(''); setNewVendor(''); setNewStore('')
-    setTimeout(() => window.location.reload(), 800)
-    setLoading(false)
+    setError(null)
+    try {
+      const res = await fetch('/api/admin/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: inviteEmail || undefined,
+          role: inviteRole,
+          loja: inviteLoja,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Falha ao gerar convite.')
+        return
+      }
+      setInviteLink(data.link)
+      setInviteEmailSent(!!data.email_sent)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  async function saveUser() {
-    if (!editUser) return
+  async function handleCopiarLink() {
+    if (!inviteLink) return
+    try {
+      await navigator.clipboard.writeText(inviteLink)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      // clipboard indisponivel — link visivel para copia manual
+    }
+  }
+
+  function handleCloseInvite(open: boolean) {
+    if (!open) {
+      setInviteLink(null)
+      setInviteEmailSent(false)
+      setCopied(false)
+      setError(null)
+      setInviteEmail('')
+      setInviteRole(ASSIGNABLE_ROLES[0])
+      setInviteLoja(STORE_OPTIONS[0].value)
+    }
+    setInviteOpen(open)
+  }
+
+  // ── Handler de reenvio de convite ─────────────────────────────────────
+
+  async function handleReenviarConvite(row: UserRow) {
     setLoading(true)
-    const body: Record<string, unknown> = { user_id: editUser.id, name: editUser.name, role: editUser.role, vendor_id: editUser.vendor_id || null, active: editUser.active, store: editUser.store || null }
-    if (editUser.email)  body.email    = editUser.email
-    if (editUser.newPwd) body.password = editUser.newPwd
-    const data = await api('/api/admin/update-user', body)
-    if (data.error) { flash(`Erro: ${data.error}`); setLoading(false); return }
-    const savedStore = editUser.store ?? null
-    setList(l => l.map(p => p.id === editUser!.id ? { ...p, name: editUser!.name, role: editUser!.role, vendor_id: editUser!.vendor_id, active: editUser!.active, store: savedStore } : p))
-    flash('✓ Usuário atualizado!')
-    setEditUser(null)
-    setLoading(false)
+    setError(null)
+    try {
+      const body: Record<string, unknown> = {
+        role: row.role,
+        loja: row.store ?? STORE_OPTIONS[0].value,
+      }
+      const res = await fetch('/api/admin/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Falha ao reenviar convite.')
+        return
+      }
+      setInviteLink(data.link)
+      setInviteEmailSent(false)
+      setInviteOpen(true)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  async function saveGoal(goal: Goal) {
-    setSaving(goal.id)
-    const data = await api('/api/admin/update-goals', { id:goal.id, meta1:goal.meta1, meta2:goal.meta2, meta3:goal.meta3, bonus1:goal.bonus1, bonus2:goal.bonus2, bonus3:goal.bonus3 })
-    if (data.error) flash(`Erro: ${data.error}`)
-    else flash(`✓ Meta de ${goal.vendor_name} salva!`)
-    setSaving(null)
+  // ── Handler de edicao ──────────────────────────────────────────────────
+
+  async function handleSave() {
+    if (!editingUser) return
+    setLoading(true)
+    setError(null)
+    try {
+      // 1. update-user: name, role, store
+      const res = await fetch('/api/admin/update-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: editingUser.id,
+          name: editName,
+          role: editRole,
+          store: editStore,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Falha ao salvar alteracoes.')
+        return
+      }
+
+      // 2. Se ativo mudou, chamar disable-user
+      if (editAtivo !== editingUser.ativo) {
+        const disRes = await fetch('/api/admin/disable-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: editingUser.id, ativo: editAtivo }),
+        })
+        const disData = await disRes.json()
+        if (!disRes.ok) {
+          setError(disData.error ?? 'Falha ao atualizar status do usuario.')
+          return
+        }
+      }
+
+      router.refresh()
+      setEditingUser(null)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  function updateGoal(id: number, field: keyof Goal, value: string) {
-    setEditGoals(gs => gs.map(g => g.id === id ? { ...g, [field]: Number(value) } : g))
+  // ── Handler de desativacao ────────────────────────────────────────────
+
+  async function handleDisable() {
+    if (!disablingUser) return
+    setLoading(true)
+    setError(null)
+    try {
+      const novoAtivo = !disablingUser.ativo
+      const res = await fetch('/api/admin/disable-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: disablingUser.id, ativo: novoAtivo }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Falha ao alterar status do usuario.')
+        return
+      }
+      router.refresh()
+      setDisablingUser(null)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const periodGoals = editGoals.filter(g => g.period_id === activePeriod)
+  // ── Navegacao de filtros ───────────────────────────────────────────────
 
-  // Linked vendor lookup
-  const vendorById = Object.fromEntries(allVendors.map(v => [v.vendor_id, v]))
+  function handleFilterRole(value: string | null) {
+    const params = new URLSearchParams()
+    if (value && value !== '_all') params.set('role', value)
+    if (activeLoja) params.set('loja', activeLoja)
+    router.push(`/dashboard/usuarios${params.toString() ? '?' + params.toString() : ''}`)
+  }
 
-  // Vendors not linked to any user
-  const linkedVendorIds = new Set(list.map(p => p.vendor_id).filter(Boolean) as string[])
-  // Sort: orphan vendors (no goals/name) first, then by name
-  const unlinkedVendors = allVendors
-    .filter(v => !linkedVendorIds.has(v.vendor_id))
-    .sort((a, b) => {
-      const aOrphan = a.vendor_name === `Vendedor ${a.vendor_id}` || a.store === 'Sem loja'
-      const bOrphan = b.vendor_name === `Vendedor ${b.vendor_id}` || b.store === 'Sem loja'
-      if (aOrphan && !bOrphan) return -1
-      if (!aOrphan && bOrphan) return 1
-      return a.vendor_name.localeCompare(b.vendor_name)
-    })
+  function handleFilterLoja(value: string | null) {
+    const params = new URLSearchParams()
+    if (activeRole) params.set('role', activeRole)
+    if (value && value !== '_all') params.set('loja', value)
+    router.push(`/dashboard/usuarios${params.toString() ? '?' + params.toString() : ''}`)
+  }
 
-  const TAB_STYLE = (active: boolean) => ({
-    padding:'8px 20px', borderRadius:'6px 6px 0 0', fontSize:'0.82rem', fontWeight:600 as const,
-    border:'1px solid transparent', borderBottom:'none', cursor:'pointer' as const,
-    background: active ? 'var(--surface)' : 'transparent',
-    borderColor: active ? 'var(--border)' : 'transparent',
-    color: active ? 'var(--text)' : 'var(--muted)',
-    fontFamily: 'Syne, sans-serif',
-  })
+  // ── Colunas da tabela ──────────────────────────────────────────────────
+  // Usando Record<string, unknown> para compatibilidade com DataTable e cast
+  // interno de `r` para UserRow dentro de cada render.
+
+  const columns: Column<Record<string, unknown>>[] = [
+    {
+      key: 'name',
+      header: 'Nome',
+      render: (r) => {
+        const row = r as unknown as UserRow
+        return (
+          <div className="flex items-center gap-2">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-muted font-mono text-[11px] text-muted-foreground shrink-0">
+              {getInitials(row.name)}
+            </span>
+            <span className="font-medium text-foreground">{row.name}</span>
+          </div>
+        )
+      },
+    },
+    {
+      key: 'numero_vendedor',
+      header: 'N Vendedor',
+      render: (r) => {
+        const row = r as unknown as UserRow
+        return <span className="text-muted-foreground">{row.numero_vendedor ?? '—'}</span>
+      },
+    },
+    {
+      key: 'store',
+      header: 'Loja',
+      render: (r) => {
+        const row = r as unknown as UserRow
+        const storeLabel = row.store ? (STORE_LABELS[row.store] ?? row.store) : null
+        if (!storeLabel) return <span className="text-muted-foreground">—</span>
+        const lojaMap: Record<string, LojaName> = {
+          'Jebai': 'Jebai',
+          'Paje-MKT': 'Pajé 1',
+          'Paje-Caixa': 'Pajé 2',
+        }
+        const lojaName = row.store ? lojaMap[row.store] : undefined
+        if (lojaName) return <LojaBadge loja={lojaName} />
+        return <span className="text-muted-foreground">{storeLabel}</span>
+      },
+    },
+    {
+      key: 'role',
+      header: 'Role',
+      render: (r) => {
+        const row = r as unknown as UserRow
+        return <Badge variant="outline">{ROLE_LABELS[row.role] ?? row.role}</Badge>
+      },
+    },
+    {
+      key: 'ativo',
+      header: 'Ativo',
+      render: (r) => {
+        const row = r as unknown as UserRow
+        return (
+          <Badge variant={row.ativo ? 'default' : 'secondary'}>
+            {row.ativo ? 'ativo' : 'inativo'}
+          </Badge>
+        )
+      },
+    },
+    {
+      key: 'last_sign_in_at',
+      header: 'Ultimo acesso',
+      render: (r) => {
+        const row = r as unknown as UserRow
+        return <span className="text-muted-foreground">{formatLastSeen(row.last_sign_in_at)}</span>
+      },
+    },
+    {
+      key: 'id',
+      header: 'Acoes',
+      render: (r) => {
+        const row = r as unknown as UserRow
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger render={
+              <Button variant="ghost" size="icon-sm" aria-label="Acoes" />
+            }>
+              <MoreHorizontal className="h-4 w-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="bottom" align="end">
+              <DropdownMenuItem onSelect={() => setEditingUser(row)}>
+                <Pencil className="h-4 w-4" />
+                Editar
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setDisablingUser(row)}>
+                {row.ativo ? 'Desativar' : 'Reativar'}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => handleReenviarConvite(row)}>
+                <UserPlus className="h-4 w-4" />
+                Reenviar convite
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      },
+    },
+  ]
+
+  // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <div>
-      {msg && (
-        <div style={{ padding:'10px 14px', borderRadius:'8px', marginBottom:'1rem', fontSize:'0.78rem', fontFamily:'DM Mono,monospace', background: msg.startsWith('✓') ? 'rgba(200,245,66,0.1)':'rgba(245,92,66,0.1)', color: msg.startsWith('✓') ? 'var(--meta1)':'#f55c42', border:`1px solid ${msg.startsWith('✓')?'rgba(200,245,66,0.3)':'rgba(245,92,66,0.3)'}` }}>
-          {msg}
-        </div>
-      )}
+    <div className="flex flex-col gap-6 p-6">
+      {/* Header */}
+      <PageHeader
+        title="Usuarios"
+        subtitle="Gerencie acessos e convites da equipe"
+        actions={
+          <Button onClick={() => setInviteOpen(true)}>
+            <UserPlus className="h-4 w-4" />
+            Convidar usuario
+          </Button>
+        }
+      />
 
-      {/* Tab bar */}
-      <div style={{ display:'flex', gap:'4px', borderBottom:'1px solid var(--border)', marginBottom:'1.5rem' }}>
-        <button style={TAB_STYLE(tab==='usuarios')} onClick={() => setTab('usuarios')}>Usuários & Mapeamento</button>
-        <button style={TAB_STYLE(tab==='metas')} onClick={() => setTab('metas')}>Metas por Período</button>
+      {/* Filtros */}
+      <div className="flex flex-wrap items-center gap-3">
+        <Select value={activeRole ?? '_all'} onValueChange={handleFilterRole}>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Todos os roles" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="_all">Todos os roles</SelectItem>
+            <SelectItem value="vendedor">Vendedor</SelectItem>
+            <SelectItem value="adm">ADM</SelectItem>
+            <SelectItem value="gerente">Gerente</SelectItem>
+            <SelectItem value="super_admin">Super Admin</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={activeLoja ?? '_all'} onValueChange={handleFilterLoja}>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Todas as lojas" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="_all">Todas as lojas</SelectItem>
+            {STORE_OPTIONS.map((s) => (
+              <SelectItem key={s.value} value={s.value}>
+                {s.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {(activeRole || activeLoja) && (
+          <a
+            href="/dashboard/usuarios"
+            className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4"
+          >
+            Limpar filtros
+          </a>
+        )}
       </div>
 
-      {/* ══════════════ TAB: USUARIOS ══════════════ */}
-      {tab === 'usuarios' && (
-        <div>
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'1.25rem' }}>
-            <span style={{ fontSize:'0.68rem', fontFamily:'DM Mono,monospace', color:'var(--muted)' }}>{list.length} usuários</span>
-            <button onClick={() => setShowCreate(true)} style={{ ...s.btnP, fontSize:'0.78rem', padding:'7px 14px' }}>+ Novo Usuário</button>
-          </div>
-
-          <div style={{ overflowX:'auto' }}>
-            <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'0.82rem', tableLayout:'fixed' }}>
-              <colgroup>
-                <col style={{ width:'18%' }} /><col style={{ width:'7%' }} />
-                <col style={{ width:'18%' }} /><col style={{ width:'10%' }} />
-                <col style={{ width:'7%' }} /><col style={{ width:'12%' }} />
-              </colgroup>
-              <thead>
-                <tr style={{ borderBottom:'1px solid var(--border)' }}>
-                  {['Nome','Role','Vendedor vinculado','Loja','Status','Ações'].map(h => (
-                    <th key={h} style={{ fontFamily:'DM Mono,monospace', fontSize:'0.6rem', color:'var(--muted)', textTransform:'uppercase', letterSpacing:'0.08em', padding:'6px 10px', textAlign:'left' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {list.map(p => {
-                  const v = vendorById[p.vendor_id ?? '']
-                  return (
-                    <tr key={p.id} style={{ borderBottom:'1px solid var(--border)', opacity: p.active ? 1 : 0.5 }}>
-                      <td style={{ padding:'9px 10px', fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.name}</td>
-                      <td style={{ padding:'9px 10px' }}>
-                        <span style={{ fontFamily:'DM Mono,monospace', fontSize:'0.63rem', padding:'2px 7px', borderRadius:'4px', background: p.role==='adm'?'rgba(200,245,66,0.15)':'rgba(66,217,245,0.12)', color: p.role==='adm'?'var(--meta1)':'var(--mkt)' }}>{p.role}</span>
-                      </td>
-                      <td style={{ padding:'9px 10px', fontFamily:'DM Mono,monospace', fontSize:'0.73rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                        {v ? v.vendor_name : p.vendor_id ? <span style={{ color:'#f55c42' }}>ID {p.vendor_id} (não mapeado)</span> : <span style={{ color:'var(--muted)' }}>—</span>}
-                      </td>
-                      <td style={{ padding:'9px 10px', fontFamily:'DM Mono,monospace', fontSize:'0.7rem', color:'var(--muted)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{v?.store ?? '—'}</td>
-                      <td style={{ padding:'9px 10px' }}>
-                        <span style={{ fontFamily:'DM Mono,monospace', fontSize:'0.63rem', padding:'2px 7px', borderRadius:'4px', background: p.active?'rgba(200,245,66,0.1)':'rgba(107,111,122,0.15)', color: p.active?'var(--meta1)':'var(--muted)' }}>{p.active?'ativo':'inativo'}</span>
-                      </td>
-                      <td style={{ padding:'9px 10px' }}>
-                        <button onClick={() => setEditUser({ ...p, email:'', newPwd:'', store: p.store ?? vendorById[p.vendor_id ?? '']?.store ?? '' })} style={{ background:'transparent', border:'1px solid var(--border)', borderRadius:'5px', color:'var(--muted)', fontFamily:'DM Mono,monospace', fontSize:'0.65rem', padding:'3px 10px', cursor:'pointer' }}>
-                          Editar
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+      {/* Mensagem de erro global */}
+      {error && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {error}
         </div>
       )}
 
-      {/* ══════════════ TAB: METAS ══════════════ */}
-      {tab === 'metas' && (
-        <div>
-          <div style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'1.25rem', flexWrap:'wrap' }}>
-            <select value={activePeriod} onChange={e => setActivePeriod(Number(e.target.value))}
-              style={{ background:'var(--surface2)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontFamily:'DM Mono,monospace', fontSize:'0.8rem', padding:'8px 12px', outline:'none' }}>
-              {periods.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
-            </select>
-            <span style={{ fontSize:'0.68rem', fontFamily:'DM Mono,monospace', color:'var(--muted)' }}>{periodGoals.length} vendedores</span>
-          </div>
+      {/* Tabela */}
+      {users.length === 0 ? (
+        <EmptyState
+          icon={<Users className="h-10 w-10" />}
+          title="Nenhum usuario encontrado"
+          description="Tente ajustar os filtros ou convide um novo membro."
+        />
+      ) : (
+        <DataTable
+          columns={columns}
+          data={users as unknown as Record<string, unknown>[]}
+        />
+      )}
 
-          <div style={{ overflowX:'auto' }}>
-            <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'0.8rem', tableLayout:'fixed' }}>
-              <colgroup>
-                <col style={{ width:'16%' }} /><col style={{ width:'9%' }} /><col style={{ width:'5%' }} />
-                <col style={{ width:'10%' }} /><col style={{ width:'10%' }} /><col style={{ width:'10%' }} />
-                <col style={{ width:'8%' }} /><col style={{ width:'8%' }} /><col style={{ width:'8%' }} />
-                <col style={{ width:'9%' }} />
-                <col style={{ width:'7%' }} />
-              </colgroup>
-              <thead>
-                <tr style={{ borderBottom:'1px solid var(--border)' }}>
-                  {[
-                    {h:'Vendedor',a:'left'},{h:'Loja',a:'left'},{h:'ID',a:'left'},
-                    {h:'1ª Meta ($)',a:'right'},{h:'2ª Meta ($)',a:'right'},{h:'3ª Meta ($)',a:'right'},
-                    {h:'Bônus 1',a:'right'},{h:'Bônus 2',a:'right'},{h:'Bônus 3',a:'right'},
-                    {h:'Usuário',a:'left'},
-                    {h:'',a:'left'},
-                  ].map(col => (
-                    <th key={col.h} style={{ fontFamily:'DM Mono,monospace', fontSize:'0.58rem', color:'var(--muted)', textTransform:'uppercase', letterSpacing:'0.07em', padding:'6px 8px', textAlign:col.a as 'left'|'right', whiteSpace:'nowrap' }}>{col.h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {periodGoals.length === 0 ? (
-                  <tr><td colSpan={11} style={{ padding:'2rem', textAlign:'center', color:'var(--muted)', fontFamily:'DM Mono,monospace' }}>Nenhuma meta para este período.</td></tr>
-                ) : periodGoals.map(g => {
-                  const linkedUser = list.find(p => p.vendor_id === g.vendor_id)
-                  const cur = editGoals.find(eg => eg.id === g.id) ?? g
-                  const inputStyle = { background:'var(--surface2)', border:'1px solid var(--border)', borderRadius:'5px', color:'var(--text)', fontFamily:'DM Mono,monospace', fontSize:'0.75rem', padding:'5px 6px', outline:'none', width:'100%', textAlign:'right' as const }
-                  return (
-                    <tr key={g.id} style={{ borderBottom:'1px solid var(--border)' }}>
-                      <td style={{ padding:'6px 8px', fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{g.vendor_name}</td>
-                      <td style={{ padding:'6px 8px', fontFamily:'DM Mono,monospace', fontSize:'0.7rem', color:'var(--muted)' }}>{g.store}</td>
-                      <td style={{ padding:'6px 8px', fontFamily:'DM Mono,monospace', fontSize:'0.7rem', color:'var(--accent)' }}>{g.vendor_id}</td>
-                      {(['meta1','meta2','meta3','bonus1','bonus2','bonus3'] as const).map(field => (
-                        <td key={field} style={{ padding:'4px 6px', textAlign:'right' }}>
-                          <input type="number" value={cur[field]} onChange={e => updateGoal(g.id, field, e.target.value)} style={inputStyle} />
-                        </td>
+      {/* ── Sheet de convite ───────────────────────────────────────────── */}
+      <Sheet open={inviteOpen} onOpenChange={handleCloseInvite}>
+        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Convidar usuario</SheetTitle>
+          </SheetHeader>
+
+          <div className="flex flex-col gap-4 p-4">
+            {!inviteLink ? (
+              <>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="invite-email">Email (opcional)</Label>
+                  <Input
+                    id="invite-email"
+                    type="email"
+                    placeholder="email@dasilva.com — opcional"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="invite-role">Role</Label>
+                  <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as typeof inviteRole)}>
+                    <SelectTrigger id="invite-role" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ASSIGNABLE_ROLES.map((r) => (
+                        <SelectItem key={r} value={r}>{ROLE_LABELS[r] ?? r}</SelectItem>
                       ))}
-                      <td style={{ padding:'6px 8px', fontSize:'0.7rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                        {linkedUser
-                          ? <span style={{ color:'var(--meta1)', fontFamily:'DM Mono,monospace' }}>✓ {linkedUser.name}</span>
-                          : <span style={{ color:'#f5c842', fontFamily:'DM Mono,monospace', fontSize:'0.65rem' }}>Não vinculado</span>
-                        }
-                      </td>
-                      <td style={{ padding:'6px 8px' }}>
-                        <button onClick={() => saveGoal(cur)} disabled={saving === g.id}
-                          style={{ background:'var(--accent)', color:'#0e0f11', fontFamily:'Syne,sans-serif', fontWeight:700, fontSize:'0.68rem', border:'none', borderRadius:'5px', padding:'5px 10px', cursor:'pointer', opacity:saving===g.id?0.6:1, whiteSpace:'nowrap' }}>
-                          {saving === g.id ? '...' : 'Salvar'}
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-      {/* ══════ CREATE USER MODAL ══════ */}
-      {showCreate && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }}>
-          <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:'14px', padding:'2rem', width:'100%', maxWidth:'460px', maxHeight:'90vh', overflowY:'auto' }}>
-            <h2 style={{ fontSize:'1.1rem', fontWeight:700, marginBottom:'1.25rem' }}>Criar Novo Usuário</h2>
-            <label style={s.label}>Nome completo</label>
-            <input style={s.input} value={newName} onChange={e => setNewName(e.target.value)} placeholder="Ex: Tania Velazquez" />
-            <label style={s.label}>Email</label>
-            <input style={s.input} type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="tania@dasilva.com" />
-            <label style={s.label}>Senha inicial</label>
-            <input style={s.input} type="password" value={newPwd} onChange={e => setNewPwd(e.target.value)} placeholder="Mínimo 6 caracteres" />
-            <label style={s.label}>Role</label>
-            <select style={{ ...s.input }} value={newRole} onChange={e => setNewRole(e.target.value as 'adm'|'vendedor')}>
-              <option value="vendedor">Vendedor</option>
-              <option value="adm">ADM</option>
-            </select>
-            <label style={s.label}>Vincular ao vendedor (opcional)</label>
-            <select style={{ ...s.input }} value={newVendor} onChange={e => {
-              setNewVendor(e.target.value)
-              const v = allVendors.find(x => x.vendor_id === e.target.value)
-              if (v?.store && v.store !== 'Sem loja') setNewStore(v.store)
-            }}>
-              <option value="">— Não vinculado por enquanto —</option>
-              {unlinkedVendors.length === 0
-                ? <option disabled>Todos os vendedores já têm usuário</option>
-                : unlinkedVendors.map(v => (
-                    <option key={v.vendor_id} value={v.vendor_id}>
-                      {v.vendor_name === `Vendedor ${v.vendor_id}` ? `ID ${v.vendor_id} (sem nome)` : v.vendor_name} — ID {v.vendor_id}{v.store && v.store !== 'Sem loja' ? ` (${v.store})` : ''}
-                    </option>
-                  ))
-              }
-            </select>
-            <label style={s.label}>Loja</label>
-            <select style={{ ...s.input }} value={newStore} onChange={e => setNewStore(e.target.value)}>
-              <option value="">— Selecionar loja —</option>
-              <option value="Jebai">Jebai</option>
-              <option value="Paje-MKT">Paje-MKT</option>
-              <option value="Paje-Caixa">Paje-Caixa</option>
-            </select>
-            <div style={{ display:'flex', gap:'10px', marginTop:'0.5rem' }}>
-              <button onClick={() => setShowCreate(false)} style={{ ...s.btnS, flex:1 }}>Cancelar</button>
-              <button onClick={createUser} disabled={loading || !newEmail || !newName || !newPwd} style={{ ...s.btnP, flex:2, opacity:loading?0.7:1 }}>
-                {loading ? 'Criando...' : 'Criar Usuário'}
-              </button>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="invite-loja">Loja</Label>
+                  <Select value={inviteLoja} onValueChange={(v) => { if (v) setInviteLoja(v) }}>
+                    <SelectTrigger id="invite-loja" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STORE_OPTIONS.map((s) => (
+                        <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {error && (
+                  <p className="text-sm text-destructive">{error}</p>
+                )}
+
+                <Button onClick={handleGerarConvite} disabled={loading}>
+                  {loading ? 'Gerando...' : 'Gerar convite'}
+                </Button>
+              </>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <p className="text-sm text-muted-foreground">Link de convite gerado com sucesso.</p>
+
+                <div className="rounded-md border border-border bg-card p-3 font-mono text-[12px] break-all">
+                  {inviteLink}
+                </div>
+
+                <Button
+                  variant="outline"
+                  onClick={handleCopiarLink}
+                  className="gap-2"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="h-4 w-4" />
+                      Link copiado
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" />
+                      Copiar link
+                    </>
+                  )}
+                </Button>
+
+                {inviteEmailSent && inviteEmail && (
+                  <p className="text-sm text-muted-foreground">
+                    Email enviado para {inviteEmail}
+                  </p>
+                )}
+
+                <p className="text-xs text-muted-foreground">Link valido por 7 dias.</p>
+              </div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* ── Sheet de edicao ────────────────────────────────────────────── */}
+      <Sheet open={!!editingUser} onOpenChange={(open) => { if (!open) setEditingUser(null) }}>
+        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Editar usuario</SheetTitle>
+          </SheetHeader>
+
+          <div className="flex flex-col gap-4 p-4">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="edit-name">Nome</Label>
+              <Input
+                id="edit-name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+              />
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* ══════ EDIT USER MODAL ══════ */}
-      {editUser && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }}>
-          <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:'14px', padding:'2rem', width:'100%', maxWidth:'480px', maxHeight:'90vh', overflowY:'auto' }}>
-            <h2 style={{ fontSize:'1.1rem', fontWeight:700, marginBottom:'1.25rem' }}>
-              Editar — <span style={{ color:'var(--accent)' }}>{list.find(p => p.id === editUser.id)?.name}</span>
-            </h2>
-
-            <label style={s.label}>Nome</label>
-            <input style={s.input} value={editUser.name} onChange={e => setEditUser(u => u ? {...u, name:e.target.value} : u)} />
-
-            <label style={s.label}>Novo email (vazio = não alterar)</label>
-            <input style={s.input} type="email" value={editUser.email ?? ''} placeholder="novo@email.com" onChange={e => setEditUser(u => u ? {...u, email:e.target.value} : u)} />
-
-            <label style={s.label}>Nova senha (vazio = não alterar)</label>
-            <input style={s.input} type="password" value={editUser.newPwd ?? ''} placeholder="Nova senha..." onChange={e => setEditUser(u => u ? {...u, newPwd:e.target.value} : u)} />
-
-            <label style={s.label}>Role</label>
-            <select style={{ ...s.input }} value={editUser.role} onChange={e => setEditUser(u => u ? {...u, role:e.target.value as 'adm'|'vendedor'} : u)}>
-              <option value="vendedor">Vendedor</option>
-              <option value="adm">ADM</option>
-            </select>
-
-            <label style={s.label}>Vendedor vinculado (ID)</label>
-            <select style={{ ...s.input }} value={editUser.vendor_id ?? ''} onChange={e => {
-              const v = allVendors.find(x => x.vendor_id === e.target.value)
-              setEditUser(u => u ? {
-                ...u,
-                vendor_id: e.target.value || null,
-                store: v?.store && v.store !== 'Sem loja' ? v.store : (u.store ?? ''),
-              } : u)
-            }}>
-              <option value="">— Não vinculado —</option>
-              {allVendors
-                .filter(v => !linkedVendorIds.has(v.vendor_id) || v.vendor_id === editUser.vendor_id)
-                .sort((a, b) => {
-                  // Current vendor first
-                  if (a.vendor_id === editUser.vendor_id) return -1
-                  if (b.vendor_id === editUser.vendor_id) return 1
-                  // Orphans (no name/store) second
-                  const aOrphan = a.vendor_name === `Vendedor ${a.vendor_id}` || a.store === 'Sem loja'
-                  const bOrphan = b.vendor_name === `Vendedor ${b.vendor_id}` || b.store === 'Sem loja'
-                  if (aOrphan && !bOrphan) return -1
-                  if (!aOrphan && bOrphan) return 1
-                  return a.vendor_name.localeCompare(b.vendor_name)
-                })
-                .map(v => (
-                  <option key={v.vendor_id} value={v.vendor_id}>
-                    {v.vendor_name === `Vendedor ${v.vendor_id}` ? `ID ${v.vendor_id} (sem nome)` : v.vendor_name} — ID {v.vendor_id}{v.store && v.store !== 'Sem loja' ? ` (${v.store})` : ''}
-                  </option>
-                ))
-              }
-            </select>
-
-            <label style={s.label}>Loja</label>
-            <select style={{ ...s.input }} value={editUser.store ?? ''} onChange={e => setEditUser(u => u ? {...u, store: e.target.value} : u)}>
-              <option value="">— Selecionar loja —</option>
-              <option value="Jebai">Jebai</option>
-              <option value="Paje-MKT">Paje-MKT</option>
-              <option value="Paje-Caixa">Paje-Caixa</option>
-            </select>
-
-            <label style={s.label}>Status</label>
-            <select style={{ ...s.input }} value={editUser.active?'true':'false'} onChange={e => setEditUser(u => u ? {...u, active:e.target.value==='true'} : u)}>
-              <option value="true">Ativo</option>
-              <option value="false">Inativo</option>
-            </select>
-
-            <div style={{ display:'flex', gap:'10px' }}>
-              <button onClick={() => { setEditUser(null) }} style={{ ...s.btnS, flex:1 }}>Cancelar</button>
-              <button onClick={saveUser} disabled={loading} style={{ ...s.btnP, flex:2, opacity:loading?0.7:1 }}>
-                {loading ? 'Salvando...' : 'Salvar alterações'}
-              </button>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="edit-role">Role</Label>
+              <Select value={editRole} onValueChange={(v) => setEditRole(v as typeof editRole)}>
+                <SelectTrigger id="edit-role" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ASSIGNABLE_ROLES.map((r) => (
+                    <SelectItem key={r} value={r}>{ROLE_LABELS[r] ?? r}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="edit-store">Loja</Label>
+              <Select value={editStore} onValueChange={(v) => { if (v) setEditStore(v) }}>
+                <SelectTrigger id="edit-store" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STORE_OPTIONS.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <Label htmlFor="edit-ativo">Ativo</Label>
+              <Switch
+                id="edit-ativo"
+                checked={editAtivo}
+                onCheckedChange={setEditAtivo}
+              />
+            </div>
+
+            {error && (
+              <p className="text-sm text-destructive">{error}</p>
+            )}
           </div>
-        </div>
-      )}
+
+          <SheetFooter>
+            <Button variant="outline" onClick={() => setEditingUser(null)}>
+              Descartar alteracoes
+            </Button>
+            <Button onClick={handleSave} disabled={loading}>
+              {loading ? 'Salvando...' : 'Salvar alteracoes'}
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
+      {/* ── Dialog de desativacao ──────────────────────────────────────── */}
+      <Dialog open={!!disablingUser} onOpenChange={(open) => { if (!open) setDisablingUser(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {disablingUser?.ativo ? 'Desativar usuario' : 'Reativar usuario'}
+            </DialogTitle>
+            <DialogDescription>
+              {disablingUser?.ativo
+                ? `Isso encerrara a sessao ativa de ${disablingUser?.name} imediatamente. Esta acao pode ser revertida reativando o usuario.`
+                : `Isso reativara o acesso de ${disablingUser?.name}.`}
+            </DialogDescription>
+          </DialogHeader>
+          {error && (
+            <p className="text-sm text-destructive px-1">{error}</p>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDisablingUser(null)}>
+              Manter usuario ativo
+            </Button>
+            <Button
+              variant={disablingUser?.ativo ? 'destructive' : 'default'}
+              onClick={handleDisable}
+              disabled={loading}
+            >
+              {loading ? 'Aguarde...' : (disablingUser?.ativo ? 'Desativar' : 'Reativar')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

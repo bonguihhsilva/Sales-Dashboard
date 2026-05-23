@@ -1,56 +1,64 @@
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
-import { LogoutButton } from '@/components/ui'
+import type { Profile } from '@/types'
 import UsersClient from './UsersClient'
 
-export const dynamic = 'force-dynamic'
+export type UserRow = Profile & { last_sign_in_at: string | null }
 
-export default async function UsersPage() {
+export default async function UsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ role?: string; loja?: string }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'adm') redirect('/meu-resultado')
+  // Guard: somente adm/gerente/super_admin (D-01). Via app_metadata.
+  const callerRole = user.app_metadata?.role as string | undefined
+  if (!callerRole || !['adm', 'gerente', 'super_admin'].includes(callerRole)) {
+    redirect('/meu-resultado')
+  }
 
-  // Use admin client for data fetches to bypass RLS restrictions
-  const admin = createAdminClient()
-  const { data: profiles } = await admin.from('profiles').select('*').order('name')
-  const { data: periods }  = await admin.from('periods').select('*').order('year', { ascending: false }).order('month', { ascending: false })
-  const { data: goals }    = await admin.from('goals').select('*').order('vendor_name')
+  // tenant_id do caller — para isolar a listagem (Pitfall 4)
+  const { data: callerProfile } = await supabase
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single()
+  const tenantId = callerProfile?.tenant_id
 
-  // Use the all_vendors view which deduplicates across goals + sales_records
-  const { data: vendorRows } = await admin
-    .from('all_vendors')
-    .select('vendor_id, vendor_name, store, has_goals, linked_user')
-    .order('vendor_name')
+  // Profiles do tenant + last_sign_in_at via admin API
+  const admin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+  const [{ data: profiles }, listResult] = await Promise.all([
+    supabase.from('profiles').select('*').eq('tenant_id', tenantId).order('name'),
+    admin.auth.admin.listUsers({ perPage: 1000 }),
+  ])
+  const authUsers = listResult.data?.users ?? []
 
-  const allVendors = (vendorRows ?? []).map(v => ({
-    vendor_id:  v.vendor_id,
-    vendor_name: v.vendor_name,
-    store:      v.store,
+  const users: UserRow[] = (profiles ?? []).map((p) => ({
+    ...(p as Profile),
+    last_sign_in_at: authUsers.find((u) => u.id === p.id)?.last_sign_in_at ?? null,
   }))
 
+  // Filtros em memoria (lista pequena — 3 lojas)
+  const { role, loja } = await searchParams
+  const filteredUsers = users.filter((u) => {
+    if (role && u.role !== role) return false
+    if (loja && u.store !== loja) return false
+    return true
+  })
+
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-      <div style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <a href="/dashboard" style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textDecoration: 'none' }}>← Voltar ao dashboard</a>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '4px' }}>
-            Gestão <span style={{ color: 'var(--accent)' }}>// Usuários · Mapeamento · Metas</span>
-          </h1>
-        </div>
-        <LogoutButton />
-      </div>
-      <div style={{ padding: '1.5rem 2.5rem' }}>
-        <UsersClient
-          profiles={profiles ?? []}
-          periods={periods ?? []}
-          goals={goals ?? []}
-          allVendors={allVendors}
-        />
-      </div>
-    </div>
+    <UsersClient
+      users={filteredUsers}
+      activeRole={role ?? null}
+      activeLoja={loja ?? null}
+    />
   )
 }
