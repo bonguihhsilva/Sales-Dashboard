@@ -111,6 +111,9 @@ export default async function DashboardPage({
           <PeriodSelector periods={periods as Period[]} activePeriod={activePeriod} />
           <UploadModal periods={periods as Period[]} />
           <ExportButton />
+          <a href="/dashboard/comissao" style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', padding: '6px 12px', textDecoration: 'none' }}>
+            Comissão
+          </a>
           <a href="/dashboard/usuarios" style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', padding: '6px 12px', textDecoration: 'none' }}>
             Gestão
           </a>
