@@ -18,13 +18,17 @@ export default async function ComissaoPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
+  
   const { data: profile } = await supabase
     .from('profiles').select('role, name, tenant_id').eq('id', user.id).single()
   
-  if (!profile || !['adm', 'gerente', 'super_admin'].includes(profile.role)) {
+  const effectiveRole = profile?.role || jwtRole
+
+  if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) {
     return (
       <div style={{ padding: '2rem', color: 'red', fontFamily: 'monospace' }}>
-        Acesso Negado. Seu perfil ({profile?.role || 'null'}) não tem permissão para acessar esta página.
+        Acesso Negado. Seu perfil ({effectiveRole}) não tem permissão para acessar esta página.
         <br/><br/>
         <a href="/dashboard" style={{ color: 'white', textDecoration: 'underline' }}>Voltar ao Dashboard</a>
       </div>
@@ -107,7 +111,7 @@ export default async function ComissaoPage({
             Comissões <span style={{ color: 'var(--accent)' }}>// {activePeriodLabel}</span>
           </h1>
           <p style={{ fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '3px' }}>
-            GDS - FRAME · {profile.role.toUpperCase()} · {profile.name}
+            GDS - FRAME · {effectiveRole.toUpperCase()} · {profile?.name || 'Administrador'}
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -121,7 +125,7 @@ export default async function ComissaoPage({
         <ComissaoClient
           vendorRows={vendorRows}
           periodId={activePeriod}
-          role={profile.role}
+          role={effectiveRole}
         />
       </div>
     </div>

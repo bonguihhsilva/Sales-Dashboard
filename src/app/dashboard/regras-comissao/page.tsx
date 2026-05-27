@@ -11,9 +11,13 @@ export default async function RegrasComissaoPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
   const { data: profile } = await supabase
     .from('profiles').select('role, name, tenant_id').eq('id', user.id).single()
-  if (!profile || !['adm', 'gerente', 'super_admin'].includes(profile.role)) {
+  
+  const effectiveRole = profile?.role || jwtRole
+
+  if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) {
     redirect('/dashboard')
   }
 
