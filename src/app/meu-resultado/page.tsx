@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { fmtCurrency, fmtK, metaLevel, bonusAmount, STORE_COLORS } from '@/lib/utils'
 import { KpiCard, StorePill, ProgressBar, SectionTitle, LogoutButton } from '@/components/ui'
@@ -56,6 +57,15 @@ export default async function MeuResultadoPage({
     .eq('vendor_id', profile.vendor_id)
     .order('total_spent', { ascending: false })
     .limit(1000)
+
+  // Commission: vendedor_id = profiles.id = user.id (FK is uuid, not vendor_id text)
+  const adminDb = createAdminClient()
+  const { data: comissaoCalc } = await adminDb
+    .from('comissoes_calculadas')
+    .select('comissao_base, bonus_total, total, aprovado')
+    .eq('vendedor_id', user.id)
+    .eq('periodo_id', activePeriod)
+    .maybeSingle()
 
   // Fetch HR data for Meu RH tab (must be before the !summary early return)
   const [
@@ -173,7 +183,12 @@ export default async function MeuResultadoPage({
               <KpiCard label="Clientes"        value={Number(summary.unique_clients).toLocaleString()} />
               <KpiCard label="Ticket Médio"    value={fmtCurrency(Number(summary.avg_ticket))} />
               <KpiCard label="Alcance Meta"    value={`${pctLabel}%`} sub={pctRef} color={META_COL} />
-              <KpiCard label="Comissão Total"  value={fmtCurrency(commission)} sub={`0,3% × vendas + bônus $${b}`} color={META_COL} />
+              <KpiCard
+                label="Comissão Total"
+                value={fmtCurrency(comissaoCalc ? Number(comissaoCalc.total) : commission)}
+                sub={comissaoCalc?.aprovado ? 'aprovada ✓' : comissaoCalc ? 'pendente de aprovação' : 'prévia — não calculada'}
+                color={comissaoCalc?.aprovado ? '#22c55e' : META_COL}
+              />
             </div>
 
             <div style={{ background: 'var(--surface)', border: `1px solid ${col}22`, borderRadius: '12px', padding: '1.5rem', marginBottom: '1.25rem', position: 'relative', overflow: 'hidden' }}>
@@ -204,6 +219,47 @@ export default async function MeuResultadoPage({
                 <div style={{ fontSize: '2rem', fontWeight: 800 }}>{Number(summary.total_items).toLocaleString()}</div>
                 <div style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '4px' }}>{summary.total_orders} notas emitidas</div>
               </div>
+            </div>
+
+            {/* Commission detail card */}
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '1.25rem', marginTop: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                <span style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                  Comissão do Período
+                </span>
+                {comissaoCalc?.aprovado ? (
+                  <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', padding: '3px 9px', borderRadius: '4px', background: '#22c55e22', color: '#22c55e' }}>aprovada</span>
+                ) : comissaoCalc ? (
+                  <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', padding: '3px 9px', borderRadius: '4px', background: '#f5a74222', color: '#f5a742' }}>pendente de aprovação</span>
+                ) : (
+                  <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', padding: '3px 9px', borderRadius: '4px', background: 'var(--surface2)', color: 'var(--muted)' }}>não calculada</span>
+                )}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                <div>
+                  <div style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginBottom: '4px' }}>Base</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, fontFamily: 'DM Mono, monospace' }}>
+                    {fmtCurrency(comissaoCalc ? Number(comissaoCalc.comissao_base) : sold * Number(summary.commission_pct))}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginBottom: '4px' }}>Bônus</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, fontFamily: 'DM Mono, monospace', color: b > 0 ? 'var(--meta1)' : 'var(--muted)' }}>
+                    {b > 0 ? fmtCurrency(comissaoCalc ? Number(comissaoCalc.bonus_total) : b) : '—'}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginBottom: '4px' }}>Total</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: comissaoCalc?.aprovado ? '#22c55e' : META_COL }}>
+                    {fmtCurrency(comissaoCalc ? Number(comissaoCalc.total) : commission)}
+                  </div>
+                </div>
+              </div>
+              {!comissaoCalc && (
+                <div style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '10px', opacity: 0.7 }}>
+                  Prévia — comissão oficial será calculada e aprovada pelo gerente
+                </div>
+              )}
             </div>
           </>
         )}
