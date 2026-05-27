@@ -20,8 +20,15 @@ export default async function ComissaoPage({
 
   const { data: profile } = await supabase
     .from('profiles').select('role, name, tenant_id').eq('id', user.id).single()
+  
   if (!profile || !['adm', 'gerente', 'super_admin'].includes(profile.role)) {
-    redirect('/dashboard')
+    return (
+      <div style={{ padding: '2rem', color: 'red', fontFamily: 'monospace' }}>
+        Acesso Negado. Seu perfil ({profile?.role || 'null'}) não tem permissão para acessar esta página.
+        <br/><br/>
+        <a href="/dashboard" style={{ color: 'white', textDecoration: 'underline' }}>Voltar ao Dashboard</a>
+      </div>
+    )
   }
 
   const adminDb = createAdminClient()
