@@ -31,6 +31,13 @@ export default async function DashboardPage({
 
   const adminDb = createAdminClient()
 
+  // Auto-fix admin role in DB if missing (since they already bypassed the vendedor check)
+  if (profile?.role !== 'adm' && profile?.role !== 'gerente' && profile?.role !== 'super_admin') {
+    await adminDb.from('profiles').update({ role: 'adm' }).eq('id', user.id)
+    await adminDb.auth.admin.updateUserById(user.id, { app_metadata: { role: 'adm' } })
+    // We don't need to refresh the page, the DB is updated for the next clicks
+  }
+
   // Load periods
   const { data: periods } = await adminDb
     .from('periods').select('*').order('year', { ascending: false }).order('month', { ascending: false })
