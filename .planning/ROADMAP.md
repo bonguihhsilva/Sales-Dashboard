@@ -87,6 +87,20 @@ Plans:
 
 ---
 
+### Phase 05: Portal de Gestão do LMS (CMS)
+
+**Goal**: Criar interface administrativa para o gerente cadastrar trilhas, módulos, aulas e testes diretamente pelo painel.
+**Depends on**: Phase 03
+**Success Criteria** (what must be TRUE):
+  1. ADM tem acesso a `/dashboard/treinamentos`
+  2. Pode criar Trilhas, Módulos, Lições e Questões pela UI sem acessar banco
+**Plans**: 1 plano
+
+Plans:
+- [x] 05-01: Mini-CMS LMS completo integrado com as rotas.
+
+---
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -95,3 +109,4 @@ Plans:
 | 02. Motor de Comissão | 4/4 | Complete | - |
 | 03. LMS / Treinamento | 3/3 | Complete | - |
 | 04. Relatórios & Export | 2/2 | Complete | - |
+| 05. Portal LMS (CMS) | 1/1 | Complete | - |
