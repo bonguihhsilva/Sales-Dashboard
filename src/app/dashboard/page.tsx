@@ -191,14 +191,14 @@ export default async function DashboardPage({
           <>
             {/* KPIs */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: '12px', marginBottom: '1.5rem' }}>
-              <KpiCard label="Total Vendido" value={fmtCurrency(grandTotal)} sub={`${((grandTotal / totalM1) * 100).toFixed(1)}% da 1ª meta`} color="var(--accent)" />
+              <KpiCard label="Total Vendido" value={fmtCurrency(grandTotal)} sub={totalM1 > 0 ? `${((grandTotal / totalM1) * 100).toFixed(1)}% da 1ª meta` : 'metas não configuradas'} color="var(--accent)" />
               <KpiCard label="Vendedores" value={String(filtered.length)} sub={`${hitMeta} na meta`} />
               <KpiCard label="Na Meta" value={`${hitMeta} / ${filtered.length}`} sub={`${filtered.filter(v => metaLevel(Number(v.total_sold), Number(v.meta1), Number(v.meta2), Number(v.meta3)) >= 2).length} na 2ª+`} color="var(--meta1)" />
               <KpiCard label="Bônus Total" value={`$${totalBonus.toLocaleString()}`} color="var(--mkt)" />
               {activeStore === 'all' && stores.map(s => {
                 const sv = (summaries ?? []).filter(v => v.store === s.key)
                 const st = sv.reduce((a, v) => a + Number(v.total_sold), 0)
-                return <KpiCard key={s.key} label={s.label} value={fmtCurrency(st)} sub={`${(st / grandTotal * 100).toFixed(1)}% do total`} color={s.color} />
+                return <KpiCard key={s.key} label={s.label} value={fmtCurrency(st)} sub={grandTotal > 0 ? `${(st / grandTotal * 100).toFixed(1)}% do total` : '—'} color={s.color} />
               })}
             </div>
 
@@ -214,9 +214,9 @@ export default async function DashboardPage({
                       <div style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: s.color, marginBottom: '6px' }}>{s.label}</div>
                       <div style={{ fontSize: '1.3rem', fontWeight: 800, color: s.color }}>{fmtCurrency(st)}</div>
                       <div style={{ fontSize: '0.68rem', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', marginTop: '3px' }}>
-                        {sv.length} vendedores · {hit} na meta · {(st / grandTotal * 100).toFixed(1)}% do total
+                        {sv.length} vendedores · {hit} na meta · {grandTotal > 0 ? (st / grandTotal * 100).toFixed(1) : '0'}% do total
                       </div>
-                      <div style={{ height: '3px', borderRadius: '2px', marginTop: '10px', background: s.color, width: `${(st / grandTotal * 100).toFixed(1)}%` }} />
+                      <div style={{ height: '3px', borderRadius: '2px', marginTop: '10px', background: s.color, width: `${grandTotal > 0 ? (st / grandTotal * 100).toFixed(1) : 0}%` }} />
                     </div>
                   )
                 })}

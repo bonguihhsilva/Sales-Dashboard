@@ -92,14 +92,16 @@ export default async function MeuResultadoPage({
 
   const pctBase  = lvl === 0 ? m1 : lvl === 1 ? m1 : lvl === 2 ? m2 : m3
   const pctLabel = pctBase > 0 ? Math.round(sold / pctBase * 100) : 0
-  const pctRef   = lvl === 0 ? `da 1ª meta (${fmtK(m1)})`
-                 : lvl === 1 ? `da 1ª meta atingida (${fmtK(m1)})`
-                 : lvl === 2 ? `da 2ª meta atingida (${fmtK(m2)})`
+  const pctRef   = m1 === 0    ? 'metas não configuradas'
+                 : lvl === 0   ? `da 1ª meta (${fmtK(m1)})`
+                 : lvl === 1   ? `da 1ª meta atingida (${fmtK(m1)})`
+                 : lvl === 2   ? `da 2ª meta atingida (${fmtK(m2)})`
                  : `da 3ª meta atingida (${fmtK(m3)})`
 
-  const remainMsg = sold < m1 ? `Faltam ${fmtCurrency(m1 - sold)} para a 1ª meta`
-                  : sold < m2 ? `Faltam ${fmtCurrency(m2 - sold)} para a 2ª meta`
-                  : sold < m3 ? `Faltam ${fmtCurrency(m3 - sold)} para a 3ª meta`
+  const remainMsg = m1 === 0   ? 'Metas não configuradas para este período'
+                  : sold < m1  ? `Faltam ${fmtCurrency(m1 - sold)} para a 1ª meta`
+                  : sold < m2  ? `Faltam ${fmtCurrency(m2 - sold)} para a 2ª meta`
+                  : sold < m3  ? `Faltam ${fmtCurrency(m3 - sold)} para a 3ª meta`
                   : 'Superou todas as metas! 🏆'
 
   return (
@@ -118,7 +120,7 @@ export default async function MeuResultadoPage({
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <StorePill store={summary.store} />
+          {summary && <StorePill store={summary.store} />}
           {/* Period selector */}
           <div style={{ display: 'flex', gap: '4px' }}>
             {(periods as Period[]).map(p => (
