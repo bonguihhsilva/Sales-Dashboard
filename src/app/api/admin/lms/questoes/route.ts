@@ -1,3 +1,4 @@
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -16,7 +17,9 @@ export async function POST(req: NextRequest) {
 
   const { pergunta, opcao_a, opcao_b, opcao_c, opcao_d, resposta_correta, explicacao, modulo_id } = await req.json()
 
-  const { data, error } = await supabase
+  const adminDb = createAdminClient()
+
+  const { data, error } = await adminDb
     .from('quiz_questoes')
     .insert({ pergunta, opcao_a, opcao_b, opcao_c, opcao_d, resposta_correta, explicacao, modulo_id })
     .select()

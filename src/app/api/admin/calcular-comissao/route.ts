@@ -7,12 +7,15 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await caller.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
+  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
   const { data: profile } = await caller
     .from('profiles').select('role, tenant_id').eq('id', user.id).single()
-  if (!profile || !['adm', 'gerente', 'super_admin'].includes(profile.role)) {
+  
+  const effectiveRole = profile?.role || jwtRole
+  if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) {
     return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
   }
-  if (!profile.tenant_id) {
+  if (!profile?.tenant_id) {
     return NextResponse.json({ error: 'Perfil sem tenant' }, { status: 400 })
   }
 

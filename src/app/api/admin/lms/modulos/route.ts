@@ -1,3 +1,4 @@
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -16,8 +17,10 @@ export async function POST(req: NextRequest) {
 
   const { titulo, descricao, xp_reward, trilha_id } = await req.json()
 
+  const adminDb = createAdminClient()
+
   // Buscar a maior ordem para adicionar no final
-  const { data: maxOrdemData } = await supabase
+  const { data: maxOrdemData } = await adminDb
     .from('modulos')
     .select('ordem')
     .eq('trilha_id', trilha_id)
@@ -26,7 +29,7 @@ export async function POST(req: NextRequest) {
     
   const ordem = maxOrdemData && maxOrdemData.length > 0 ? maxOrdemData[0].ordem + 1 : 1
 
-  const { data, error } = await supabase
+  const { data, error } = await adminDb
     .from('modulos')
     .insert({ titulo, descricao, xp_reward, trilha_id, ordem })
     .select()

@@ -21,11 +21,22 @@ export default async function RegrasComissaoPage() {
     redirect('/dashboard')
   }
 
+  if (!profile?.tenant_id) {
+    return (
+      <div style={{ padding: '2rem', color: 'red', fontFamily: 'monospace' }}>
+        Erro: Seu perfil nao possui um tenant vinculado.
+        <br/><br/>
+        <a href="/dashboard" style={{ color: 'white', textDecoration: 'underline' }}>Voltar ao Dashboard</a>
+      </div>
+    )
+  }
+
+  // Buscar regras ativas e inativas (admin ve tudo)
   const adminDb = createAdminClient()
   const { data: regras } = await adminDb
     .from('regras_comissao')
     .select('*')
-    .eq('tenant_id', profile.tenant_id)
+    .eq('tenant_id', profile.tenant_id!)
     .order('prioridade', { ascending: true })
     .order('criado_em', { ascending: false })
 
@@ -43,7 +54,7 @@ export default async function RegrasComissaoPage() {
             Regras de Comissão
           </h1>
           <p style={{ fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '3px' }}>
-            GDS - FRAME · {profile.role.toUpperCase()} · {profile.name}
+            GDS - FRAME · {effectiveRole.toUpperCase()} · {profile.name || 'Admin'}
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
