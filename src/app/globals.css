@@ -31,14 +31,24 @@
     --paje1: 6 182 212;    /* #06b6d4 */
     --paje2: 249 115 22;   /* #f97316 */
 
-    /* === Legacy aliases for existing inline-styled components (MITIGATES T-01-02) === */
-    --bg:       hsl(var(--background));
-    --text:     hsl(var(--foreground));
-    --surface:  hsl(var(--card));
-    --surface2: hsl(var(--muted));
-    --meta1:    hsl(var(--accent));
-    --meta2:    rgb(var(--paje1));
-    --meta3:    rgb(var(--paje2));
+    /* === GDS color tokens — hardcoded complete CSS colors for inline style components ===
+     * shadcn vars above hold HSL channels so Tailwind can do hsl(var(--x)/alpha).
+     * These aliases use literal hsl() to avoid hsl(hsl()) when the shadcn channels
+     * are overridden below. --border/muted/accent are overridden last so var() usage
+     * in inline styles resolves to a valid CSS color. */
+    --bg:       hsl(220, 8%, 7%);
+    --text:     hsl(240, 5%, 96%);
+    --surface:  hsl(225, 7%, 9%);
+    --surface2: hsl(225, 6%, 14%);
+    --meta1:    hsl(74, 89%, 62%);
+    --meta2:    rgb(6, 182, 212);
+    --meta3:    rgb(249, 115, 22);
+    --mkt:      #42d9f5;
+    --caixa:    #f5a742;
+    /* Override shadcn HSL-channel vars with complete colors — last wins */
+    --border:   hsl(240, 4%, 15%);
+    --muted:    hsl(240, 5%, 46%);
+    --accent:   hsl(74, 89%, 62%);
   }
 
   .light {
@@ -65,7 +75,8 @@
 }
 
 @layer base {
-  * { @apply border-border; box-sizing: border-box; }
+  /* border-color hardcoded: @apply border-border would produce hsl(hsl(...)) since --border is now a full color */
+  * { border-color: hsl(240, 4%, 15%); box-sizing: border-box; }
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-syne), 'Syne', sans-serif;
@@ -73,7 +84,7 @@
   }
 }
 
-/* Scrollbar — preserve aesthetic from previous globals.css */
+/* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: hsl(var(--card)); }
-::-webkit-scrollbar-thumb { background: hsl(var(--muted)); border-radius: 3px; }
+::-webkit-scrollbar-track { background: hsl(225, 7%, 9%); }
+::-webkit-scrollbar-thumb { background: hsl(225, 6%, 14%); border-radius: 3px; }
