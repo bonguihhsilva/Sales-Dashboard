@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDS Dashboard v2 — Visão Final</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: #2a2a2a;
+    --text: #f0f0f0;
+    --muted: #666;
+    --accent: #c8f542;
+    --blue: #4169e1;
+    --meta1: #c8f542;
+    --meta2: #42d9f5;
+    --meta3: #f5a742;
+    --danger: #ff4444;
+    --success: #42f587;
+    --jebai: #c8f542;
+    --paje1: #42d9f5;
+    --paje2: #f5a742;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; }
+
+  /* NAV */
+  .nav { display: flex; gap: 2rem; padding: 1rem 2rem; border-bottom: 1px solid var(--border); align-items: center; position: sticky; top: 0; background: var(--bg); z-index: 100; }
+  .nav h1 { font-size: 1rem; font-weight: 800; color: var(--accent); letter-spacing: 0.05em; }
+  .nav-links { display: flex; gap: 0.25rem; flex: 1; }
+  .nav-link { padding: 0.4rem 0.9rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; color: var(--muted); transition: all 0.15s; border: none; background: none; font-family: 'Syne', sans-serif; }
+  .nav-link:hover, .nav-link.active { background: var(--surface2); color: var(--text); }
+  .nav-link.active { color: var(--accent); }
+
+  /* SCREENS */
+  .screen { display: none; padding: 2rem; max-width: 1400px; margin: 0 auto; }
+  .screen.active { display: block; }
+  .screen-title { font-size: 0.65rem; font-family: 'DM Mono', monospace; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1.5rem; }
+
+  /* GRID */
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+
+  /* CARD */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+  .card-label { font-size: 0.65rem; font-family: 'DM Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.5rem; }
+  .card-value { font-size: 1.8rem; font-weight: 800; color: var(--text); }
+  .card-sub { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; font-family: 'DM Mono', monospace; }
+  .card-accent { border-left: 3px solid var(--accent); }
+  .card-blue { border-left: 3px solid var(--blue); }
+  .card-meta2 { border-left: 3px solid var(--meta2); }
+  .card-meta3 { border-left: 3px solid var(--meta3); }
+
+  /* SECTION HEADER */
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+  .section-title { font-size: 0.9rem; font-weight: 700; }
+  .badge { padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.65rem; font-family: 'DM Mono', monospace; }
+  .badge-accent { background: rgba(200, 245, 66, 0.15); color: var(--accent); }
+  .badge-blue { background: rgba(65, 105, 225, 0.2); color: #7ba7ff; }
+  .badge-muted { background: var(--surface2); color: var(--muted); }
+
+  /* STORE TABS */
+  .store-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .store-tab { padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--muted); }
+  .store-tab.jebai { border-color: var(--jebai); color: var(--jebai); background: rgba(200,245,66,0.08); }
+  .store-tab.paje1 { border-color: var(--paje1); color: var(--paje1); background: rgba(66,217,245,0.08); }
+  .store-tab.paje2 { border-color: var(--paje2); color: var(--paje2); background: rgba(245,167,66,0.08); }
+
+  /* RANKING TABLE */
+  .ranking-table { width: 100%; border-collapse: collapse; }
+  .ranking-table th { font-size: 0.65rem; font-family: 'DM Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+  .ranking-table td { padding: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.85rem; }
+  .ranking-table tr:hover td { background: var(--surface2); }
+  .rank-num { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--muted); width: 2rem; }
+  .rank-1 { color: var(--meta1); font-weight: 700; }
+  .rank-2 { color: var(--meta2); }
+  .rank-3 { color: var(--meta3); }
+  .vendor-name { font-weight: 600; }
+  .store-pill { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.65rem; font-family: 'DM Mono', monospace; }
+  .pill-jebai { background: rgba(200,245,66,0.12); color: var(--jebai); }
+  .pill-paje1 { background: rgba(66,217,245,0.12); color: var(--paje1); }
+  .pill-paje2 { background: rgba(245,167,66,0.12); color: var(--paje2); }
+
+  /* PROGRESS BAR */
+  .progress-wrap { margin-top: 0.3rem; }
+  .progress-bar { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+  .fill-m1 { background: var(--meta1); }
+  .fill-m2 { background: var(--meta2); }
+  .fill-m3 { background: var(--meta3); }
+
+  /* META LEVELS */
+  .meta-badges { display: flex; gap: 0.3rem; margin-top: 0.4rem; }
+  .meta-badge { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-family: 'DM Mono', monospace; font-weight: 700; }
+  .meta-badge.hit { background: var(--meta1); color: #000; }
+  .meta-badge.miss { background: var(--surface2); color: var(--muted); }
+
+  /* COMMISSION */
+  .commission-rule { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
+  .rule-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+  .rule-name { font-weight: 600; font-size: 0.9rem; }
+  .rule-badge { padding: 0.15rem 0.5rem; background: rgba(200,245,66,0.12); color: var(--accent); border-radius: 4px; font-size: 0.65rem; font-family: 'DM Mono', monospace; }
+  .rule-condition { font-size: 0.78rem; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .condition-tag { display: inline-block; padding: 0.1rem 0.4rem; background: rgba(65,105,225,0.15); color: #7ba7ff; border-radius: 3px; font-size: 0.65rem; margin-right: 0.25rem; }
+  .toggle { width: 32px; height: 18px; background: var(--accent); border-radius: 9px; position: relative; cursor: pointer; }
+  .toggle::after { content: ''; position: absolute; top: 2px; right: 2px; width: 14px; height: 14px; background: #000; border-radius: 50%; }
+
+  /* APPROVAL TABLE */
+  .approval-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 1rem; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.85rem; }
+  .approval-row:hover { background: var(--surface2); }
+  .approval-header { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 1rem; padding: 0.5rem 1rem; font-size: 0.65rem; font-family: 'DM Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid var(--border); }
+  .btn { padding: 0.35rem 0.8rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-family: 'Syne', sans-serif; font-weight: 600; border: none; }
+  .btn-approve { background: rgba(66,245,135,0.15); color: var(--success); }
+  .btn-reject { background: rgba(255,68,68,0.12); color: var(--danger); }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-ghost { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  .status-pending { color: var(--meta3); }
+  .status-approved { color: var(--success); }
+
+  /* LMS */
+  .trilha-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 1rem; }
+  .trilha-header { padding: 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; }
+  .trilha-title { font-weight: 700; font-size: 1rem; margin-bottom: 0.25rem; }
+  .trilha-meta { font-size: 0.75rem; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .modulos-list { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .modulo-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; background: var(--surface2); cursor: pointer; }
+  .modulo-item:hover { border: 1px solid var(--border); }
+  .modulo-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
+  .modulo-icon.done { background: rgba(66,245,135,0.15); }
+  .modulo-icon.active { background: rgba(200,245,66,0.15); }
+  .modulo-icon.locked { background: var(--border); }
+  .modulo-info { flex: 1; }
+  .modulo-title { font-size: 0.85rem; font-weight: 600; }
+  .modulo-sub { font-size: 0.7rem; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .xp-badge { padding: 0.2rem 0.5rem; background: rgba(200,245,66,0.12); color: var(--accent); border-radius: 4px; font-size: 0.65rem; font-family: 'DM Mono', monospace; }
+
+  /* QUIZ */
+  .quiz-card { background: var(--surface); border: 1px solid var(--accent); border-radius: 12px; padding: 1.5rem; max-width: 600px; }
+  .quiz-progress { display: flex; gap: 0.25rem; margin-bottom: 1.5rem; }
+  .quiz-dot { height: 3px; flex: 1; border-radius: 2px; background: var(--border); }
+  .quiz-dot.done { background: var(--accent); }
+  .quiz-dot.current { background: var(--meta2); }
+  .quiz-question { font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; line-height: 1.5; }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .quiz-option { padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; font-size: 0.875rem; transition: all 0.15s; }
+  .quiz-option:hover { border-color: var(--accent); background: rgba(200,245,66,0.05); }
+  .quiz-option.selected { border-color: var(--accent); background: rgba(200,245,66,0.1); color: var(--accent); }
+
+  /* GAMIFICATION */
+  .xp-bar-wrap { margin-bottom: 1.5rem; }
+  .xp-info { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem; }
+  .xp-level { font-size: 2rem; font-weight: 800; color: var(--accent); }
+  .xp-total { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--muted); }
+  .xp-bar { height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .xp-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--meta2)); border-radius: 4px; }
+  .badges-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
+  .badge-item { background: var(--surface2); border-radius: 10px; padding: 0.75rem; text-align: center; }
+  .badge-icon { font-size: 1.5rem; margin-bottom: 0.25rem; }
+  .badge-name { font-size: 0.65rem; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .badge-item.earned { border: 1px solid rgba(200,245,66,0.3); background: rgba(200,245,66,0.05); }
+  .badge-item.earned .badge-name { color: var(--accent); }
+
+  /* WIDGETS */
+  .widget-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: auto; gap: 1rem; }
+  .widget { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; position: relative; }
+  .widget-drag { position: absolute; top: 0.5rem; right: 0.5rem; color: var(--muted); font-size: 0.7rem; cursor: grab; font-family: 'DM Mono', monospace; }
+  .widget-span2 { grid-column: span 2; }
+  .mini-chart { display: flex; align-items: flex-end; gap: 4px; height: 60px; margin-top: 0.75rem; }
+  .mini-bar { flex: 1; border-radius: 3px 3px 0 0; min-height: 8px; }
+
+  /* HR */
+  .hr-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+  .hr-tab { padding: 0.5rem 1rem; font-size: 0.8rem; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .hr-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .hr-card { background: var(--surface2); border-radius: 8px; padding: 1rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+  .hr-info h4 { font-size: 0.875rem; font-weight: 600; }
+  .hr-info p { font-size: 0.75rem; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 0.2rem; }
+  .status-chip { padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.65rem; font-family: 'DM Mono', monospace; }
+  .chip-available { background: rgba(66,245,135,0.12); color: var(--success); }
+  .chip-pending { background: rgba(245,167,66,0.12); color: var(--meta3); }
+  .chip-used { background: var(--surface); color: var(--muted); }
+
+  /* EXPORT */
+  .export-config { background: var(--surface2); border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; }
+  .export-config label { font-size: 0.75rem; color: var(--muted); font-family: 'DM Mono', monospace; display: block; margin-bottom: 0.4rem; }
+  .export-config select { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 0.5rem; border-radius: 6px; font-family: 'Syne', sans-serif; font-size: 0.85rem; }
+  .export-preview { background: rgba(200,245,66,0.05); border: 1px solid rgba(200,245,66,0.2); border-radius: 8px; padding: 1rem; }
+  .preview-row { display: flex; justify-content: space-between; font-size: 0.8rem; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .preview-row:last-child { border: none; font-weight: 700; color: var(--accent); }
+
+  /* CHART MOCK */
+  .chart-area { height: 140px; background: var(--surface2); border-radius: 8px; margin-top: 0.75rem; position: relative; overflow: hidden; display: flex; align-items: flex-end; padding: 1rem; gap: 6px; }
+  .chart-bar-group { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; }
+  .chart-bar { width: 100%; border-radius: 3px 3px 0 0; }
+  .chart-label { font-size: 0.6rem; font-family: 'DM Mono', monospace; color: var(--muted); margin-top: 4px; }
+
+  /* SEPARATOR */
+  hr.divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+  /* LABEL */
+  .feature-label { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.65rem; font-family: 'DM Mono', monospace; color: var(--muted); margin-bottom: 1rem; }
+  .feature-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+  /* NOTA DE SPRINT */
+  .sprint-note { background: rgba(65,105,225,0.1); border: 1px solid rgba(65,105,225,0.3); border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.75rem; color: #7ba7ff; font-family: 'DM Mono', monospace; margin-bottom: 1.5rem; }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <h1>GDS DASHBOARD v2</h1>
+  <div class="nav-links">
+    <button class="nav-link active" onclick="show('dashboard')">Dashboard</button>
+    <button class="nav-link" onclick="show('commission')">Comissão</button>
+    <button class="nav-link" onclick="show('lms')">Treinamento</button>
+    <button class="nav-link" onclick="show('widgets')">Widgets</button>
+    <button class="nav-link" onclick="show('hr')">RH</button>
+    <button class="nav-link" onclick="show('export')">Exportar</button>
+    <button class="nav-link" onclick="show('meu-resultado')">Meu Resultado</button>
+  </div>
+</div>
+
+<!-- ═══════════════ DASHBOARD PRINCIPAL ═══════════════ -->
+<div id="screen-dashboard" class="screen active">
+  <div class="feature-label"><span class="feature-dot"></span> S0 + S1 + S3 — Ranking & Importação CEC</div>
+  <div class="sprint-note">S3 — Novos uploads gravam em <code>vendas + itens_venda</code>. Histórico em <code>sales_records</code> continua acessível.</div>
+
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+    <div>
+      <h2 style="font-size:1.5rem; font-weight:800;">Ranking de Vendedores</h2>
+      <p style="color:var(--muted); font-size:0.8rem; font-family:'DM Mono',monospace; margin-top:0.25rem;">Maio 2026 · 63.906 registros</p>
+    </div>
+    <div style="display:flex; gap:0.75rem; align-items:center;">
+      <select style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:0.4rem 0.8rem;border-radius:6px;font-family:'Syne',sans-serif;font-size:0.8rem;">
+        <option>Maio 2026</option>
+        <option>Abril 2026</option>
+        <option>Março 2026</option>
+      </select>
+      <button class="btn btn-ghost">Importar CEC</button>
+    </div>
+  </div>
+
+  <div class="store-tabs">
+    <button class="store-tab jebai">Jebai</button>
+    <button class="store-tab paje1">Pajé 1</button>
+    <button class="store-tab paje2">Pajé 2</button>
+  </div>
+
+  <div class="grid-4" style="margin-bottom:1.5rem;">
+    <div class="card card-accent">
+      <div class="card-label">Total Vendido</div>
+      <div class="card-value">$847.2k</div>
+      <div class="card-sub">+12.4% vs abr</div>
+    </div>
+    <div class="card card-blue">
+      <div class="card-label">Vendedores Ativos</div>
+      <div class="card-value">23</div>
+      <div class="card-sub">de 27 cadastrados</div>
+    </div>
+    <div class="card card-meta2">
+      <div class="card-label">Meta M1 Atingida</div>
+      <div class="card-value">18</div>
+      <div class="card-sub">vendedores acima de M1</div>
+    </div>
+    <div class="card card-meta3">
+      <div class="card-label">Total Bônus</div>
+      <div class="card-value">$4.850</div>
+      <div class="card-sub">pendente aprovação</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-header">
+      <span class="section-title">Ranking Geral</span>
+      <span class="badge badge-accent">27 vendedores</span>
+    </div>
+    <table class="ranking-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Vendedor</th>
+          <th>Loja</th>
+          <th>Total Vendido</th>
+          <th>Meta</th>
+          <th>Bônus</th>
+          <th>Comissão</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="rank-num rank-1">01</span></td>
+          <td><span class="vendor-name">Carlos Martínez</span></td>
+          <td><span class="store-pill pill-jebai">Jebai</span></td>
+          <td style="font-family:'DM Mono',monospace;">$48.320</td>
+          <td>
+            <div style="font-size:0.75rem; color:var(--meta2); font-family:'DM Mono',monospace;">142%</div>
+            <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill fill-m2" style="width:100%"></div></div></div>
+          </td>
+          <td style="font-family:'DM Mono',monospace; color:var(--meta1);">$200</td>
+          <td style="font-family:'DM Mono',monospace; color:var(--accent);">$144.96</td>
+        </tr>
+        <tr>
+          <td><span class="rank-num rank-2">02</span></td>
+          <td><span class="vendor-name">Ana González</span></td>
+          <td><span class="store-pill pill-paje1">Pajé 1</span></td>
+          <td style="font-family:'DM Mono',monospace;">$44.100</td>
+          <td>
+            <div style="font-size:0.75rem; color:var(--meta1); font-family:'DM Mono',monospace;">128%</div>
+            <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill fill-m1" style="width:100%"></div></div></div>
+          </td>
+          <td style="font-family:'DM Mono',monospace; color:var(--meta1);">$150</td>
+          <td style="font-family:'DM Mono',monospace; color:var(--accent);">$132.30</td>
+        </tr>
+        <tr>
+          <td><span class="rank-num rank-3">03</span></td>
+          <td><span class="vendor-name">Diego Rojas</span></td>
+          <td><span class="store-pill pill-paje2">Pajé 2</span></td>
+          <td style="font-family:'DM Mono',monospace;">$39.750</td>
+          <td>
+            <div style="font-size:0.75rem; color:var(--meta3); font-family:'DM Mono',monospace;">115%</div>
+            <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill fill-m3" style="width:85%"></div></div></div>
+          </td>
+          <td style="font-family:'DM Mono',monospace; color:var(--meta1);">$100</td>
+          <td style="font-family:'DM Mono',monospace; color:var(--accent);">$119.25</td>
+        </tr>
+        <tr>
+          <td><span class="rank-num" style="color:var(--muted)">04</span></td>
+          <td><span class="vendor-name">María López</span></td>
+          <td><span class="store-pill pill-jebai">Jebai</span></td>
+          <td style="font-family:'DM Mono',monospace;">$35.200</td>
+          <td>
+            <div style="font-size:0.75rem; color:var(--muted); font-family:'DM Mono',monospace;">102%</div>
+            <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill fill-m1" style="width:75%"></div></div></div>
+          </td>
+          <td style="font-family:'DM Mono',monospace; color:var(--meta1);">$100</td>
+          <td style="font-family:'DM Mono',monospace; color:var(--accent);">$105.60</td>
+        </tr>
+        <tr>
+          <td><span class="rank-num" style="color:var(--muted)">05</span></td>
+          <td><span class="vendor-name">Roberto Silva</span></td>
+          <td><span class="store-pill pill-paje1">Pajé 1</span></td>
+          <td style="font-family:'DM Mono',monospace;">$28.900</td>
+          <td>
+            <div style="font-size:0.75rem; color:var(--muted); font-family:'DM Mono',monospace;">84%</div>
+            <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill fill-m1" style="width:55%"></div></div></div>
+          </td>
+          <td style="font-family:'DM Mono',monospace; color:var(--muted);">—</td>
+          <td style="font-family:'DM Mono',monospace; color:var(--muted);">$86.70</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════ COMISSÃO S4 ═══════════════ -->
+<div id="screen-commission" class="screen">
+  <div class="feature-label"><span class="feature-dot"></span> S4 — Motor de Comissão</div>
+  <div class="sprint-note">Gerente configura regras em JSONB. Engine calcula ao fechar período. Aprovação individual antes do pagamento.</div>
+
+  <div class="grid-2">
+    <div>
+      <div class="section-header">
+        <span class="section-title">Regras de Comissão</span>
+        <button class="btn btn-primary" style="font-size:0.75rem;">+ Nova Regra</button>
+      </div>
+
+      <div class="commission-rule">
+        <div class="rule-header">
+          <span class="rule-name">Comissão Base</span>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <span class="rule-badge">prioridade 0</span>
+            <div class="toggle"></div>
+          </div>
+        </div>
+        <div class="rule-condition">
+          <span class="condition-tag">sempre ativo</span>
+          <span style="font-size:0.78rem;">→ 0.3% sobre total vendido</span>
+        </div>
+      </div>
+
+      <div class="commission-rule">
+        <div class="rule-header">
+          <span class="rule-name">Bônus Meta M1</span>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <span class="rule-badge">prioridade 1</span>
+            <div class="toggle"></div>
+          </div>
+        </div>
+        <div class="rule-condition">
+          <span class="condition-tag">meta1_atingida = true</span>
+          <span style="font-size:0.78rem;">→ +$100 fixo</span>
+        </div>
+      </div>
+
+      <div class="commission-rule">
+        <div class="rule-header">
+          <span class="rule-name">Bônus Meta M2</span>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <span class="rule-badge">prioridade 2</span>
+            <div class="toggle"></div>
+          </div>
+        </div>
+        <div class="rule-condition">
+          <span class="condition-tag">meta2_atingida = true</span>
+          <span style="font-size:0.78rem;">→ +$150 adicional</span>
+        </div>
+      </div>
+
+      <div class="commission-rule">
+        <div class="rule-header">
+          <span class="rule-name">Bônus Meta M3</span>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <span class="rule-badge">prioridade 3</span>
+            <div class="toggle"></div>
+          </div>
+        </div>
+        <div class="rule-condition">
+          <span class="condition-tag">meta3_atingida = true</span>
+          <span style="font-size:0.78rem;">→ +$200 adicional</span>
+        </div>
+      </div>
+
+      <div class="commission-rule">
+        <div class="rule-header">
+          <span class="rule-name">Multiplicador Jebai</span>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <span class="rule-badge">prioridade 4</span>
+            <div class="toggle" style="background:var(--border);"></div>
+          </div>
+        </div>
+        <div class="rule-condition">
+          <span class="condition-tag">loja = jebai</span>
+          <span class="condition-tag">total > 40000</span>
+          <span style="font-size:0.78rem;">→ comissão_base × 1.2</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-header">
+        <span class="section-title">Aprovação — Maio 2026</span>
+        <button class="btn btn-ghost" style="font-size:0.75rem;">Calcular Período</button>
+      </div>
+      <div class="card" style="padding:0;">
+        <div class="approval-header">
+          <span>Vendedor</span>
+          <span>Base</span>
+          <span>Bônus</span>
+          <span>Total</span>
+          <span>Ação</span>
+        </div>
+        <div class="approval-row">
+          <span style="font-weight:600;">Carlos Martínez</span>
+          <span style="font-family:'DM Mono',monospace;">$144.96</span>
+          <span style="font-family:'DM Mono',monospace; color:var(--meta1);">$200</span>
+          <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--accent);">$344.96</span>
+          <div style="display:flex;gap:0.4rem;">
+            <button class="btn btn-approve">✓</button>
+            <button class="btn btn-reject">✕</button>
+          </div>
+        </div>
+        <div class="approval-row">
+          <span style="font-weight:600;">Ana González</span>
+          <span style="font-family:'DM Mono',monospace;">$132.30</span>
+          <span style="font-family:'DM Mono',monospace; color:var(--meta1);">$150</span>
+          <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--accent);">$282.30</span>
+          <div style="display:flex;gap:0.4rem;">
+            <button class="btn btn-approve">✓</button>
+            <button class="btn btn-reject">✕</button>
+          </div>
+        </div>
+        <div class="approval-row">
+          <span style="font-weight:600;">Diego Rojas</span>
+          <span style="font-family:'DM Mono',monospace;">$119.25</span>
+          <span style="font-family:'DM Mono',monospace; color:var(--meta1);">$100</span>
+          <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--accent);">$219.25</span>
+          <div style="display:flex;gap:0.4rem;">
+            <button class="btn btn-approve">✓</button>
+            <button class="btn btn-reject">✕</button>
+          </div>
+        </div>
+        <div class="approval-row" style="background:rgba(66,245,135,0.03);">
+          <span style="font-weight:600;">María López</span>
+          <span style="font-family:'DM Mono',monospace;">$105.60</span>
+          <span style="font-family:'DM Mono',monospace; color:var(--meta1);">$100</span>
+          <span style="font-family:'DM Mono',monospace; font-weight:700; color:var(--success);">$205.60</span>
+          <span class="status-chip chip-available" style="font-size:0.65rem;">Aprovado</span>
+        </div>
+        <div style="padding:1rem; border-top:1px solid var(--border); display:flex; justify-content:space-between;">
+          <span style="font-size:0.8rem; color:var(--muted);">Total a pagar</span>
+          <span style="font-family:'DM Mono',monospace; font-weight:800; color:var(--accent); font-size:1.1rem;">$1.052.11</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ LMS S6 ═══════════════ -->
+<div id="screen-lms" class="screen">
+  <div class="feature-label"><span class="feature-dot"></span> S6 — LMS de Treinamento</div>
+  <div class="sprint-note">1 trilha, 8 módulos, 24 lições e 12 questões já no banco. UI conecta nesses dados.</div>
+
+  <div class="grid-2-1">
+    <div>
+      <div class="section-header">
+        <span class="section-title">Trilhas de Treinamento</span>
+        <span class="badge badge-muted">1 trilha ativa</span>
+      </div>
+
+      <div class="trilha-card">
+        <div class="trilha-header">
+          <div>
+            <div class="trilha-title">Técnicas de Venda CDE</div>
+            <div class="trilha-meta">8 módulos · 24 lições · ~4h estimado</div>
+          </div>
+          <div>
+            <div style="font-size:0.75rem; color:var(--muted); font-family:'DM Mono',monospace; text-align:right;">Progresso</div>
+            <div style="font-size:1.2rem; font-weight:800; color:var(--accent); text-align:right;">62%</div>
+          </div>
+        </div>
+        <div class="progress-bar" style="margin: 0 1.25rem 0.5rem; height:6px; border-radius:3px;">
+          <div class="progress-fill fill-m1" style="width:62%; height:6px; border-radius:3px;"></div>
+        </div>
+        <div class="modulos-list">
+          <div class="modulo-item">
+            <div class="modulo-icon done">✓</div>
+            <div class="modulo-info">
+              <div class="modulo-title">Fundamentos de Atendimento</div>
+              <div class="modulo-sub">3 lições · quiz aprovado · 70/100</div>
+            </div>
+            <span class="xp-badge">+50 XP</span>
+          </div>
+          <div class="modulo-item">
+            <div class="modulo-icon done">✓</div>
+            <div class="modulo-info">
+              <div class="modulo-title">Conhecendo o Cliente CDE</div>
+              <div class="modulo-sub">3 lições · quiz aprovado · 85/100</div>
+            </div>
+            <span class="xp-badge">+50 XP</span>
+          </div>
+          <div class="modulo-item" style="border:1px solid var(--accent);">
+            <div class="modulo-icon active" style="color:var(--accent);">▶</div>
+            <div class="modulo-info">
+              <div class="modulo-title" style="color:var(--accent);">Técnica de Fechamento</div>
+              <div class="modulo-sub">3 lições · em andamento · lição 2/3</div>
+            </div>
+            <span class="xp-badge">+50 XP</span>
+          </div>
+          <div class="modulo-item" style="opacity:0.5;">
+            <div class="modulo-icon locked" style="font-size:0.7rem; color:var(--muted);">🔒</div>
+            <div class="modulo-info">
+              <div class="modulo-title">Objeções e Contornos</div>
+              <div class="modulo-sub">3 lições · bloqueado</div>
+            </div>
+            <span class="xp-badge" style="opacity:0.4;">+50 XP</span>
+          </div>
+          <div class="modulo-item" style="opacity:0.5;">
+            <div class="modulo-icon locked" style="font-size:0.7rem; color:var(--muted);">🔒</div>
+            <div class="modulo-info">
+              <div class="modulo-title">Produtos de Alta Margem</div>
+              <div class="modulo-sub">3 lições · bloqueado</div>
+            </div>
+            <span class="xp-badge" style="opacity:0.4;">+50 XP</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:1rem;">
+        <div class="card-label">Quiz — Técnica de Fechamento</div>
+        <div class="quiz-card" style="border:none; padding:0; background:transparent;">
+          <div class="quiz-progress">
+            <div class="quiz-dot done"></div>
+            <div class="quiz-dot done"></div>
+            <div class="quiz-dot current"></div>
+            <div class="quiz-dot"></div>
+          </div>
+          <div class="quiz-question">3 / 4 — Qual é o melhor momento para apresentar o preço ao cliente?</div>
+          <div class="quiz-options">
+            <div class="quiz-option">Logo no início da conversa</div>
+            <div class="quiz-option selected">Depois de apresentar o valor do produto</div>
+            <div class="quiz-option">Somente quando o cliente perguntar</div>
+            <div class="quiz-option">No final, após o cliente já estar decidido</div>
+          </div>
+          <button class="btn btn-primary">Próxima →</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title" style="margin-bottom:1rem;">Minha Performance</div>
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="xp-bar-wrap">
+          <div class="xp-info">
+            <span class="xp-level">Nível 3</span>
+            <span class="xp-total">350 / 500 XP</span>
+          </div>
+          <div class="xp-bar">
+            <div class="xp-fill" style="width:70%"></div>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-top:1rem;">
+          <div style="text-align:center; background:var(--surface2); border-radius:8px; padding:0.75rem;">
+            <div style="font-size:1.5rem; font-weight:800; color:var(--accent);">5</div>
+            <div style="font-size:0.65rem; color:var(--muted); font-family:'DM Mono',monospace;">módulos ok</div>
+          </div>
+          <div style="text-align:center; background:var(--surface2); border-radius:8px; padding:0.75rem;">
+            <div style="font-size:1.5rem; font-weight:800; color:var(--meta2);">7</div>
+            <div style="font-size:0.65rem; color:var(--muted); font-family:'DM Mono',monospace;">streak dias</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-bottom:0.75rem;">Badges</div>
+      <div class="badges-grid">
+        <div class="badge-item earned">
+          <div class="badge-icon">🥇</div>
+          <div class="badge-name">Primeiro Módulo</div>
+        </div>
+        <div class="badge-item earned">
+          <div class="badge-icon">🔥</div>
+          <div class="badge-name">7 Dias Streak</div>
+        </div>
+        <div class="badge-item earned">
+          <div class="badge-icon">💡</div>
+          <div class="badge-name">Quiz Perfeito</div>
+        </div>
+        <div class="badge-item">
+          <div class="badge-icon" style="opacity:0.3;">🏆</div>
+          <div class="badge-name">Top Vendedor</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ WIDGETS S5 ═══════════════ -->
+<div id="screen-widgets" class="screen">
+  <div class="feature-label"><span class="feature-dot"></span> S5 — Dashboard de Widgets</div>
+  <div class="sprint-note">7 widget_types no banco. Layout salvo por usuário em dashboard_layouts (JSONB). Arrastar para reorganizar.</div>
+
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+    <h2 style="font-size:1.2rem; font-weight:700;">Meu Dashboard</h2>
+    <div style="display:flex;gap:0.5rem;">
+      <button class="btn btn-ghost">+ Adicionar Widget</button>
+      <button class="btn btn-primary">Salvar Layout</button>
+    </div>
+  </div>
+
+  <div class="widget-grid">
+    <div class="widget widget-span2">
+      <div class="widget-drag">⠿ arrastar</div>
+      <div class="card-label">Evolução de Vendas — Últimos 6 Meses</div>
+      <div class="chart-area">
+        <div class="chart-bar-group">
+          <div class="chart-bar" style="height:55px; background:rgba(200,245,66,0.3);"></div>
+          <div class="chart-label">Dez</div>
+        </div>
+        <div class="chart-bar-group">
+          <div class="chart-bar" style="height:70px; background:rgba(200,245,66,0.3);"></div>
+          <div class="chart-label">Jan</div>
+        </div>
+        <div class="chart-bar-group">
+          <div class="chart-bar" style="height:60px; background:rgba(200,245,66,0.3);"></div>
+          <div class="chart-label">Fev</div>
+        </div>
+        <div class="chart-bar-group">
+          <div class="chart-bar" style="height:80px; background:rgba(200,245,66,0.3);"></div>
+          <div class="chart-label">Mar</div>
+        </div>
+        <div class="chart-bar-group">
+          <div class="chart-bar" style="height:75px; background:rgba(200,245,66,0.4);"></div>
+          <div class="chart-label">Abr</div>
+        </div>
+        <div class="chart-bar-group">
+          <div class="chart-bar" style="height:100%; background:var(--accent);"></div>
+          <div class="chart-label" style="color:var(--accent);">Mai</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-drag">⠿ arrastar</div>
+      <div class="card-label">Distribuição por Loja</div>
+      <div style="margin-top:1rem; display:flex;flex-direction:column;gap:0.6rem;">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:0.3rem;"><span style="color:var(--jebai)">Jebai</span><span style="font-family:'DM Mono',monospace;">$347k</span></div>
+          <div class="progress-bar"><div class="progress-fill fill-m1" style="width:41%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:0.3rem;"><span style="color:var(--paje1)">Pajé 1</span><span style="font-family:'DM Mono',monospace;">$291k</span></div>
+          <div class="progress-bar"><div class="progress-fill fill-m2" style="width:34%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:0.3rem;"><span style="color:var(--paje2)">Pajé 2</span><span style="font-family:'DM Mono',monospace;">$209k</span></div>
+          <div class="progress-bar"><div class="progress-fill fill-m3" style="width:25%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-drag">⠿ arrastar</div>
+      <div class="card-label">Top 3 Vendedores</div>
+      <div style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.5rem;">
+        <div style="display:flex;align-items:center;gap:0.5rem;"><span style="color:var(--meta1);font-weight:800;font-size:0.9rem;width:1.2rem;">1</span><span style="font-size:0.85rem;font-weight:600;">Carlos M.</span><span style="margin-left:auto;font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--accent);">$48.3k</span></div>
+        <div style="display:flex;align-items:center;gap:0.5rem;"><span style="color:var(--meta2);font-weight:800;font-size:0.9rem;width:1.2rem;">2</span><span style="font-size:0.85rem;font-weight:600;">Ana G.</span><span style="margin-left:auto;font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--accent);">$44.1k</span></div>
+        <div style="display:flex;align-items:center;gap:0.5rem;"><span style="color:var(--meta3);font-weight:800;font-size:0.9rem;width:1.2rem;">3</span><span style="font-size:0.85rem;font-weight:600;">Diego R.</span><span style="margin-left:auto;font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--accent);">$39.8k</span></div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-drag">⠿ arrastar</div>
+      <div class="card-label">Taxa Meta M1</div>
+      <div style="text-align:center; padding:0.5rem 0;">
+        <div style="font-size:2.5rem; font-weight:800; color:var(--meta1);">78%</div>
+        <div style="font-size:0.75rem; color:var(--muted); font-family:'DM Mono',monospace;">18 de 23 vendedores</div>
+        <div class="progress-bar" style="margin-top:0.75rem; height:8px; border-radius:4px;"><div class="progress-fill fill-m1" style="width:78%; height:8px; border-radius:4px;"></div></div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-drag">⠿ arrastar</div>
+      <div class="card-label">Comissões Pendentes</div>
+      <div style="margin-top:0.5rem;">
+        <div style="font-size:2rem; font-weight:800; color:var(--meta3);">$846.85</div>
+        <div style="font-size:0.75rem; color:var(--muted); font-family:'DM Mono',monospace; margin-top:0.25rem;">22 pendentes · 1 aprovado</div>
+        <button class="btn btn-ghost" style="width:100%; margin-top:0.75rem; font-size:0.75rem;">Ver Aprovações →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ RH ═══════════════ -->
+<div id="screen-hr" class="screen">
+  <div class="feature-label"><span class="feature-dot"></span> HR Module — Folgas, Faltas, Férias, Licenças</div>
+
+  <div class="grid-4" style="margin-bottom:1.5rem;">
+    <div class="card card-accent">
+      <div class="card-label">Folgas Disponíveis</div>
+      <div class="card-value">47</div>
+      <div class="card-sub">saldos ativos</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Faltas Este Mês</div>
+      <div class="card-value" style="color:var(--danger)">3</div>
+      <div class="card-sub">a registrar</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Férias Agendadas</div>
+      <div class="card-value">2</div>
+      <div class="card-sub">próximos 30 dias</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Licenças Pendentes</div>
+      <div class="card-value" style="color:var(--meta3)">5</div>
+      <div class="card-sub">aguardando revisão</div>
+    </div>
+  </div>
+
+  <div class="hr-tabs">
+    <button class="hr-tab active">Folgas</button>
+    <button class="hr-tab">Faltas</button>
+    <button class="hr-tab">Férias</button>
+    <button class="hr-tab">Licenças</button>
+  </div>
+
+  <div class="grid-2">
+    <div>
+      <div class="section-header">
+        <span class="section-title">Saldo de Folgas</span>
+        <button class="btn btn-primary" style="font-size:0.75rem;">+ Registrar Folga</button>
+      </div>
+      <div class="hr-card">
+        <div class="hr-info"><h4>Carlos Martínez</h4><p>Emitida 15/05/2026 · Expira 15/11/2026</p></div>
+        <span class="status-chip chip-available">Disponível</span>
+      </div>
+      <div class="hr-card">
+        <div class="hr-info"><h4>Ana González</h4><p>Emitida 20/05/2026 · Expira 20/11/2026</p></div>
+        <span class="status-chip chip-available">Disponível</span>
+      </div>
+      <div class="hr-card">
+        <div class="hr-info"><h4>Diego Rojas</h4><p>Usada em 22/05/2026</p></div>
+        <span class="status-chip chip-used">Usada</span>
+      </div>
+    </div>
+    <div>
+      <div class="section-header">
+        <span class="section-title">Licenças Pendentes</span>
+        <span class="badge badge-muted">5 aguardando</span>
+      </div>
+      <div class="hr-card">
+        <div class="hr-info"><h4>María López</h4><p>Licença médica · 26/05/2026</p></div>
+        <div style="display:flex;gap:0.4rem;">
+          <button class="btn btn-approve" style="font-size:0.7rem;">✓</button>
+          <button class="btn btn-reject" style="font-size:0.7rem;">✕</button>
+        </div>
+      </div>
+      <div class="hr-card">
+        <div class="hr-info"><h4>Roberto Silva</h4><p>Consulta médica · 27/05/2026</p></div>
+        <div style="display:flex;gap:0.4rem;">
+          <button class="btn btn-approve" style="font-size:0.7rem;">✓</button>
+          <button class="btn btn-reject" style="font-size:0.7rem;">✕</button>
+        </div>
+      </div>
+      <div class="hr-card">
+        <div class="hr-info"><h4>Laura Benítez</h4><p>Documento pessoal · 28/05/2026</p></div>
+        <div style="display:flex;gap:0.4rem;">
+          <button class="btn btn-approve" style="font-size:0.7rem;">✓</button>
+          <button class="btn btn-reject" style="font-size:0.7rem;">✕</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ EXPORT ═══════════════ -->
+<div id="screen-export" class="screen">
+  <div class="feature-label"><span class="feature-dot"></span> S4 + Relatórios — Export Excel & Sumário Comissões</div>
+
+  <div class="grid-2">
+    <div>
+      <div class="section-title" style="margin-bottom:1rem;">Exportar Relatório Excel</div>
+      <div class="export-config">
+        <label>Período</label>
+        <select><option>Maio 2026</option><option>Abril 2026</option><option>Março 2026</option></select>
+      </div>
+      <div class="export-config">
+        <label>Loja</label>
+        <select><option>Todas as lojas</option><option>Jebai</option><option>Pajé 1</option><option>Pajé 2</option></select>
+      </div>
+      <div class="export-config">
+        <label>Incluir</label>
+        <div style="display:flex;gap:1rem;margin-top:0.5rem;">
+          <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text);"><input type="checkbox" checked> Vendas</label>
+          <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text);"><input type="checkbox" checked> Metas</label>
+          <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text);"><input type="checkbox" checked> Comissões</label>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%; padding:0.75rem; font-size:0.9rem; margin-top:0.5rem;">Baixar Excel (.xlsx)</button>
+    </div>
+
+    <div>
+      <div class="section-title" style="margin-bottom:1rem;">Sumário Financeiro — Maio 2026</div>
+      <div class="card" style="padding:0;">
+        <div class="approval-header" style="grid-template-columns:2fr 1fr 1fr;">
+          <span>Loja</span>
+          <span>Total Vendas</span>
+          <span>Comissões</span>
+        </div>
+        <div class="approval-row" style="grid-template-columns:2fr 1fr 1fr;">
+          <span style="color:var(--jebai); font-weight:600;">Jebai</span>
+          <span style="font-family:'DM Mono',monospace;">$347.200</span>
+          <span style="font-family:'DM Mono',monospace; color:var(--accent);">$1.041.60</span>
+        </div>
+        <div class="approval-row" style="grid-template-columns:2fr 1fr 1fr;">
+          <span style="color:var(--paje1); font-weight:600;">Pajé 1</span>
+          <span style="font-family:'DM Mono',monospace;">$291.000</span>
+          <span style="font-family:'DM Mono',monospace; color:var(--accent);">$873.00</span>
+        </div>
+        <div class="approval-row" style="grid-template-columns:2fr 1fr 1fr;">
+          <span style="color:var(--paje2); font-weight:600;">Pajé 2</span>
+          <span style="font-family:'DM Mono',monospace;">$209.000</span>
+          <span style="font-family:'DM Mono',monospace; color:var(--accent);">$627.00</span>
+        </div>
+        <div style="padding:1rem; border-top:1px solid var(--border); display:grid; grid-template-columns:2fr 1fr 1fr;">
+          <span style="font-weight:700;">Total Geral</span>
+          <span style="font-family:'DM Mono',monospace; font-weight:800; color:var(--accent);">$847.200</span>
+          <span style="font-family:'DM Mono',monospace; font-weight:800; color:var(--accent);">$2.541.60</span>
+        </div>
+      </div>
+
+      <div class="export-preview" style="margin-top:1rem;">
+        <div style="font-size:0.7rem; color:var(--accent); font-family:'DM Mono',monospace; margin-bottom:0.5rem;">PREVIEW — colunas no Excel</div>
+        <div class="preview-row"><span>Vendedor</span><span>Carlos Martínez</span></div>
+        <div class="preview-row"><span>Loja</span><span>Jebai</span></div>
+        <div class="preview-row"><span>Total Vendido</span><span>$48.320</span></div>
+        <div class="preview-row"><span>Meta Atingida</span><span>M3 (142%)</span></div>
+        <div class="preview-row"><span>Bônus</span><span>$200</span></div>
+        <div class="preview-row"><span>Comissão Base</span><span>$144.96</span></div>
+        <div class="preview-row"><span>Total a Receber</span><span>$344.96</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ MEU RESULTADO ═══════════════ -->
+<div id="screen-meu-resultado" class="screen">
+  <div class="feature-label"><span class="feature-dot"></span> View Vendedor — meu-resultado</div>
+
+  <div class="grid-2-1">
+    <div>
+      <div style="margin-bottom:1.5rem;">
+        <h2 style="font-size:1.3rem; font-weight:800;">Olá, Carlos 👋</h2>
+        <p style="color:var(--muted); font-size:0.8rem; font-family:'DM Mono',monospace; margin-top:0.25rem;">Jebai · Maio 2026</p>
+      </div>
+
+      <div class="grid-3" style="margin-bottom:1.5rem;">
+        <div class="card card-accent">
+          <div class="card-label">Total Vendido</div>
+          <div class="card-value">$48.3k</div>
+          <div class="card-sub">Meta M3 atingida</div>
+        </div>
+        <div class="card card-meta2">
+          <div class="card-label">Bônus</div>
+          <div class="card-value" style="font-size:1.4rem;">$200</div>
+          <div class="card-sub">M1+M2+M3</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Comissão</div>
+          <div class="card-value" style="font-size:1.4rem; color:var(--accent);">$344.96</div>
+          <div class="card-sub">aguardando aprovação</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-label">Progresso de Metas — Maio 2026</div>
+        <div style="display:flex;flex-direction:column;gap:1rem;margin-top:0.75rem;">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.4rem;">
+              <span>M1 — $34.000</span>
+              <span style="color:var(--meta1); font-family:'DM Mono',monospace;">✓ $48.3k</span>
+            </div>
+            <div class="progress-bar" style="height:6px;"><div class="progress-fill fill-m1" style="width:100%; height:6px;"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.4rem;">
+              <span>M2 — $40.000</span>
+              <span style="color:var(--meta2); font-family:'DM Mono',monospace;">✓ $48.3k</span>
+            </div>
+            <div class="progress-bar" style="height:6px;"><div class="progress-fill fill-m2" style="width:100%; height:6px;"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.4rem;">
+              <span>M3 — $45.000</span>
+              <span style="color:var(--meta3); font-family:'DM Mono',monospace;">✓ $48.3k (107%)</span>
+            </div>
+            <div class="progress-bar" style="height:6px;"><div class="progress-fill fill-m3" style="width:100%; height:6px;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Evolução Histórica</div>
+        <div class="chart-area" style="height:100px;">
+          <div class="chart-bar-group"><div class="chart-bar" style="height:60px; background:rgba(200,245,66,0.25);"></div><div class="chart-label">Dez</div></div>
+          <div class="chart-bar-group"><div class="chart-bar" style="height:50px; background:rgba(200,245,66,0.25);"></div><div class="chart-label">Jan</div></div>
+          <div class="chart-bar-group"><div class="chart-bar" style="height:65px; background:rgba(200,245,66,0.25);"></div><div class="chart-label">Fev</div></div>
+          <div class="chart-bar-group"><div class="chart-bar" style="height:72px; background:rgba(200,245,66,0.3);"></div><div class="chart-label">Mar</div></div>
+          <div class="chart-bar-group"><div class="chart-bar" style="height:68px; background:rgba(200,245,66,0.35);"></div><div class="chart-label">Abr</div></div>
+          <div class="chart-bar-group"><div class="chart-bar" style="height:88px; background:var(--accent);"></div><div class="chart-label" style="color:var(--accent);">Mai</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title" style="margin-bottom:1rem;">Meu Treinamento</div>
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="xp-info">
+          <span class="xp-level">Nível 3</span>
+          <span class="xp-total">350 XP</span>
+        </div>
+        <div class="xp-bar"><div class="xp-fill" style="width:70%"></div></div>
+        <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
+          <div class="badge-item earned" style="flex:1; padding:0.5rem;">
+            <div class="badge-icon" style="font-size:1.2rem;">🥇</div>
+            <div class="badge-name">1º Módulo</div>
+          </div>
+          <div class="badge-item earned" style="flex:1; padding:0.5rem;">
+            <div class="badge-icon" style="font-size:1.2rem;">🔥</div>
+            <div class="badge-name">7 Streak</div>
+          </div>
+          <div class="badge-item" style="flex:1; padding:0.5rem; opacity:0.4;">
+            <div class="badge-icon" style="font-size:1.2rem;">🏆</div>
+            <div class="badge-name">Top 3</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-bottom:0.75rem; font-size:0.85rem;">Próximo Módulo</div>
+      <div class="modulo-item" style="border:1px solid var(--accent); background:rgba(200,245,66,0.05); margin-bottom:1rem;">
+        <div class="modulo-icon active" style="color:var(--accent);">▶</div>
+        <div class="modulo-info">
+          <div class="modulo-title" style="color:var(--accent);">Técnica de Fechamento</div>
+          <div class="modulo-sub">Lição 2/3 em andamento</div>
+        </div>
+        <button class="btn btn-primary" style="font-size:0.7rem;">Continuar</button>
+      </div>
+
+      <div class="section-title" style="margin-bottom:0.75rem; font-size:0.85rem; margin-top:1rem;">Minha RH</div>
+      <div class="hr-card" style="background:var(--surface2);">
+        <div class="hr-info"><h4>Folga Disponível</h4><p>Expira 15/11/2026</p></div>
+        <span class="status-chip chip-available">Disponível</span>
+      </div>
+      <div class="hr-card" style="background:var(--surface2);">
+        <div class="hr-info"><h4>Licença Solicitada</h4><p>Consulta · 27/05/2026</p></div>
+        <span class="status-chip chip-pending">Pendente</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

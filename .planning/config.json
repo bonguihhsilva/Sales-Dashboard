@@ -1,0 +1,18 @@
+{
+  "model_profile": "balanced",
+  "commit_docs": true,
+  "response_language": "Portuguese",
+  "milestone_version": "v1.0",
+  "milestone_name": "ferramenta-escalavel",
+  "workflow": {
+    "research": true,
+    "plan_check": true,
+    "verifier": true,
+    "use_worktrees": false,
+    "discuss_mode": "discuss"
+  },
+  "git": {
+    "branching_strategy": "none",
+    "base_branch": "master"
+  }
+}

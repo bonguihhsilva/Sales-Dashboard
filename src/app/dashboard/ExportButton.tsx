@@ -35,7 +35,7 @@ export default function ExportButton() {
         vendors: {
           nome: string; loja: string; total_vendido: number
           comissao_pct: number; comissao: number
-          meta_atingida: string; bonus: number; total_ganhos: number
+          meta_atingida: string; bonus: number; total_ganhos: number; status_aprovacao: string
         }[]
       }
 
@@ -47,11 +47,11 @@ export default function ExportButton() {
       const lines: string[] = [
         `Relatório de Comissões${SEP}${periodLabel}`,
         '',
-        ['#','Vendedor','Loja','Total Vendido ($)','Comissão % Vendas','Comissão ($)','Meta Atingida','Bônus ($)','Total Ganhos ($)'].join(SEP),
+        ['#','Vendedor','Loja','Total Vendido ($)','Comissão % Vendas','Comissão ($)','Meta Atingida','Bônus ($)','Total Ganhos ($)','Status'].join(SEP),
         ...vendors.map((v, i) => [
           i + 1, v.nome, v.loja,
           fmt(v.total_vendido), fmtPct(v.comissao_pct), fmt(v.comissao),
-          v.meta_atingida, fmt(v.bonus), fmt(v.total_ganhos),
+          v.meta_atingida, fmt(v.bonus), fmt(v.total_ganhos), v.status_aprovacao
         ].join(SEP)),
         '',
         ['TOTAL','','',
@@ -59,6 +59,7 @@ export default function ExportButton() {
           fmt(vendors.reduce((s,v) => s + v.comissao, 0)),'',
           fmt(vendors.reduce((s,v) => s + v.bonus, 0)),
           fmt(vendors.reduce((s,v) => s + v.total_ganhos, 0)),
+          ''
         ].join(SEP),
       ]
 

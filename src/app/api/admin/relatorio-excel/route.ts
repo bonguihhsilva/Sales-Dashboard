@@ -37,19 +37,39 @@ export async function GET(req: NextRequest) {
   const vendors = (summary ?? []).filter(v => goalIds.has(v.vendor_id))
 
   // Build CSV (we'll convert to Excel on client side)
-  // Actually return JSON and let client generate Excel
+  // Get comissoes_calculadas to use the source of truth if available
+  const { data: comissoesCalc } = await admin
+    .from('comissoes_calculadas')
+    .select('vendedor_id, comissao_base, bonus_total, total, aprovado')
+    .eq('periodo_id', parseInt(periodId))
+
+  const calcMap = new Map(comissoesCalc?.map(c => [c.vendedor_id, c]) || [])
+
+  // Fetch profiles to map vendor_id (string) to id (uuid)
+  const { data: profiles } = await admin
+    .from('profiles')
+    .select('id, vendor_id')
+
+  const profileMap = new Map(profiles?.map(p => [p.vendor_id, p.id]) || [])
+
   return NextResponse.json({
     period: period?.label ?? `Período ${periodId}`,
     vendors: vendors.map(v => {
+      const profileId = profileMap.get(v.vendor_id)
+      const calc = profileId ? calcMap.get(profileId) : null
+
       const sold         = Number(v.total_sold) || 0
       const commPct      = Number(v.commission_pct) || 0.003
-      const commission   = sold * commPct
-      const bonus        = Number(v.bonus_earned) || 0
-      const totalEarning = commission + bonus
+      
       const m1 = Number(v.meta1) || 0
       const m2 = Number(v.meta2) || 0
       const m3 = Number(v.meta3) || 0
       const level = sold >= m3 ? 3 : sold >= m2 ? 2 : sold >= m1 ? 1 : 0
+
+      const commission   = calc ? Number(calc.comissao_base) : sold * commPct
+      const bonus        = calc ? Number(calc.bonus_total) : (Number(v.bonus_earned) || 0)
+      const totalEarning = calc ? Number(calc.total) : (commission + bonus)
+      
       return {
         nome:         v.vendor_name,
         loja:         v.store,
@@ -59,6 +79,7 @@ export async function GET(req: NextRequest) {
         meta_atingida: level === 0 ? 'Abaixo da 1ª meta' : `${level}ª meta`,
         bonus:        bonus,
         total_ganhos: totalEarning,
+        status_aprovacao: calc?.aprovado ? 'Aprovada' : (calc ? 'Pendente' : 'Prévia')
       }
     }),
   })

@@ -58,6 +58,12 @@ export default async function MeuResultadoPage({
     .order('total_spent', { ascending: false })
     .limit(1000)
 
+  const { data: gamificacao } = await supabase
+    .from('gamificacao')
+    .select('*')
+    .eq('usuario_id', user.id)
+    .maybeSingle()
+
   // Commission: vendedor_id = profiles.id = user.id (FK is uuid, not vendor_id text)
   const adminDb = createAdminClient()
   const { data: comissaoCalc } = await adminDb
@@ -147,6 +153,23 @@ export default async function MeuResultadoPage({
               </a>
             ))}
           </div>
+          <div style={{ height: '24px', width: '1px', background: 'var(--border)', margin: '0 5px' }}></div>
+          <a 
+            href="/treinamentos" 
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px', 
+              background: 'var(--surface)', border: '1px solid var(--border)', 
+              padding: '6px 12px', borderRadius: '6px', textDecoration: 'none', color: 'var(--text)',
+              transition: 'all 0.2s'
+            }}
+          >
+            <div style={{ fontSize: '1rem' }}>🎓</div>
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Treinamentos</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--meta3, #f5a742)' }}>Lvl {gamificacao?.nivel || 1} • {gamificacao?.xp_total || 0} XP</div>
+            </div>
+          </a>
+          <div style={{ height: '24px', width: '1px', background: 'var(--border)', margin: '0 5px' }}></div>
           <ChangePassword />
           <LogoutButton />
         </div>

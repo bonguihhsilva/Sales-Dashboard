@@ -5,6 +5,7 @@ import { LogoutButton } from '@/components/ui'
 import type { Period } from '@/types'
 import PeriodSelector from '../PeriodSelector'
 import ComissaoClient, { type VendorRow } from './ComissaoClient'
+import ExportButton from '../ExportButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -103,6 +104,7 @@ export default async function ComissaoPage({
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <ExportButton />
           <PeriodSelector periods={periods as Period[]} activePeriod={activePeriod} />
           <LogoutButton />
         </div>
