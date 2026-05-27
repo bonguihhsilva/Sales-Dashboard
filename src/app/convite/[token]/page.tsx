@@ -3,13 +3,15 @@ import { Card, CardContent } from '@/components/ui/card'
 import { AlertCircle } from 'lucide-react'
 import { ConviteForm } from './ConviteForm'
 
+import { createAdminClient } from '@/lib/supabase/admin'
+
 export const metadata = { title: 'DA SILVA — Definir senha' }
 
 export default async function ConvitePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
 
-  const supabase = await createClient()
-  const { data: convite } = await supabase
+  const adminDb = createAdminClient()
+  const { data: convite } = await adminDb
     .from('convites')
     .select('usado, expira_em')
     .eq('token', token)
