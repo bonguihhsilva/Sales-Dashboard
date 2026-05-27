@@ -27,8 +27,8 @@ O GDS Dashboard evoluiu de um leitor de ranking para uma plataforma completa de 
 **Plans**: 2 planos
 
 Plans:
-- [ ] 01-01: Segurança crítica (JWT, Site URL, bulk update roles)
-- [ ] 01-02: Edge Function invite + UAT fluxo convite e2e
+- [x] 01-01: Segurança crítica (JWT, Site URL, bulk update roles)
+- [x] 01-02: Edge Function invite + UAT fluxo convite e2e
 
 ---
 
@@ -91,7 +91,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 01. Segurança & Estabilidade | 0/2 | Not started | - |
+| 01. Segurança & Estabilidade | 2/2 | Complete | - |
 | 02. Motor de Comissão | 4/4 | Complete | - |
 | 03. LMS / Treinamento | 3/3 | Complete | - |
 | 04. Relatórios & Export | 2/2 | Complete | - |
