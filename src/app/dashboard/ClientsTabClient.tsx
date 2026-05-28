@@ -160,7 +160,7 @@ export default function ClientsTabClient({ clients }: { clients: Client[] }) {
                   key={`${c.client_id}-${c.vendor_id}`} 
                   style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
                   onClick={() => openClientDetails(c)}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--surface2)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
                   <td style={{ padding: '7px 10px', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: 'var(--muted)' }}>{i + 1}</td>
@@ -213,7 +213,7 @@ export default function ClientsTabClient({ clients }: { clients: Client[] }) {
                       <th style={{ textAlign: 'left', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>DATA / HORA</th>
                       <th style={{ textAlign: 'left', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>PRODUTO</th>
                       <th style={{ textAlign: 'left', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>VENDEDOR</th>
-                      <th style={{ textAlign: 'left', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>LOJA</th>
+                      <th style={{ textAlign: 'left', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>CANAL DE VENDA</th>
                       <th style={{ textAlign: 'right', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>QTD</th>
                       <th style={{ textAlign: 'right', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>VALOR</th>
                     </tr>

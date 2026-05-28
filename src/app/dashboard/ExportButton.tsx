@@ -2,31 +2,14 @@
 
 import { useState, useEffect } from 'react'
 
-interface Period { id: number; label: string }
-
-export default function ExportButton() {
-  const [periods, setPeriods]   = useState<Period[]>([])
-  const [periodId, setPeriodId] = useState('')
+export default function ExportButton({ activePeriod }: { activePeriod?: number }) {
   const [loading, setLoading]   = useState(false)
 
-  // Fetch periods client-side via API (bypasses RLS)
-  useEffect(() => {
-    fetch('/api/admin/periods')
-      .then(r => r.json())
-      .then((data: Period[]) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setPeriods(data)
-          setPeriodId(String(data[0].id))
-        }
-      })
-      .catch(console.error)
-  }, [])
-
   async function handleExport() {
-    if (!periodId) return
+    if (!activePeriod) return
     setLoading(true)
     try {
-      const res = await fetch(`/api/admin/relatorio-excel?period=${periodId}`)
+      const res = await fetch(`/api/admin/relatorio-excel?period=${activePeriod}`)
       const data = await res.json()
       if (data.error) { alert(data.error); return }
 
@@ -47,7 +30,7 @@ export default function ExportButton() {
       const lines: string[] = [
         `Relatório de Comissões${SEP}${periodLabel}`,
         '',
-        ['#','Vendedor','Loja','Total Vendido ($)','Comissão % Vendas','Comissão ($)','Meta Atingida','Bônus ($)','Total Ganhos ($)','Status'].join(SEP),
+        ['#','Vendedor','Canal de Venda','Total Vendido ($)','Comissão % Vendas','Comissão ($)','Meta Atingida','Bônus ($)','Total Ganhos ($)','Status'].join(SEP),
         ...vendors.map((v, i) => [
           i + 1, v.nome, v.loja,
           fmt(v.total_vendido), fmtPct(v.comissao_pct), fmt(v.comissao),
@@ -77,34 +60,21 @@ export default function ExportButton() {
     }
   }
 
-  // Don't render until periods are loaded
-  if (periods.length === 0) return null
-
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-      <select
-        value={periodId}
-        onChange={e => setPeriodId(e.target.value)}
-        style={{
-          background: 'var(--surface2)', border: '1px solid var(--border)',
-          borderRadius: '6px', color: 'var(--text)', fontFamily: 'DM Mono, monospace',
-          fontSize: '0.68rem', padding: '5px 8px', outline: 'none', cursor: 'pointer',
-        }}
-      >
-        {periods.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
-      </select>
       <button
         onClick={handleExport}
         disabled={loading}
         style={{
-          background: 'rgba(200,245,66,0.12)',
-          border: '1px solid var(--accent)',
+          background: 'var(--surface2)',
+          border: '1px solid var(--border)',
           borderRadius: '6px',
           color: loading ? 'var(--muted)' : 'var(--accent)',
           fontFamily: 'DM Mono, monospace', fontWeight: 700,
-          fontSize: '0.68rem', padding: '5px 12px',
+          fontSize: '0.68rem', padding: '7px 12px',
           cursor: loading ? 'not-allowed' : 'pointer',
           whiteSpace: 'nowrap',
+          height: '100%',
         }}
       >
         {loading ? '⏳ Gerando...' : '⬇ Relatório CSV'}

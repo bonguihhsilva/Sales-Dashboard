@@ -449,7 +449,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
       {/* ── Sub-tab switcher ─────────────────────────────────── */}
       <div style={{ display: 'flex', gap: '6px', marginBottom: '1.5rem' }}>
         {([
-          { key: 'lojas',      label: 'Lojas' },
+          { key: 'lojas',      label: 'Canais de Venda' },
           { key: 'vendedores', label: 'Vendedores' },
         ] as { key: SubTab; label: string }[]).map(t => {
           const on = activeSubTab === t.key
@@ -792,7 +792,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
                   <tr style={{ borderBottom: '2px solid var(--border)' }}>
                     <th style={{ ...thBase, textAlign: 'left', width: '24px' }}>#</th>
                     <th style={{ ...thBase, textAlign: 'left', minWidth: '130px' }}>Vendedor</th>
-                    <th style={{ ...thBase, textAlign: 'left', minWidth: '70px' }}>Loja</th>
+                    <th style={{ ...thBase, textAlign: 'left', minWidth: '70px' }}>Canal de Venda</th>
                     {sortedPeriodsAsc.map((p, pi) => (
                       <th key={p.id} style={{ ...thBase, textAlign: 'right', minWidth: '120px' }}>
                         <span style={{ color: pi === sortedPeriodsAsc.length - 1 ? 'var(--accent)' : 'var(--muted)' }}>

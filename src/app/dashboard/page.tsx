@@ -81,17 +81,11 @@ export default async function DashboardPage({
     .order('total_spent', { ascending: false })
     .limit(2000)
 
-  // Only show vendors linked to a user account
-  const { data: linkedProfiles } = await adminDb
-    .from('profiles')
-    .select('vendor_id')
-    .not('vendor_id', 'is', null)
-  const linkedVendorIds = new Set((linkedProfiles ?? []).map(p => p.vendor_id as string))
-  const registeredSummaries = (summaries ?? []).filter(s => linkedVendorIds.has(s.vendor_id))
-
+  // Remove the linkedVendorIds filter to show all vendors in ranking/evolution
+  // Previously we filtered `summaries` by `linkedVendorIds`, now we use all of them.
   const filtered = activeStore === 'all'
-    ? registeredSummaries
-    : registeredSummaries.filter(s => s.store === activeStore)
+    ? summaries ?? []
+    : (summaries ?? []).filter(s => s.store === activeStore)
 
   const grandTotal   = filtered.reduce((s, v) => s + Number(v.total_sold), 0)
   const totalM1      = filtered.reduce((s, v) => s + Number(v.meta1), 0)
@@ -126,11 +120,11 @@ export default async function DashboardPage({
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <PeriodSelector periods={periods as Period[]} activePeriod={activePeriod} />
           <UploadModal periods={periods as Period[]} />
-          <ExportButton />
+          <ExportButton activePeriod={activePeriod} />
         </div>
       </div>
 
-      {/* Store tabs */}
+      {/* Canais de Venda tabs */}
       <div style={{
         display: 'flex', gap: '4px', padding: '1rem 2rem 0',
         borderBottom: '1px solid var(--border)', overflowX: 'auto', background: 'var(--surface)'
@@ -274,7 +268,7 @@ export default async function DashboardPage({
                     {([
                       { h:'#',         align:'left'  },
                       { h:'Vendedor',  align:'left'  },
-                      { h:'Loja',      align:'left'  },
+                      { h:'Canal de Venda', align:'left' },
                       { h:'Clientes',  align:'right' },
                       { h:'Total',     align:'right' },
                       { h:'1ª Meta',   align:'right', color:'var(--meta1)' },
