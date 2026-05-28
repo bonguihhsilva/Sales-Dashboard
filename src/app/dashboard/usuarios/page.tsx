@@ -56,11 +56,16 @@ export default async function UsersPage({
     return true
   })
 
+  // Fetch stores for the tenant
+  const { data: dbStores } = await supabase.from('stores').select('*').eq('tenant_id', tenantId).order('name')
+  const stores = (dbStores || []).map(s => ({ key: s.name, label: s.name, color: s.color }))
+
   return (
     <UsersClient
       users={filteredUsers}
       activeRole={role ?? null}
       activeLoja={loja ?? null}
+      stores={stores}
     />
   )
 }

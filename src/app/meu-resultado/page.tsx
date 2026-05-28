@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
-import { fmtCurrency, fmtK, metaLevel, bonusAmount, STORE_COLORS } from '@/lib/utils'
+import { fmtCurrency, fmtK, metaLevel, bonusAmount } from '@/lib/utils'
 import { KpiCard, StorePill, ProgressBar, SectionTitle, LogoutButton } from '@/components/ui'
 import ClientsTabClient from './ClientsTabClient'
 import MeuRHTab from './MeuRHTab'
@@ -103,7 +103,10 @@ export default async function MeuResultadoPage({
   const lvl = summary ? metaLevel(sold, m1, m2, m3) : 0
   const b   = summary ? bonusAmount(lvl, Number(summary.bonus1), Number(summary.bonus2), Number(summary.bonus3)) : 0
   const commission = sold * (summary ? Number(summary.commission_pct) : 0) + b
-  const col = summary ? (STORE_COLORS[summary.store] || 'var(--accent)') : 'var(--accent)'
+  const { data: dbStores } = await supabase.from('stores').select('*').eq('tenant_id', profile.tenant_id)
+  const stores = (dbStores || []).map(s => ({ key: s.name, label: s.name, color: s.color }))
+  const storeObj = summary ? stores.find(s => s.key === summary.store) : undefined
+  const col = storeObj?.color || 'var(--accent)'
   const META_COL = ['var(--muted)','var(--meta1)','var(--meta2)','var(--meta3)'][lvl]
 
   const pctBase  = lvl === 0 ? m1 : lvl === 1 ? m1 : lvl === 2 ? m2 : m3
@@ -136,7 +139,7 @@ export default async function MeuResultadoPage({
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {summary && <StorePill store={summary.store} />}
+          {summary && <StorePill store={summary.store} label={storeObj?.label} color={storeObj?.color} />}
           {/* Period selector */}
           <div style={{ display: 'flex', gap: '4px' }}>
             {(periods as Period[]).map(p => (

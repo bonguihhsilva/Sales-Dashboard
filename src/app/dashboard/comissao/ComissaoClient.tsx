@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { fmtCurrency } from '@/lib/utils'
-import { STORE_COLORS, STORE_LABELS } from '@/lib/utils'
+import type { Store } from '@/types'
 
 type ComissaoRecord = {
   id: string
@@ -29,9 +29,10 @@ interface Props {
   vendorRows: VendorRow[]
   periodId: number
   role: string
+  stores: Store[]
 }
 
-export default function ComissaoClient({ vendorRows, periodId, role }: Props) {
+export default function ComissaoClient({ vendorRows, periodId, role, stores }: Props) {
   const [rows, setRows] = useState(vendorRows)
   const [isPending, startTransition] = useTransition()
   const [calcError, setCalcError] = useState<string | null>(null)
@@ -131,8 +132,9 @@ export default function ComissaoClient({ vendorRows, periodId, role }: Props) {
                 </tr>
               )}
               {rows.map((row, i) => {
-                const storeColor = STORE_COLORS[row.store] || 'var(--muted)'
-                const storeLabel = STORE_LABELS[row.store] || row.store
+                const storeObj   = stores.find(s => s.name === row.store)
+                const storeColor = storeObj?.color || 'var(--muted)'
+                const storeLabel = storeObj?.name  || row.store
                 const comPct     = (row.commission_pct * 100).toFixed(2)
                 const base       = row.comissao ? row.comissao.comissao_base : row.total_sold * row.commission_pct
                 const bonus      = row.comissao ? row.comissao.bonus_total   : row.bonus_earned

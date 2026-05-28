@@ -35,27 +35,14 @@ interface Props {
   data:             DayData[]
   periods:          Period[]
   vendorSummaries:  VendorPeriodSummary[]
+  stores:           { key: string; label: string; color: string }[]
 }
-
-const STORE_COLORS: Record<string, string> = {
-  'Jebai':      '#c8f542',
-  'Paje-MKT':   '#42d9f5',
-  'Paje-Caixa': '#f5a742',
-}
-
-const STORE_LABELS: Record<string, string> = {
-  'Jebai':      'Jebai',
-  'Paje-MKT':   'Pajé 1',
-  'Paje-Caixa': 'Pajé 2',
-}
-
-const STORES = ['Jebai', 'Paje-MKT', 'Paje-Caixa']
 
 const PERIOD_PALETTES = [
-  { Jebai: '#c8f542', 'Paje-MKT': '#42d9f5', 'Paje-Caixa': '#f5a742' },
-  { Jebai: '#7ab833', 'Paje-MKT': '#2491a8', 'Paje-Caixa': '#c27a1a' },
-  { Jebai: '#e8ff80', 'Paje-MKT': '#80eeff', 'Paje-Caixa': '#ffe080' },
-  { Jebai: '#a0c830', 'Paje-MKT': '#30b8d8', 'Paje-Caixa': '#d89030' },
+  ['#c8f542', '#42d9f5', '#f5a742', '#7b61ff', '#f542b9'],
+  ['#7ab833', '#2491a8', '#c27a1a', '#4a2fc2', '#a8247f'],
+  ['#e8ff80', '#80eeff', '#ffe080', '#bba8ff', '#ff80d4'],
+  ['#a0c830', '#30b8d8', '#d89030', '#6040b8', '#d8309c'],
 ]
 
 type Metric   = 'total' | 'clients' | 'avg_ticket' | 'transactions'
@@ -81,9 +68,11 @@ const VENDOR_METRIC_FIELD: Record<Metric, keyof VendorPeriodSummary> = {
 type ChartSeries = { id: string; label: string; color: string; points: { x: number | string; value: number }[] }
 
 function OverlayBarChart({
-  store, storeSeries, metric, dayStart, dayEnd,
+  store, storeLabel, storeColor, storeSeries, metric, dayStart, dayEnd,
 }: {
   store: string
+  storeLabel: string
+  storeColor: string
   storeSeries: ChartSeries[]
   metric: Metric
   dayStart: number
@@ -145,22 +134,21 @@ function OverlayBarChart({
     setHoveredDay(days[di])
   }
 
-  const col     = STORE_COLORS[store] ?? '#999'
   const xStep   = numDays > 20 ? 3 : numDays > 14 ? 2 : 1
   const dayLabels = days.filter((_, i) => i % xStep === 0)
 
   return (
-    <div style={{ background: 'var(--surface)', border: `1px solid ${col}28`, borderRadius: '12px', padding: '1rem', overflow: 'hidden', borderLeft: `3px solid ${col}` }}>
+    <div style={{ background: 'var(--surface)', border: `1px solid ${storeColor}28`, borderRadius: '12px', padding: '1rem', overflow: 'hidden', borderLeft: `3px solid ${storeColor}` }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }}>
-        <span style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: col, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700 }}>
-          {STORE_LABELS[store] ?? store}
+        <span style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: storeColor, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700 }}>
+          {storeLabel}
         </span>
         <div style={{ display: 'flex', gap: '12px' }}>
           {storeSeries.map(s => (
             <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>
               <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: s.color, flexShrink: 0 }} />
-              {s.label.replace(`${store} (`, '').replace(')', '')}
+              {s.label.replace(`${storeLabel} (`, '').replace(')', '')}
             </div>
           ))}
         </div>
@@ -253,9 +241,9 @@ function OverlayBarChart({
 
 // ── Main component ────────────────────────────────────────────────────────
 
-export default function EvolucaoTab({ data, periods, vendorSummaries }: Props) {
+export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: Props) {
   const [metric, setMetric]             = useState<Metric>('total')
-  const [activeStores, setActiveStores] = useState<Set<string>>(new Set(STORES))
+  const [activeStores, setActiveStores] = useState<Set<string>>(new Set(stores.map(s => s.key)))
   const [viewMode, setViewMode]         = useState<ViewMode>('month')
   const [activeSubTab, setActiveSubTab] = useState<SubTab>('lojas')
   const [dayStart, setDayStart]         = useState(1)
@@ -284,41 +272,41 @@ export default function EvolucaoTab({ data, periods, vendorSummaries }: Props) {
 
     if (viewMode === 'month' && activePeriods.length === 1) {
       const pid = activePeriods[0].id
-      for (const store of STORES) {
-        if (!activeStores.has(store)) continue
-        const storeData = filtered.filter(d => d.period_id === pid && d.store === store)
+      for (const store of stores) {
+        if (!activeStores.has(store.key)) continue
+        const storeData = filtered.filter(d => d.period_id === pid && d.store === store.key)
           .sort((a, b) => a.sale_date.localeCompare(b.sale_date))
         result.push({
-          id: store, label: store, color: STORE_COLORS[store],
+          id: store.key, label: store.label, color: store.color,
           points: storeData.map(d => ({ x: d.sale_date, value: Number(d[metric]) })),
         })
       }
     } else if (viewMode === 'overlay') {
-      for (const store of STORES) {
-        if (!activeStores.has(store)) continue
+      for (const [storeIdx, store] of stores.entries()) {
+        if (!activeStores.has(store.key)) continue
         activePeriods.forEach((period, pi) => {
           const palette = PERIOD_PALETTES[pi % PERIOD_PALETTES.length]
-          const storeData = filtered.filter(d => d.period_id === period.id && d.store === store)
+          const storeData = filtered.filter(d => d.period_id === period.id && d.store === store.key)
             .sort((a, b) => a.day_of_month - b.day_of_month)
           result.push({
-            id: `${store}-${period.id}`,
-            label: `${store} (${period.label})`,
-            color: palette[store as keyof typeof palette] ?? '#999',
+            id: `${store.key}-${period.id}`,
+            label: `${store.label} (${period.label})`,
+            color: palette[storeIdx % palette.length] ?? '#999',
             points: storeData.map(d => ({ x: d.day_of_month, value: Number(d[metric]) })),
           })
         })
       }
     } else {
-      for (const store of STORES) {
-        if (!activeStores.has(store)) continue
+      for (const store of stores) {
+        if (!activeStores.has(store.key)) continue
         const byDate = new Map<string, number>()
-        filtered.filter(d => d.store === store).forEach(d => {
+        filtered.filter(d => d.store === store.key).forEach(d => {
           byDate.set(d.sale_date, (byDate.get(d.sale_date) ?? 0) + Number(d[metric]))
         })
         const sorted = [...byDate.entries()].sort(([a], [b]) => a.localeCompare(b))
         let cum = 0
         result.push({
-          id: store, label: store, color: STORE_COLORS[store],
+          id: store.key, label: store.label, color: store.color,
           points: sorted.map(([date, val]) => { cum += val; return { x: date, value: cum } }),
         })
       }
@@ -383,13 +371,14 @@ export default function EvolucaoTab({ data, periods, vendorSummaries }: Props) {
   const storePeriodTotals = useMemo(() => {
     return activePeriods.map(period => ({
       period,
-      stores: STORES.map(store => ({
-        store,
-        color: STORE_COLORS[store],
-        total:  data.filter(d => d.period_id === period.id && d.store === store).reduce((s, d) => s + Number(d.total), 0),
-        clients: data.filter(d => d.period_id === period.id && d.store === store).reduce((s, d) => s + Number(d.clients), 0),
+      stores: stores.map(store => ({
+        store: store.key,
+        storeLabel: store.label,
+        color: store.color,
+        total:  data.filter(d => d.period_id === period.id && d.store === store.key).reduce((s, d) => s + Number(d.total), 0),
+        clients: data.filter(d => d.period_id === period.id && d.store === store.key).reduce((s, d) => s + Number(d.clients), 0),
         avgTicket: (() => {
-          const rows = data.filter(d => d.period_id === period.id && d.store === store)
+          const rows = data.filter(d => d.period_id === period.id && d.store === store.key)
           return rows.length ? rows.reduce((s, d) => s + Number(d.avg_ticket), 0) / rows.length : 0
         })(),
       })),
@@ -545,21 +534,21 @@ export default function EvolucaoTab({ data, periods, vendorSummaries }: Props) {
         )}
 
         <div style={{ display: 'flex', gap: '6px', marginLeft: '4px' }}>
-          {STORES.map(store => {
-            const active = activeStores.has(store)
+          {stores.map(store => {
+            const active = activeStores.has(store.key)
             return (
               <button
-                key={store}
-                onClick={() => toggleStore(store)}
+                key={store.key}
+                onClick={() => toggleStore(store.key)}
                 style={{
-                  background: active ? `${STORE_COLORS[store]}15` : 'transparent',
-                  border: `1px solid ${active ? STORE_COLORS[store] : 'var(--border)'}`,
-                  borderRadius: '6px', color: active ? STORE_COLORS[store] : 'var(--muted)',
+                  background: active ? `${store.color}15` : 'transparent',
+                  border: `1px solid ${active ? store.color : 'var(--border)'}`,
+                  borderRadius: '6px', color: active ? store.color : 'var(--muted)',
                   fontFamily: 'DM Mono, monospace', fontSize: '0.65rem',
                   padding: '5px 10px', cursor: 'pointer', transition: 'all 0.15s',
                 }}
               >
-                {STORE_LABELS[store] ?? store}
+                {store.label}
               </button>
             )
           })}
@@ -582,7 +571,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries }: Props) {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                   {stores.map(s => (
                     <div key={s.store} style={{ background: 'var(--surface)', border: `1px solid ${s.color}28`, borderRadius: '10px', padding: '1rem 1.25rem', borderLeft: `3px solid ${s.color}` }}>
-                      <div style={{ fontSize: '0.58rem', fontFamily: 'DM Mono, monospace', color: s.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px', fontWeight: 700 }}>{s.store}</div>
+                      <div style={{ fontSize: '0.58rem', fontFamily: 'DM Mono, monospace', color: s.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px', fontWeight: 700 }}>{s.storeLabel}</div>
                       <div style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '4px' }}>{fmtCurrency(s.total)}</div>
                       <div style={{ height: '3px', background: 'var(--surface2)', borderRadius: '2px', marginBottom: '8px' }}>
                         <div style={{ height: '100%', width: `${periodTotal > 0 ? (s.total / periodTotal) * 100 : 0}%`, background: s.color, borderRadius: '2px' }} />
@@ -648,13 +637,15 @@ export default function EvolucaoTab({ data, periods, vendorSummaries }: Props) {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '1.5rem' }}>
-                {STORES.filter(s => activeStores.has(s)).map(store => {
-                  const storeSeries = series.filter(s => s.id.startsWith(store + '-'))
+                {stores.filter(s => activeStores.has(s.key)).map(store => {
+                  const storeSeries = series.filter(s => s.id.startsWith(store.key + '-'))
                   if (storeSeries.length === 0) return null
                   return (
                     <OverlayBarChart
-                      key={store}
-                      store={store}
+                      key={store.key}
+                      store={store.key}
+                      storeLabel={store.label}
+                      storeColor={store.color}
                       storeSeries={storeSeries}
                       metric={metric}
                       dayStart={dayStart}
@@ -752,16 +743,16 @@ export default function EvolucaoTab({ data, periods, vendorSummaries }: Props) {
                   <thead>
                     <tr style={{ borderBottom: '1px solid var(--border)' }}>
                       <th style={{ ...thBase, textAlign: 'left' }}>Data</th>
-                      {STORES.flatMap(s => [
-                        <th key={`${s}v`} style={{ ...thBase, color: STORE_COLORS[s], textAlign: 'right' }}>{s} ($)</th>,
-                        <th key={`${s}c`} style={{ ...thBase, textAlign: 'right' }}>Cli.</th>,
-                        <th key={`${s}a`} style={{ ...thBase, textAlign: 'right' }}>Ticket</th>,
+                      {stores.flatMap(s => [
+                        <th key={`${s.key}v`} style={{ ...thBase, color: s.color, textAlign: 'right' }}>{s.label} ($)</th>,
+                        <th key={`${s.key}c`} style={{ ...thBase, textAlign: 'right' }}>Cli.</th>,
+                        <th key={`${s.key}a`} style={{ ...thBase, textAlign: 'right' }}>Ticket</th>,
                       ])}
                     </tr>
                   </thead>
                   <tbody>
                     {[...new Set(data.filter(d => d.period_id === activePeriods[0].id).map(d => d.sale_date))].sort().map(date => {
-                      const row = STORES.map(store => data.find(d => d.sale_date === date && d.store === store && d.period_id === activePeriods[0].id))
+                      const row = stores.map(store => data.find(d => d.sale_date === date && d.store === store.key && d.period_id === activePeriods[0].id))
                       const dayTotal = row.reduce((s, d) => s + (d ? Number(d.total) : 0), 0)
                       return (
                         <tr key={date} style={{ borderBottom: '1px solid var(--border)' }}>
@@ -770,7 +761,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries }: Props) {
                             <span style={{ fontSize: '0.58rem', color: 'var(--muted)', marginLeft: '6px' }}>{fmtCurrency(dayTotal)}</span>
                           </td>
                           {row.flatMap((d, i) => [
-                            <td key={`v${i}`} style={{ padding: '5px 8px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontWeight: 600, color: STORE_COLORS[STORES[i]], fontSize: '0.7rem' }}>{d ? fmtCurrency(Number(d.total)) : '—'}</td>,
+                            <td key={`v${i}`} style={{ padding: '5px 8px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontWeight: 600, color: stores[i].color, fontSize: '0.7rem' }}>{d ? fmtCurrency(Number(d.total)) : '—'}</td>,
                             <td key={`c${i}`} style={{ padding: '5px 8px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: 'var(--muted)' }}>{d ? d.clients : '—'}</td>,
                             <td key={`a${i}`} style={{ padding: '5px 8px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: 'var(--muted)' }}>{d ? fmtCurrency(Number(d.avg_ticket)) : '—'}</td>,
                           ])}
@@ -830,8 +821,9 @@ export default function EvolucaoTab({ data, periods, vendorSummaries }: Props) {
                     const lastVal  = row.byPeriod.get(sortedPeriodsAsc[sortedPeriodsAsc.length - 1]?.id ?? 0) ?? 0
                     const totalGrowth = firstVal > 0 ? ((lastVal - firstVal) / firstVal) * 100 : null
                     const rankColors  = ['#f5c842', '#a8abb2', '#cd7f32']
-                    const col = STORE_COLORS[row.store] ?? 'var(--muted)'
-                    const storeLabel = STORE_LABELS[row.store] ?? row.store
+                    const storeObj = stores.find(s => s.key === row.store)
+                    const col = storeObj?.color ?? 'var(--muted)'
+                    const storeLabel = storeObj?.label ?? row.store
 
                     return (
                       <tr key={row.vendor_id} style={{ borderBottom: '1px solid var(--border)' }}>

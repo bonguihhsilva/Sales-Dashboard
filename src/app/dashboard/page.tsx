@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
-import { fmtCurrency, fmtK, metaLevel, bonusAmount, STORE_COLORS, STORE_LABELS } from '@/lib/utils'
+import { fmtCurrency, fmtK, metaLevel, bonusAmount } from '@/lib/utils'
 import { KpiCard, StorePill, ProgressBar, BonusBadge, SectionTitle, LogoutButton } from '@/components/ui'
 import type { VendorSummary, Period } from '@/types'
 import UploadModal from './UploadModal'
@@ -98,11 +98,13 @@ export default async function DashboardPage({
   const totalBonus   = filtered.reduce((v, s) => v + Number(s.bonus_earned), 0)
   const activePeriodLabel = (periods as Period[])?.find(p => p.id === activePeriod)?.label ?? ''
 
-  const stores = [
-    { key: 'Jebai',       label: 'Jebai',   color: STORE_COLORS.Jebai },
-    { key: 'Paje-MKT',    label: 'Pajé 1',  color: STORE_COLORS['Paje-MKT'] },
-    { key: 'Paje-Caixa',  label: 'Pajé 2',  color: STORE_COLORS['Paje-Caixa'] },
-  ]
+  const { data: dbStores } = await adminDb
+    .from('stores')
+    .select('*')
+    .eq('tenant_id', profile?.tenant_id)
+    .order('name')
+
+  const stores = (dbStores || []).map(s => ({ key: s.name, label: s.name, color: s.color }))
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
@@ -205,6 +207,7 @@ export default async function DashboardPage({
             data={(evolutionData ?? []) as Parameters<typeof EvolucaoTab>[0]['data']}
             periods={(periods ?? []) as Parameters<typeof EvolucaoTab>[0]['periods']}
             vendorSummaries={(allVendorSummaries ?? []) as Parameters<typeof EvolucaoTab>[0]['vendorSummaries']}
+            stores={stores}
           />
         ) : activeTab === 'clientes' ? (
           <ClientsTabClient clients={(allClients ?? []) as Parameters<typeof ClientsTabClient>[0]['clients']} />
@@ -315,7 +318,13 @@ export default async function DashboardPage({
                             {v.vendor_name}
                           </a>
                         </td>
-                        <td style={td}><StorePill store={v.store} /></td>
+                        <td style={td}>
+                          <StorePill 
+                            store={v.store} 
+                            label={stores.find(s => s.key === v.store)?.label} 
+                            color={stores.find(s => s.key === v.store)?.color} 
+                          />
+                        </td>
                         <td style={{ ...td, textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.76rem' }}>{Number(v.unique_clients).toLocaleString()}</td>
                         <td style={{ ...td, textAlign: 'right', fontFamily: 'DM Mono, monospace', fontWeight: 700 }}>{fmtCurrency(sold)}</td>
                         <td style={{ ...td, textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.76rem', color: lvl >= 1 ? 'var(--meta1)' : 'var(--muted)' }}>{fmtK(m1)}</td>

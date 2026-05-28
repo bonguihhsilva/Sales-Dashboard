@@ -10,8 +10,16 @@ export default async function MapeamentoPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  const { data: profile } = await supabase.from('profiles').select('role, tenant_id').eq('id', user.id).single()
   if (profile?.role !== 'adm') redirect('/meu-resultado')
+
+  const { data: storesData } = await supabase
+    .from('stores')
+    .select('key, label, color')
+    .eq('tenant_id', profile.tenant_id)
+    .order('label')
+
+  const stores = storesData ?? []
 
   // All user profiles
   const { data: profiles } = await supabase
@@ -58,6 +66,7 @@ export default async function MapeamentoPage() {
           profiles={profiles ?? []}
           vendors={uniqueVendors}
           orphanVendors={orphanVendors}
+          stores={stores}
         />
       </div>
     </div>

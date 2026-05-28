@@ -49,7 +49,7 @@ import {
   SelectItem,
 } from '@/components/ui/select'
 import { ASSIGNABLE_ROLES } from '@/lib/auth/roles'
-import { STORE_LABELS } from '@/types'
+import type { Store } from '@/types'
 import type { UserRow } from './page'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -61,11 +61,7 @@ const ROLE_LABELS: Record<string, string> = {
   super_admin: 'Super Admin',
 }
 
-const STORE_OPTIONS = [
-  { value: 'Jebai', label: 'Jebai' },
-  { value: 'Paje-MKT', label: 'Paje 1' },
-  { value: 'Paje-Caixa', label: 'Paje 2' },
-]
+
 
 function formatLastSeen(dateStr: string | null): string {
   if (!dateStr) return 'Nunca'
@@ -89,11 +85,14 @@ export default function UsersClient({
   users,
   activeRole,
   activeLoja,
+  stores,
 }: {
   users: UserRow[]
   activeRole: string | null
   activeLoja: string | null
+  stores: { key: string; label: string; color: string }[]
 }) {
+  const STORE_OPTIONS = stores.length > 0 ? stores.map(s => ({ value: s.key, label: s.label })) : [{ value: '', label: 'Nenhuma loja disponível' }]
   const router = useRouter()
 
   // Estados de UI principal
@@ -191,7 +190,7 @@ export default function UsersClient({
     try {
       const body: Record<string, unknown> = {
         role: row.role,
-        loja: row.store ?? STORE_OPTIONS[0].value,
+        loja: row.store ?? (STORE_OPTIONS[0]?.value || ''),
       }
       const res = await fetch('/api/admin/invite', {
         method: 'POST',
@@ -330,16 +329,9 @@ export default function UsersClient({
       header: 'Loja',
       render: (r) => {
         const row = r as unknown as UserRow
-        const storeLabel = row.store ? (STORE_LABELS[row.store] ?? row.store) : null
-        if (!storeLabel) return <span className="text-muted-foreground">—</span>
-        const lojaMap: Record<string, LojaName> = {
-          'Jebai': 'Jebai',
-          'Paje-MKT': 'Pajé 1',
-          'Paje-Caixa': 'Pajé 2',
-        }
-        const lojaName = row.store ? lojaMap[row.store] : undefined
-        if (lojaName) return <LojaBadge loja={lojaName} />
-        return <span className="text-muted-foreground">{storeLabel}</span>
+        const storeObj = stores.find(s => s.key === row.store)
+        if (!storeObj) return <span className="text-muted-foreground">{row.store || '—'}</span>
+        return <LojaBadge loja={storeObj.label as any} />
       },
     },
     {

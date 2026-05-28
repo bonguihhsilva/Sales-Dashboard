@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { fmtCurrency, fmtK, metaLevel, bonusAmount, STORE_COLORS } from '@/lib/utils'
+import { fmtCurrency, fmtK, metaLevel, bonusAmount } from '@/lib/utils'
 import { KpiCard, StorePill, ProgressBar, SectionTitle, LogoutButton } from '@/components/ui'
 import ClientsTab from '../../ClientsTab'
 import EvolutionChart from './EvolutionChart'
@@ -19,7 +19,7 @@ export default async function VendorDetailPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  const { data: profile } = await supabase.from('profiles').select('role, tenant_id').eq('id', user.id).single()
   if (profile?.role !== 'adm') redirect('/meu-resultado')
 
   const { vendor_id } = await params
@@ -49,7 +49,10 @@ export default async function VendorDetailPage({
   const nextMetaLabel = lvl === 0 ? '1ª meta' : lvl === 1 ? '2ª meta' : lvl === 2 ? '3ª meta' : null
   const nextMetaDiff  = nextMetaValue !== null ? nextMetaValue - sold : null
   const nextMetaPct   = nextMetaValue !== null ? Math.round(sold / nextMetaValue * 100) : 100
-  const col = STORE_COLORS[summary.store] || 'var(--accent)'
+  const { data: dbStores } = await supabase.from('stores').select('*').eq('tenant_id', profile?.tenant_id)
+  const stores = (dbStores || []).map(s => ({ key: s.name, label: s.name, color: s.color }))
+  const storeObj = stores.find(s => s.key === summary.store)
+  const col = storeObj?.color || 'var(--accent)'
 
   const activePeriodLabel = (periods as Period[])?.find(p => p.id === activePeriod)?.label ?? ''
 
@@ -77,7 +80,7 @@ export default async function VendorDetailPage({
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '4px' }}>{summary.vendor_name}</h1>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <StorePill store={summary.store} />
+          <StorePill store={summary.store} label={storeObj?.label} color={storeObj?.color} />
           <span style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '6px', padding: '4px 10px' }}>{activePeriodLabel}</span>
           <LogoutButton />
         </div>

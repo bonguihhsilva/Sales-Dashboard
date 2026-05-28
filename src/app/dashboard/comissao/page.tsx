@@ -105,6 +105,14 @@ export default async function ComissaoPage({
     }
   })
 
+  const { data: dbStores } = await adminDb
+    .from('stores')
+    .select('*')
+    .eq('tenant_id', profile?.tenant_id)
+    .order('name')
+
+  const stores = (dbStores || []).map(s => ({ key: s.name, label: s.name, color: s.color }))
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <div style={{
@@ -134,6 +142,7 @@ export default async function ComissaoPage({
           vendorRows={vendorRows}
           periodId={activePeriod}
           role={effectiveRole}
+          stores={stores as any}
         />
       </div>
     </div>

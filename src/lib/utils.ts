@@ -43,14 +43,3 @@ export function recencyLabel(daysAgo: number): string {
   return `${daysAgo}d atrás`
 }
 
-export const STORE_COLORS: Record<string, string> = {
-  Jebai:      '#7b61ff',
-  'Paje-MKT': '#42d9f5',
-  'Paje-Caixa': '#f5a742',
-}
-
-export const STORE_LABELS: Record<string, string> = {
-  Jebai:       'Jebai',
-  'Paje-MKT':  'Pajé 1',
-  'Paje-Caixa':'Pajé 2',
-}

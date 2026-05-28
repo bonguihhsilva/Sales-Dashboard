@@ -96,16 +96,20 @@ export interface VendorEvolution {
   total_items: number
 }
 
-export const STORE_COLORS: Record<string, string> = {
-  'Jebai': '#7b61ff',
-  'Paje-MKT': '#42d9f5',
-  'Paje-Caixa': '#f5a742',
+export interface Tenant {
+  id: string
+  nome: string
+  slug: string
+  ativo: boolean
+  cor_primaria?: string
+  logo_url?: string
 }
 
-export const STORE_LABELS: Record<string, string> = {
-  'Jebai': 'Jebai',
-  'Paje-MKT': 'Paje 1',
-  'Paje-Caixa': 'Paje 2',
+export interface Store {
+  id: string
+  tenant_id: string
+  name: string
+  color: string
 }
 
 // HR types (from main branch features)

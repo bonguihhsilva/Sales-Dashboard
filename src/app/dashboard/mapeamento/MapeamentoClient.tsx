@@ -5,17 +5,18 @@ import type { Profile } from '@/types'
 
 interface Vendor { vendor_id: string; vendor_name: string; store: string }
 
-const STORES = ['Jebai', 'Paje-MKT', 'Paje-Caixa']
 const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
 
 export default function MapeamentoClient({
   profiles,
   vendors,
   orphanVendors,
+  stores,
 }: {
   profiles: Profile[]
   vendors: Vendor[]
   orphanVendors: Vendor[]
+  stores: { key: string; label: string; color: string }[]
 }) {
   // Current vendor_id → user_id mapping (from profiles)
   const [links, setLinks] = useState<Record<string, string>>(() =>
@@ -28,7 +29,7 @@ export default function MapeamentoClient({
   // Add new vendor form state
   const [addVendor, setAddVendor] = useState<Vendor | null>(null)
   const [addName, setAddName]     = useState('')
-  const [addStore, setAddStore]   = useState('Jebai')
+  const [addStore, setAddStore]   = useState(stores.length > 0 ? stores[0].key : '')
   const [addUserId, setAddUserId] = useState('')
   const [addM1, setAddM1]         = useState('')
   const [addM2, setAddM2]         = useState('')
@@ -311,7 +312,7 @@ export default function MapeamentoClient({
                   <div>
                     <label style={labelStyle}>Loja</label>
                     <select value={addStore} onChange={e => setAddStore(e.target.value)} style={selStyle}>
-                      {STORES.map(s => <option key={s} value={s}>{s}</option>)}
+                      {stores.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
                     </select>
                   </div>
                 </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { fmtK, STORE_COLORS, STORE_LABELS } from '@/lib/utils'
+import { fmtK } from '@/lib/utils'
 
 // ── KPI Card ──────────────────────────────────────────────────────────────
 interface KpiProps {
@@ -32,16 +32,16 @@ export function KpiCard({ label, value, sub, color }: KpiProps) {
 }
 
 // ── Store Pill ────────────────────────────────────────────────────────────
-export function StorePill({ store }: { store: string }) {
-  const col = STORE_COLORS[store] || 'var(--muted)'
-  const label = STORE_LABELS[store] || store
+export function StorePill({ store, label, color }: { store: string; label?: string; color?: string }) {
+  const col = color || 'var(--muted)'
+  const displayLabel = label || store
   return (
     <span style={{
       fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', padding: '2px 7px',
       borderRadius: '4px', fontWeight: 500, whiteSpace: 'nowrap',
       background: col + '22', color: col,
     }}>
-      {label}
+      {displayLabel}
     </span>
   )
 }
