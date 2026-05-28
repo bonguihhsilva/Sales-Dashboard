@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
-import { LogoutButton } from '@/components/ui'
 import type { Period } from '@/types'
 import PeriodSelector from '../PeriodSelector'
 import ComissaoClient, { type VendorRow } from './ComissaoClient'
@@ -114,26 +113,24 @@ export default async function ComissaoPage({
   const stores = (dbStores || []).map(s => ({ key: s.name, label: s.name, color: s.color }))
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+    <div style={{ minHeight: '100%', background: 'var(--bg)' }}>
+      {/* Top App Bar */}
       <div style={{
-        padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)',
+        padding: '1rem 2rem', background: 'var(--surface)', borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem',
+        boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)', zIndex: 10, position: 'sticky', top: 0
       }}>
-        <div>
-          <a href="/dashboard" style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textDecoration: 'none' }}>
-            ← Voltar ao dashboard
-          </a>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '4px' }}>
-            Comissões <span style={{ color: 'var(--accent)' }}>// {activePeriodLabel}</span>
+        <div className="flex items-center gap-4">
+          <h1 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)', margin: 0, letterSpacing: '-0.02em' }}>
+            Comissões
           </h1>
-          <p style={{ fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '3px' }}>
-            GDS - FRAME · {effectiveRole.toUpperCase()} · {profile?.name || 'Administrador'}
-          </p>
+          <div style={{ padding: '4px 10px', background: 'var(--surface2)', borderRadius: '16px', fontSize: '0.75rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>
+            {activePeriodLabel}
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <ExportButton />
           <PeriodSelector periods={periods as Period[]} activePeriod={activePeriod} />
-          <LogoutButton />
         </div>
       </div>
 

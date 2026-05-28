@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
-import { LogoutButton } from '@/components/ui'
 import RegrasClient from './RegrasClient'
 
 export const dynamic = 'force-dynamic'
@@ -42,24 +41,17 @@ export default async function RegrasComissaoPage() {
     .order('criado_em', { ascending: false })
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+    <div style={{ minHeight: '100%', background: 'var(--bg)' }}>
+      {/* Top App Bar */}
       <div style={{
-        padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)',
+        padding: '1rem 2rem', background: 'var(--surface)', borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem',
+        boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)', zIndex: 10, position: 'sticky', top: 0
       }}>
-        <div>
-          <a href="/dashboard" style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textDecoration: 'none' }}>
-            ← Voltar ao dashboard
-          </a>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '4px' }}>
+        <div className="flex items-center gap-4">
+          <h1 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)', margin: 0, letterSpacing: '-0.02em' }}>
             Regras de Comissão
           </h1>
-          <p style={{ fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '3px' }}>
-            GDS - FRAME · {effectiveRole.toUpperCase()} · {profile.name || 'Admin'}
-          </p>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <LogoutButton />
         </div>
       </div>
 

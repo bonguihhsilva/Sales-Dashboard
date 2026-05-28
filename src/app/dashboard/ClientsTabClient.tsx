@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { fmtCurrency, recencyColor, recencyLabel } from '@/lib/utils'
+import { fetchClientHistory } from './clientsActions'
 
 interface Client {
   client_id: string
@@ -27,6 +28,24 @@ export default function ClientsTabClient({ clients }: { clients: Client[] }) {
   const [sortKey, setSortKey]     = useState<SortKey>('total_spent')
   const [sortDir, setSortDir]     = useState<1 | -1>(-1)
   const [recFilter, setRecFilter] = useState<'all' | 'today' | 'week' | 'inactive'>('all')
+
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null)
+  const [clientHistory, setClientHistory] = useState<any[]>([])
+  const [loadingHistory, setLoadingHistory] = useState(false)
+
+  async function openClientDetails(client: Client) {
+    setSelectedClient(client)
+    setLoadingHistory(true)
+    setClientHistory([])
+    try {
+      const history = await fetchClientHistory(client.client_id)
+      setClientHistory(history || [])
+    } catch (e) {
+      console.error('Failed to fetch client history', e)
+    } finally {
+      setLoadingHistory(false)
+    }
+  }
 
   const filtered = useMemo(() => {
     let list = [...clients]
@@ -137,7 +156,13 @@ export default function ClientsTabClient({ clients }: { clients: Client[] }) {
               const recColor = recencyColor(daysAgo)
               const timeStr  = c.last_purchase_time ? String(c.last_purchase_time).slice(0, 5) : ''
               return (
-                <tr key={`${c.client_id}-${c.vendor_id}`} style={{ borderBottom: '1px solid var(--border)' }}>
+                <tr 
+                  key={`${c.client_id}-${c.vendor_id}`} 
+                  style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
+                  onClick={() => openClientDetails(c)}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
                   <td style={{ padding: '7px 10px', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: 'var(--muted)' }}>{i + 1}</td>
                   <td style={{ padding: '7px 10px', fontWeight: 500, fontSize: '0.78rem' }}>{c.client_name}</td>
                   <td style={{ padding: '7px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontWeight: 600, color: 'var(--accent)' }}>{fmtCurrency(Number(c.total_spent))}</td>
@@ -160,6 +185,62 @@ export default function ClientsTabClient({ clients }: { clients: Client[] }) {
           </tbody>
         </table>
       </div>
+
+      {/* MODAL DE DETALHES DO CLIENTE */}
+      {selectedClient && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setSelectedClient(null)}>
+          <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', width: '900px', maxWidth: '95vw', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+            <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 style={{ fontSize: '1.4rem', margin: '0 0 5px 0' }}>{selectedClient.client_name}</h2>
+                <div style={{ fontSize: '0.8rem', color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>
+                  Total: <span style={{ color: 'var(--accent)' }}>{fmtCurrency(Number(selectedClient.total_spent))}</span> &nbsp;|&nbsp; 
+                  Visitas: {selectedClient.visit_days} &nbsp;|&nbsp; 
+                  Última compra: {selectedClient.last_purchase}
+                </div>
+              </div>
+              <button onClick={() => setSelectedClient(null)} style={{ background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
+            </div>
+            
+            <div style={{ padding: '1.5rem', overflowY: 'auto', flex: 1 }}>
+              <h3 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--muted)' }}>Últimas compras (Até 100)</h3>
+              {loadingHistory ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>Carregando histórico...</div>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                      <th style={{ textAlign: 'left', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>DATA / HORA</th>
+                      <th style={{ textAlign: 'left', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>PRODUTO</th>
+                      <th style={{ textAlign: 'left', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>VENDEDOR</th>
+                      <th style={{ textAlign: 'left', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>LOJA</th>
+                      <th style={{ textAlign: 'right', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>QTD</th>
+                      <th style={{ textAlign: 'right', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>VALOR</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {clientHistory.map(r => (
+                      <tr key={r.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                        <td style={{ padding: '8px', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem' }}>
+                          {String(r.sale_date)} <span style={{ color: 'var(--muted)' }}>{r.sale_time ? String(r.sale_time).slice(0,5) : ''}</span>
+                        </td>
+                        <td style={{ padding: '8px' }}>{r.product_code || '---'}</td>
+                        <td style={{ padding: '8px' }}>{r.vendor_name}</td>
+                        <td style={{ padding: '8px' }}>{r.store}</td>
+                        <td style={{ padding: '8px', textAlign: 'right', fontFamily: 'DM Mono, monospace' }}>{r.quantity}</td>
+                        <td style={{ padding: '8px', textAlign: 'right', fontFamily: 'DM Mono, monospace', color: 'var(--accent)' }}>{fmtCurrency(Number(r.valor))}</td>
+                      </tr>
+                    ))}
+                    {clientHistory.length === 0 && (
+                      <tr><td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>Nenhum registro encontrado</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

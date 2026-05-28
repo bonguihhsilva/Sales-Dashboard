@@ -1,19 +1,17 @@
 import type { Metadata } from 'next'
-import { Syne, DM_Mono } from 'next/font/google'
+import { Inter, Roboto_Mono } from 'next/font/google'
 import { ThemeProvider } from '@/components/shared/theme-provider'
 import './globals.css'
 
-const syne = Syne({
+const inter = Inter({
   subsets: ['latin'],
-  weight: ['400', '600', '700', '800'],
-  variable: '--font-syne',
+  variable: '--font-inter',
   display: 'swap',
 })
 
-const dmMono = DM_Mono({
+const robotoMono = Roboto_Mono({
   subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--font-dm-mono',
+  variable: '--font-roboto-mono',
   display: 'swap',
 })
 
@@ -26,11 +24,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="pt"
-      className={`${syne.variable} ${dmMono.variable}`}
+      className={`${inter.variable} ${robotoMono.variable}`}
       suppressHydrationWarning
     >
       <body>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           {children}
         </ThemeProvider>
       </body>

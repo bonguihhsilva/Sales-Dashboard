@@ -1,24 +1,23 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { SectionTitle } from '@/components/ui'
-import TrilhasClient from './TrilhasClient'
+import SuperAdminClient from './SuperAdminClient'
 
 export const dynamic = 'force-dynamic'
 
-export default async function TreinamentosAdminPage() {
+export default async function SuperAdminPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
-  if (jwtRole === 'vendedor') redirect('/treinamentos')
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  
+  if (profile?.role !== 'super_admin') {
+    redirect('/dashboard')
+  }
 
-  // Buscar trilhas
-  const { data: trilhas } = await supabase
-    .from('trilhas')
-    .select('*')
-    .order('ordem', { ascending: true })
+  const adminDb = createAdminClient()
+  const { data: tenants } = await adminDb.from('tenants').select('*').order('nome')
 
   return (
     <div style={{ minHeight: '100%', background: 'var(--bg)' }}>
@@ -28,16 +27,16 @@ export default async function TreinamentosAdminPage() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)', zIndex: 10, position: 'sticky', top: 0
       }}>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col">
           <h1 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)', margin: 0, letterSpacing: '-0.02em' }}>
-            Gestão de Treinamentos (LMS)
+            Painel Super Admin
           </h1>
+          <span className="text-sm text-muted-foreground mt-1">Gestão global de empresas parceiras (Tenants)</span>
         </div>
       </div>
 
       <div style={{ padding: '2rem' }}>
-
-      <TrilhasClient initialTrilhas={trilhas || []} />
+        <SuperAdminClient tenants={tenants || []} />
       </div>
     </div>
   )

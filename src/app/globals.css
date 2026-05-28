@@ -4,87 +4,91 @@
 
 @layer base {
   :root {
-    /* shadcn-compatible tokens — HSL channels (space-separated, no hsl() wrapper) */
-    --background:        220 8% 7%;     /* #0e0f11 */
-    --foreground:        240 5% 96%;    /* #f4f4f5 */
-    --card:              225 7% 9%;     /* #141517 */
-    --card-foreground:   240 5% 96%;
-    --popover:           225 7% 9%;
-    --popover-foreground: 240 5% 96%;
-    --primary:           74 89% 62%;    /* #c8f542 — accent doubles as primary */
-    --primary-foreground: 220 8% 7%;
-    --secondary:         225 6% 14%;    /* #1a1b1e */
-    --secondary-foreground: 240 5% 96%;
-    --muted:             225 6% 14%;    /* #1a1b1e */
-    --muted-foreground:  240 5% 46%;    /* #71717a */
-    --accent:            74 89% 62%;    /* #c8f542 */
-    --accent-foreground: 220 8% 7%;
-    --destructive:       0 84% 60%;     /* #ef4444 */
-    --destructive-foreground: 240 5% 96%;
-    --border:            240 4% 15%;    /* #27272a */
-    --input:             240 4% 15%;
-    --ring:              74 89% 62%;
+    /* Google Material Light Theme */
+    --background:        0 0% 96%;      /* #F3F4F6 or #f1f3f4 */
+    --foreground:        220 10% 20%;   /* #202124 */
+    --card:              0 0% 100%;     /* #FFFFFF */
+    --card-foreground:   220 10% 20%;
+    --popover:           0 0% 100%;
+    --popover-foreground: 220 10% 20%;
+    --primary:           217 89% 61%;   /* #3B82F6 Google Blue */
+    --primary-foreground: 0 0% 100%;
+    --secondary:         210 40% 96%;
+    --secondary-foreground: 220 10% 20%;
+    --muted:             210 20% 94%;   /* #F1F3F4 */
+    --muted-foreground:  215 16% 47%;   /* #5F6368 */
+    --accent:            217 89% 61%;   /* #1A73E8 */
+    --accent-foreground: 0 0% 100%;
+    --destructive:       0 84% 60%;     /* #EA4335 */
+    --destructive-foreground: 0 0% 100%;
+    --border:            214 32% 91%;   /* #E0E0E0 or #DADCE0 */
+    --input:             214 32% 91%;
+    --ring:              217 89% 61%;
     --radius: 0.5rem;
 
-    /* GDS store colors — raw RGB triplets for rgb(var(--x) / opacity) usage */
+    /* GDS store colors */
     --jebai: 147 51 234;   /* #9333ea */
     --paje1: 6 182 212;    /* #06b6d4 */
     --paje2: 249 115 22;   /* #f97316 */
 
-    /* === GDS color tokens — hardcoded complete CSS colors for inline style components ===
-     * shadcn vars above hold HSL channels so Tailwind can do hsl(var(--x)/alpha).
-     * These aliases use literal hsl() to avoid hsl(hsl()) when the shadcn channels
-     * are overridden below. --border/muted/accent are overridden last so var() usage
-     * in inline styles resolves to a valid CSS color. */
-    --bg:       hsl(220, 8%, 7%);
-    --text:     hsl(240, 5%, 96%);
-    --surface:  hsl(225, 7%, 9%);
-    --surface2: hsl(225, 6%, 14%);
-    --meta1:    hsl(74, 89%, 62%);
-    --meta2:    rgb(6, 182, 212);
-    --meta3:    rgb(249, 115, 22);
-    --mkt:      #42d9f5;
+    /* Fixed aliases for inline usage */
+    --bg:       #F3F4F6;
+    --text:     #202124;
+    --surface:  #FFFFFF;
+    --surface2: #F8F9FA;
+    --meta1:    #34A853; /* Google Green */
+    --meta2:    #FBBC05; /* Google Yellow */
+    --meta3:    #EA4335; /* Google Red */
+    --mkt:      #4285F4; /* Google Blue */
     --caixa:    #f5a742;
-    /* Override shadcn HSL-channel vars with complete colors — last wins */
-    --border:   hsl(240, 4%, 15%);
-    --muted:    hsl(240, 5%, 46%);
-    --accent:   hsl(74, 89%, 62%);
+    --border:   #DADCE0;
+    --muted:    #5F6368;
+    --accent:   #1A73E8;
   }
 
-  .light {
-    --background:        210 17% 98%;   /* #f8f9fa */
-    --foreground:        220 8% 7%;
-    --card:              0 0% 100%;
-    --card-foreground:   220 8% 7%;
-    --popover:           0 0% 100%;
-    --popover-foreground: 220 8% 7%;
-    --primary:           142 76% 36%;   /* #16a34a */
+  .dark {
+    --background:        220 10% 10%;   /* #171717 */
+    --foreground:        0 0% 100%;     /* #FFFFFF */
+    --card:              220 10% 15%;   /* #262626 */
+    --card-foreground:   0 0% 100%;
+    --popover:           220 10% 15%;
+    --popover-foreground: 0 0% 100%;
+    --primary:           217 89% 61%;
     --primary-foreground: 0 0% 100%;
-    --secondary:         210 40% 96%;
-    --secondary-foreground: 220 8% 7%;
-    --muted:             210 40% 96%;   /* #f1f5f9 */
-    --muted-foreground:  215 16% 47%;   /* #64748b */
-    --accent:            142 76% 36%;
+    --secondary:         220 10% 20%;
+    --secondary-foreground: 0 0% 100%;
+    --muted:             220 10% 20%;
+    --muted-foreground:  215 16% 65%;   /* #9AA0A6 */
+    --accent:            217 89% 61%;
     --accent-foreground: 0 0% 100%;
-    --destructive:       0 72% 51%;     /* #dc2626 */
+    --destructive:       0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border:            214 32% 91%;   /* #e2e8f0 */
-    --input:             214 32% 91%;
-    --ring:              142 76% 36%;
+    --border:            220 10% 20%;   /* #3C4043 */
+    --input:             220 10% 20%;
+    --ring:              217 89% 61%;
+
+    --bg:       #202124;
+    --text:     #E8EAED;
+    --surface:  #292A2D;
+    --surface2: #3C4043;
+    --border:   #3C4043;
+    --muted:    #9AA0A6;
+    --accent:   #8AB4F8;
   }
 }
 
 @layer base {
-  /* border-color hardcoded: @apply border-border would produce hsl(hsl(...)) since --border is now a full color */
-  * { border-color: hsl(240, 4%, 15%); box-sizing: border-box; }
+  * { border-color: var(--border); box-sizing: border-box; }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-syne), 'Syne', sans-serif;
+    font-family: var(--font-inter), 'Inter', sans-serif;
     min-height: 100vh;
   }
 }
 
 /* Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: hsl(225, 7%, 9%); }
-::-webkit-scrollbar-thumb { background: hsl(225, 6%, 14%); border-radius: 3px; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+

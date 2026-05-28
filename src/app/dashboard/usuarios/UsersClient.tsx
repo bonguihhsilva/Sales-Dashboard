@@ -11,7 +11,6 @@ import {
   Check,
 } from 'lucide-react'
 import { DataTable, type Column } from '@/components/ui/data-table'
-import { PageHeader } from '@/components/ui/page-header'
 import { LojaBadge, type LojaName } from '@/components/ui/loja-badge'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Button } from '@/components/ui/button'
@@ -397,18 +396,26 @@ export default function UsersClient({
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      {/* Header */}
-      <PageHeader
-        title="Usuarios"
-        subtitle="Gerencie acessos e convites da equipe"
-        actions={
-          <Button onClick={() => setInviteOpen(true)}>
-            <UserPlus className="h-4 w-4" />
-            Convidar usuario
-          </Button>
-        }
-      />
+    <div className="flex flex-col h-full">
+      {/* Top App Bar */}
+      <div style={{
+        padding: '1rem 2rem', background: 'var(--surface)', borderBottom: '1px solid var(--border)',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)', zIndex: 10, position: 'sticky', top: 0
+      }}>
+        <div className="flex flex-col">
+          <h1 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)', margin: 0, letterSpacing: '-0.02em' }}>
+            Gestão de Usuários
+          </h1>
+          <span className="text-sm text-muted-foreground mt-1">Gerencie acessos e convites da equipe</span>
+        </div>
+        <Button onClick={() => setInviteOpen(true)}>
+          <UserPlus className="h-4 w-4 mr-2" />
+          Convidar usuario
+        </Button>
+      </div>
+
+      <div className="flex flex-col gap-6 p-6">
 
       {/* Filtros */}
       <div className="flex flex-wrap items-center gap-3">
@@ -666,6 +673,7 @@ export default function UsersClient({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
     </div>
   )
 }

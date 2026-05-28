@@ -12,6 +12,7 @@ import ClientsTab from './ClientsTab'
 import ClientsTabClient from './ClientsTabClient'
 import EvolucaoTab from './EvolucaoTab'
 import ExportButton from './ExportButton'
+import Link from 'next/link'
 
 export default async function DashboardPage({
   searchParams,
@@ -107,98 +108,88 @@ export default async function DashboardPage({
   const stores = (dbStores || []).map(s => ({ key: s.name, label: s.name, color: s.color }))
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-      {/* Header */}
+    <div style={{ minHeight: '100%', background: 'var(--bg)' }}>
+      {/* Top App Bar (Google Style) */}
       <div style={{
-        padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)',
+        padding: '1rem 2rem', background: 'var(--surface)', borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem',
+        boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)', zIndex: 10, position: 'sticky', top: 0
       }}>
-        <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.5px' }}>
-            Sales Dashboard <span style={{ color: 'var(--accent)' }}>// {activePeriodLabel}</span>
+        <div className="flex items-center gap-4">
+          <h1 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)', margin: 0, letterSpacing: '-0.02em' }}>
+            Visão Geral de Vendas
           </h1>
-          <p style={{ fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '3px' }}>
-            GDS - FRAME · ADM · {profile?.name}
-          </p>
+          <div style={{ padding: '4px 10px', background: 'var(--surface2)', borderRadius: '16px', fontSize: '0.75rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>
+            {activePeriodLabel}
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <PeriodSelector periods={periods as Period[]} activePeriod={activePeriod} />
           <UploadModal periods={periods as Period[]} />
           <ExportButton />
-          <a href="/dashboard/comissao" style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', padding: '6px 12px', textDecoration: 'none' }}>
-            Comissão
-          </a>
-          <a href="/dashboard/regras-comissao" style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', padding: '6px 12px', textDecoration: 'none' }}>
-            Regras
-          </a>
-          <a href="/dashboard/treinamentos" style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', padding: '6px 12px', textDecoration: 'none' }}>
-            Treinamentos
-          </a>
-          <a href="/dashboard/usuarios" style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', padding: '6px 12px', textDecoration: 'none' }}>
-            Gestão
-          </a>
-          <LogoutButton />
         </div>
       </div>
 
       {/* Store tabs */}
       <div style={{
-        display: 'flex', gap: '4px', padding: '1rem 2.5rem 0',
-        borderBottom: '1px solid var(--border)', overflowX: 'auto',
+        display: 'flex', gap: '4px', padding: '1rem 2rem 0',
+        borderBottom: '1px solid var(--border)', overflowX: 'auto', background: 'var(--surface)'
       }}>
         {[{ key: 'all', label: 'Todos', color: 'var(--accent)' }, ...stores.map(s => ({ key: s.key, label: s.label, color: s.color }))].map(tab => (
-          <a key={tab.key}
+          <Link key={tab.key}
             href={`/dashboard?period=${activePeriod}&store=${tab.key}&tab=${activeTab}`}
             style={{
-              padding: '8px 20px', borderRadius: '6px 6px 0 0', fontSize: '0.8rem', fontWeight: 600,
+              padding: '8px 20px', borderRadius: '8px 8px 0 0', fontSize: '0.85rem', fontWeight: 500,
               border: '1px solid transparent', borderBottom: 'none', textDecoration: 'none', transition: 'all 0.15s',
-              background: activeStore === tab.key ? 'var(--surface)' : 'transparent',
+              background: activeStore === tab.key ? 'var(--bg)' : 'transparent',
               borderColor: activeStore === tab.key ? 'var(--border)' : 'transparent',
-              color: activeStore === tab.key ? tab.color : 'var(--muted)',
+              color: activeStore === tab.key ? 'var(--text)' : 'var(--muted-foreground)',
+              marginBottom: '-1px', zIndex: activeStore === tab.key ? 1 : 0
             }}
           >
             {tab.label}
-          </a>
+          </Link>
         ))}
-        <a
+        <div style={{ width: '1px', background: 'var(--border)', margin: '0 8px', height: '24px', alignSelf: 'center' }} />
+        <Link
+          href={`/dashboard?period=${activePeriod}&store=${activeStore}&tab=ranking`}
+          style={{
+            padding: '8px 20px', borderRadius: '8px 8px 0 0', fontSize: '0.85rem', fontWeight: 500,
+            border: '1px solid transparent', borderBottom: 'none', textDecoration: 'none', transition: 'all 0.15s',
+            background: activeTab === 'ranking' ? 'var(--bg)' : 'transparent',
+            borderColor: activeTab === 'ranking' ? 'var(--border)' : 'transparent',
+            color: activeTab === 'ranking' ? 'var(--text)' : 'var(--muted-foreground)',
+            marginBottom: '-1px', zIndex: activeTab === 'ranking' ? 1 : 0
+          }}
+        >
+          Ranking
+        </Link>
+        <Link
           href={`/dashboard?period=${activePeriod}&store=${activeStore}&tab=evolucao`}
           style={{
-            padding: '8px 20px', borderRadius: '6px 6px 0 0', fontSize: '0.8rem', fontWeight: 600,
+            padding: '8px 20px', borderRadius: '8px 8px 0 0', fontSize: '0.85rem', fontWeight: 500,
             border: '1px solid transparent', borderBottom: 'none', textDecoration: 'none', transition: 'all 0.15s',
-            background: activeTab === 'evolucao' ? 'var(--surface)' : 'transparent',
+            background: activeTab === 'evolucao' ? 'var(--bg)' : 'transparent',
             borderColor: activeTab === 'evolucao' ? 'var(--border)' : 'transparent',
-            color: activeTab === 'evolucao' ? 'var(--text)' : 'var(--muted)',
-            marginLeft: '8px',
+            color: activeTab === 'evolucao' ? 'var(--text)' : 'var(--muted-foreground)',
+            marginBottom: '-1px', zIndex: activeTab === 'evolucao' ? 1 : 0
           }}
         >
           Evolução
-        </a>
-        <a
+        </Link>
+        <Link
           href={`/dashboard?period=${activePeriod}&store=${activeStore}&tab=clientes`}
           style={{
-            padding: '8px 20px', borderRadius: '6px 6px 0 0', fontSize: '0.8rem', fontWeight: 600,
+            padding: '8px 20px', borderRadius: '8px 8px 0 0', fontSize: '0.85rem', fontWeight: 500,
             border: '1px solid transparent', borderBottom: 'none', textDecoration: 'none', transition: 'all 0.15s',
-            background: activeTab === 'clientes' ? 'var(--surface)' : 'transparent',
+            background: activeTab === 'clientes' ? 'var(--bg)' : 'transparent',
             borderColor: activeTab === 'clientes' ? 'var(--border)' : 'transparent',
-            color: activeTab === 'clientes' ? 'var(--text)' : 'var(--muted)',
-            marginLeft: '8px',
+            color: activeTab === 'clientes' ? 'var(--text)' : 'var(--muted-foreground)',
+            marginBottom: '-1px', zIndex: activeTab === 'clientes' ? 1 : 0
           }}
         >
           Clientes
-        </a>
-        <a
-          href="/dashboard/rh"
-          style={{
-            padding: '8px 20px', borderRadius: '6px 6px 0 0', fontSize: '0.8rem', fontWeight: 600,
-            border: '1px solid transparent', borderBottom: 'none', textDecoration: 'none', transition: 'all 0.15s',
-            background: 'transparent',
-            borderColor: 'transparent',
-            color: 'var(--muted)',
-            marginLeft: '4px',
-          }}
-        >
-          RH
-        </a>
+        </Link>
       </div>
 
       <div style={{ padding: '1.5rem 2.5rem 3rem' }}>
