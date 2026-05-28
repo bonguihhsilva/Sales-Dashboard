@@ -10,12 +10,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const { data: profile } = await supabase
     .from('profiles').select('role, name').eq('id', user.id).single()
 
-  const role = profile?.role || 'vendedor'
+  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
   
-  if (role === 'vendedor') {
+  if (jwtRole === 'vendedor') {
     // Vendedores have their own layout/pages or just redirect them
     redirect('/meu-resultado')
   }
+
+  const role = profile?.role || jwtRole
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
