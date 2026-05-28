@@ -27,6 +27,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
     if (!error && newProfile) {
       profile = newProfile
     }
+  } else if (!profile.tenant_id && (jwtRole === 'super_admin' || profile.role === 'super_admin')) {
+    const adminDb = createAdminClient()
+    await adminDb.from('profiles').update({ tenant_id: user.id }).eq('id', user.id)
+    profile.tenant_id = user.id
   }
 
   if (jwtRole === 'vendedor') {

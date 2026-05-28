@@ -40,8 +40,9 @@ export default async function DashboardPage({
   }
 
   // Auto-fix tenant_id if missing
-  if (!profile?.tenant_id) {
+  if (profile && !profile.tenant_id) {
     await adminDb.from('profiles').update({ tenant_id: user.id }).eq('id', user.id)
+    profile.tenant_id = user.id
   }
 
   // Load periods
