@@ -27,7 +27,7 @@ export default async function DashboardPage({
   if (jwtRole === 'vendedor') redirect('/meu-resultado')
 
   const { data: profile } = await supabase
-    .from('profiles').select('role, name').eq('id', user.id).single()
+    .from('profiles').select('role, name, tenant_id').eq('id', user.id).single()
 
   const adminDb = createAdminClient()
 
@@ -36,6 +36,11 @@ export default async function DashboardPage({
     await adminDb.from('profiles').update({ role: 'adm' }).eq('id', user.id)
     await adminDb.auth.admin.updateUserById(user.id, { app_metadata: { role: 'adm' } })
     // We don't need to refresh the page, the DB is updated for the next clicks
+  }
+
+  // Auto-fix tenant_id if missing
+  if (!profile?.tenant_id) {
+    await adminDb.from('profiles').update({ tenant_id: user.id }).eq('id', user.id)
   }
 
   // Load periods

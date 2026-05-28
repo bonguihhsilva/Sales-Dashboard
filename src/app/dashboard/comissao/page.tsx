@@ -35,6 +35,14 @@ export default async function ComissaoPage({
     )
   }
 
+  if (!profile?.tenant_id) {
+    const adminDb = createAdminClient()
+    await adminDb.from('profiles').update({ tenant_id: user.id }).eq('id', user.id)
+    if (profile) {
+      profile.tenant_id = user.id
+    }
+  }
+
   const adminDb = createAdminClient()
   const { data: periods } = await adminDb
     .from('periods').select('*')

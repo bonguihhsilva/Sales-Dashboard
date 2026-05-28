@@ -22,13 +22,14 @@ export default async function RegrasComissaoPage() {
   }
 
   if (!profile?.tenant_id) {
-    return (
-      <div style={{ padding: '2rem', color: 'red', fontFamily: 'monospace' }}>
-        Erro: Seu perfil nao possui um tenant vinculado.
-        <br/><br/>
-        <a href="/dashboard" style={{ color: 'white', textDecoration: 'underline' }}>Voltar ao Dashboard</a>
-      </div>
-    )
+    const adminDb = createAdminClient()
+    await adminDb.from('profiles').update({ tenant_id: user.id }).eq('id', user.id)
+    if (profile) {
+      profile.tenant_id = user.id
+    } else {
+      // should not happen, but just to satisfy typescript
+      redirect('/dashboard')
+    }
   }
 
   // Buscar regras ativas e inativas (admin ve tudo)

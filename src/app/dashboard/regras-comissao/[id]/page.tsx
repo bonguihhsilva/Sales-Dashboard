@@ -11,10 +11,20 @@ export default async function EditarRegraPage({ params }: { params: Promise<{ id
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
   const { data: profile } = await supabase
     .from('profiles').select('role, name, tenant_id').eq('id', user.id).single()
-  if (!profile || !['adm', 'gerente', 'super_admin'].includes(profile.role)) {
+  
+  const effectiveRole = profile?.role || jwtRole
+  if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) {
     redirect('/dashboard')
+  }
+
+  let finalTenant = profile?.tenant_id
+  if (!finalTenant) {
+    const adminDb = createAdminClient()
+    await adminDb.from('profiles').update({ tenant_id: user.id }).eq('id', user.id)
+    finalTenant = user.id
   }
 
   const { id } = await params
@@ -43,7 +53,7 @@ export default async function EditarRegraPage({ params }: { params: Promise<{ id
             Editar Regra: {regra.nome}
           </h1>
           <p style={{ fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '3px' }}>
-            GDS - FRAME · {profile.role.toUpperCase()} · {profile.name}
+            GDS - FRAME · {effectiveRole.toUpperCase()} · {profile?.name || 'Admin'}
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -52,7 +62,7 @@ export default async function EditarRegraPage({ params }: { params: Promise<{ id
       </div>
 
       <div style={{ padding: '2rem 2.5rem' }}>
-        <RegraFormClient regraInicial={regra} tenantId={profile.tenant_id} />
+        <RegraFormClient regraInicial={regra} tenantId={finalTenant} />
       </div>
     </div>
   )
