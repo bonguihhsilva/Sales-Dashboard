@@ -10,9 +10,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
   }
 
-  const role = user.app_metadata?.role as string | undefined
+  const { data: profile } = await supabase.from('profiles').select('role, tenant_id').eq('id', user.id).single()
+  const role = profile?.role
   if (role !== 'adm' && role !== 'gerente') {
     return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+  }
+  if (!profile?.tenant_id) {
+    return NextResponse.json({ error: 'Tenant não encontrado' }, { status: 400 })
   }
 
   const { titulo, descricao, ativo } = await req.json()
@@ -23,6 +27,7 @@ export async function POST(req: NextRequest) {
   const { data: maxOrdemData } = await adminDb
     .from('trilhas')
     .select('ordem')
+    .eq('tenant_id', profile.tenant_id)
     .order('ordem', { ascending: false })
     .limit(1)
     
@@ -30,7 +35,7 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await adminDb
     .from('trilhas')
-    .insert({ titulo, descricao, ativo, ordem })
+    .insert({ titulo, descricao, ativo, ordem, tenant_id: profile.tenant_id })
     .select()
     .single()
 
