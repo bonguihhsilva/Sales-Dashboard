@@ -35,7 +35,7 @@ export async function createTrilhaAction(data: { titulo: string; descricao: stri
     const { profile, user } = await checkAuth()
     const adminDb = createAdminClient()
     
-    const tenantId = profile.tenant_id || profile.id || user.id
+    const tenantId = profile.tenant_id || user.id
     
     const { data: maxOrdemData } = await adminDb
       .from('trilhas')
