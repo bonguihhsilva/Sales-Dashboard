@@ -13,7 +13,7 @@ export default async function ModulosAdminPage({ params }: { params: Promise<{ t
   // if (!user) redirect('/login')
 
   const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
-  if (jwtRole === 'vendedor') redirect('/treinamentos')
+  if (jwtRole === 'vendedor') redirect('/vendedor/treinamentos')
 
   const { trilhaId } = await params
 

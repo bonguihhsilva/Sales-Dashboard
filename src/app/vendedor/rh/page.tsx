@@ -26,28 +26,15 @@ export default async function VendedorRHPage() {
     supabase.from('hr_delays').select('*').eq('user_id', userId).order('delay_date', { ascending: false }),
   ])
 
-  const mockFreeDays = hrFreeDays?.length ? hrFreeDays : [
-    { id: '1', user_id: userId, issued_at: '2026-05-10', expires_at: '2026-11-10', status: 'available', used_at: null, notes: 'Bônus de meta batida' },
-    { id: '2', user_id: userId, issued_at: '2026-03-01', expires_at: '2026-09-01', status: 'used', used_at: '2026-04-15', notes: 'Folga compensatória' },
-  ]
+  const mockFreeDays = hrFreeDays ?? []
   
-  const mockAbsences = hrAbsences?.length ? hrAbsences : [
-    { id: '1', user_id: userId, absence_date: '2026-04-15', type: 'deduct_free_day', free_day_id: '2', notes: 'Desconto por folga' }
-  ]
+  const mockAbsences = hrAbsences ?? []
   
-  const mockVacations = hrVacations?.length ? hrVacations : [
-    { id: '1', user_id: userId, start_date: '2026-12-20', end_date: '2027-01-10', notes: 'Férias de fim de ano' }
-  ]
+  const mockVacations = hrVacations ?? []
 
-  const mockPermissions = hrPermissions?.length ? hrPermissions : [
-    { id: '1', user_id: userId, type: 'medical_certificate', requested_date: '2026-05-20', status: 'approved', notes: 'Atestado de 2 dias' },
-    { id: '2', user_id: userId, type: 'appointment', requested_date: '2026-06-05', status: 'pending', notes: 'Consulta oftalmologista' },
-  ]
+  const mockPermissions = hrPermissions ?? []
 
-  const mockDelays = hrDelays?.length ? hrDelays : [
-    { id: '1', user_id: userId, delay_date: '2026-05-18', delay_minutes: 45, status: 'pending' },
-    { id: '2', user_id: userId, delay_date: '2026-04-10', delay_minutes: 20, status: 'justified', justification: 'Trânsito' },
-  ]
+  const mockDelays = hrDelays ?? []
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '2rem 2.5rem' }}>

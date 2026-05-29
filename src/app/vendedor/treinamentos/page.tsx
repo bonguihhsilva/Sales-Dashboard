@@ -134,11 +134,6 @@ export default async function TreinamentosPage() {
                   <td style={{ padding: '12px 16px', color: 'var(--meta3, #f5a742)', fontWeight: 700 }}>+50</td>
                   <td style={{ padding: '12px 16px' }}><span style={{ background: '#10b98122', color: '#10b981', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600 }}>Concluído</span></td>
                 </tr>
-                <tr>
-                  <td colSpan={4} style={{ padding: '16px', textAlign: 'center', color: 'var(--muted)', fontStyle: 'italic' }}>
-                    <a href="#" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 500 }}>Ver todo o histórico →</a>
-                  </td>
-                </tr>
               </tbody>
             </table>
           </div>

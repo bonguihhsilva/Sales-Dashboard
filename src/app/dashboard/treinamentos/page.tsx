@@ -12,7 +12,7 @@ export default async function TreinamentosAdminPage() {
 
   if (user) {
     const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
-    if (jwtRole === 'vendedor') redirect('/treinamentos')
+    if (jwtRole === 'vendedor') redirect('/vendedor/treinamentos')
   }
 
   // Buscar trilhas

@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import ChangePassword from '@/components/ui/ChangePassword'
 
 export default async function ConfiguracoesPage() {
   const supabase = await createClient()
@@ -44,9 +45,7 @@ export default async function ConfiguracoesPage() {
                 <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Alterar Senha</div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Atualize sua senha de acesso periodicamente</div>
               </div>
-              <button style={{ background: '#2563eb', color: '#ffffff', border: 'none', padding: '6px 16px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>
-                Alterar
-              </button>
+              <ChangePassword />
             </div>
           </div>
 

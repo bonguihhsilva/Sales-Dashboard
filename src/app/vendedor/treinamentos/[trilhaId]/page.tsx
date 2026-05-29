@@ -17,7 +17,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ trilhaI
   const { data: trilha } = await supabase
     .from('trilhas').select('*').eq('id', trilhaId).single()
 
-  if (!trilha) redirect('/treinamentos')
+  if (!trilha) redirect('/vendedor/treinamentos')
 
   const { data: modulos } = await supabase
     .from('modulos').select('*').eq('trilha_id', trilhaId).order('ordem', { ascending: true })

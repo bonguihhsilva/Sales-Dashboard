@@ -10,8 +10,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let profile = { role: 'super_admin', name: 'Mock User', tenant_id: null as string | null }
-  let jwtRole = 'super_admin'
+  if (!user) redirect('/login')
+
+  let profile: { role: string; name: string; tenant_id: string | null } | null = null
+  let jwtRole = 'vendedor'
 
   if (user) {
     let { data: dbProfile } = await supabase
@@ -40,7 +42,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   const role = profile?.role || jwtRole
-  const userName = profile?.name || 'Usuário (Bypass)'
+  const userName = profile?.name || user.email?.split('@')[0] || 'Usuário'
 
   return (
     <div className="bg-background min-h-screen text-body-base font-body-base">

@@ -25,7 +25,9 @@ export default async function DashboardPage({
   const { data: { user } } = await supabase.auth.getUser()
   
   const adminDb = createAdminClient()
-  let profile = { role: 'super_admin', name: 'Mock User', tenant_id: null as string | null }
+  let profile = { role: (user?.app_metadata?.role as string | undefined) ?? 'vendedor', name: user?.email?.split('@')[0] || 'Usuário', tenant_id: null as string | null }
+
+  if (!user) redirect('/login')
 
   if (user) {
     const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'

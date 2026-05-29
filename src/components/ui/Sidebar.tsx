@@ -11,8 +11,10 @@ export function Sidebar({ role, name }: { role: string, name: string }) {
 
   const adminLinks = [
     { href: '/dashboard', label: 'Overview', icon: 'dashboard' },
+    { href: '/dashboard/metas', label: 'Metas', icon: 'flag' },
     { href: '/dashboard/comissao', label: 'Comissões', icon: 'payments' },
     { href: '/dashboard/regras-comissao', label: 'Regras', icon: 'rule' },
+    { href: '/dashboard/mapeamento', label: 'Mapeamento', icon: 'map' },
     { href: '/dashboard/treinamentos', label: 'Treinamentos', icon: 'school' },
     { href: '/dashboard/relatorios', label: 'Relatórios', icon: 'summarize' },
     { href: '/dashboard/rh', label: 'Recursos Humanos', icon: 'groups' },
@@ -86,12 +88,6 @@ export function Sidebar({ role, name }: { role: string, name: string }) {
 
 
         <div className="border-t border-white/5 pt-4 space-y-1">
-          <div className="px-2">
-            <Link href="#" className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 rounded-lg font-label-sm text-label-sm">
-              <span className="material-symbols-outlined">help</span>
-              <span>Support</span>
-            </Link>
-          </div>
           <div className="px-2 pb-4">
             <LogoutButton />
           </div>
