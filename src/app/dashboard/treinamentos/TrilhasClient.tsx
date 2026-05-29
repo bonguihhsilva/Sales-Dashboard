@@ -17,11 +17,12 @@ export default function TrilhasClient({ initialTrilhas }: { initialTrilhas: any[
     setLoading(true)
     
     try {
-      await createTrilhaAction(formData)
-      // Como a action faz revalidatePath, podemos apenas recarregar localmente ou fazer refresh
+      const res = await createTrilhaAction(formData)
+      if (res && res.error) {
+        throw new Error(res.error)
+      }
       setIsModalOpen(false)
       setFormData({ titulo: '', descricao: '', ativo: true })
-      // router.refresh já é chamado pela action ou podemos forçar
       router.refresh()
     } catch (e: any) {
       console.error(e)

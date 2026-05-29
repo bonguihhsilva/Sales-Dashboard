@@ -31,23 +31,32 @@ async function checkAuth() {
 
 // --- TRILHAS ---
 export async function createTrilhaAction(data: { titulo: string; descricao: string; ativo: boolean }) {
-  const { profile } = await checkAuth()
-  const adminDb = createAdminClient()
-  
-  const { data: maxOrdemData } = await adminDb
-    .from('trilhas')
-    .select('ordem')
-    .eq('tenant_id', profile.tenant_id)
-    .order('ordem', { ascending: false })
-    .limit(1)
-  const ordem = maxOrdemData && maxOrdemData.length > 0 ? maxOrdemData[0].ordem + 1 : 1
-
-  const { error } = await adminDb
-    .from('trilhas')
-    .insert({ ...data, ordem, tenant_id: profile.tenant_id })
+  try {
+    const { profile, user } = await checkAuth()
+    const adminDb = createAdminClient()
     
-  if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/treinamentos/admin')
+    const tenantId = profile.tenant_id || profile.id || user.id
+    
+    const { data: maxOrdemData } = await adminDb
+      .from('trilhas')
+      .select('ordem')
+      .eq('tenant_id', tenantId)
+      .order('ordem', { ascending: false })
+      .limit(1)
+    const ordem = maxOrdemData && maxOrdemData.length > 0 ? maxOrdemData[0].ordem + 1 : 1
+
+    const { error } = await adminDb
+      .from('trilhas')
+      .insert({ ...data, ordem, tenant_id: tenantId })
+      
+    if (error) throw new Error(error.message)
+    revalidatePath('/dashboard/treinamentos')
+    revalidatePath('/dashboard/treinamentos/admin')
+    return { success: true }
+  } catch (e: any) {
+    console.error('Error in createTrilhaAction:', e)
+    return { success: false, error: e.message }
+  }
 }
 
 export async function updateTrilhaAction(id: number, data: { titulo: string; descricao: string; ativo: boolean }) {

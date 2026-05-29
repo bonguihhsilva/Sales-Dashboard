@@ -25,11 +25,14 @@ export default function AdminLmsClient({
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
-  const handleAction = async (actionFn: () => Promise<void>) => {
+  const handleAction = async (actionFn: () => Promise<any>) => {
     setLoading(true)
     setErrorMsg('')
     try {
-      await actionFn()
+      const res = await actionFn()
+      if (res && res.error) {
+        throw new Error(res.error)
+      }
     } catch (e: any) {
       setErrorMsg(e.message || 'Ocorreu um erro')
     }
