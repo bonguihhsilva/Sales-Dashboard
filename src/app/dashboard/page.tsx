@@ -29,7 +29,7 @@ export default async function DashboardPage({
 
   if (user) {
     const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
-    if (jwtRole === 'vendedor') redirect('/meu-resultado')
+    if (jwtRole === 'vendedor') redirect('/vendedor/meu-resultado')
 
     const { data: dbProfile } = await supabase
       .from('profiles').select('role, name, tenant_id').eq('id', user.id).single()

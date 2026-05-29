@@ -20,7 +20,7 @@ export default async function RHPage() {
   }
 
   const effectiveRole = currentProfile.role || jwtRole
-  if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) redirect('/meu-resultado')
+  if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) redirect('/vendedor/meu-resultado')
 
   const admin = createAdminClient()
 

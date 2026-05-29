@@ -21,7 +21,7 @@ export default async function UsersPage({
   // Guard: somente adm/gerente/super_admin (D-01). Via app_metadata.
   const callerRole = user.app_metadata?.role as string | undefined
   if (!callerRole || !['adm', 'gerente', 'super_admin'].includes(callerRole)) {
-    redirect('/meu-resultado')
+    redirect('/vendedor/meu-resultado')
   }
 
   // tenant_id do caller — para isolar a listagem (Pitfall 4)

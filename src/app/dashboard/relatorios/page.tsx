@@ -18,7 +18,7 @@ export default async function RelatoriosPage({
 
   if (user) {
     const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
-    if (jwtRole === 'vendedor') redirect('/meu-resultado')
+    if (jwtRole === 'vendedor') redirect('/vendedor/meu-resultado')
   }
 
   const adminDb = createAdminClient()

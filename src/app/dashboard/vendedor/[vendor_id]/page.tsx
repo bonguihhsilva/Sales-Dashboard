@@ -21,7 +21,7 @@ export default async function VendorDetailPage({
   // if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role, tenant_id').eq('id', user.id).single()
-  if (profile?.role !== 'adm') redirect('/meu-resultado')
+  if (!profile || !['adm', 'gerente', 'super_admin'].includes(profile.role)) redirect('/vendedor/meu-resultado')
 
   const { vendor_id } = await params
   const sp = await searchParams

@@ -8,9 +8,9 @@ export default async function ConfiguracoesPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // if (!user) {
-  //   redirect('/login')
-  // }
+  if (!user) {
+    redirect('/login')
+  }
 
   const role = user?.app_metadata?.role || 'vendedor'
   const backLink = role === 'vendedor' ? '/vendedor/meu-resultado' : '/dashboard'

@@ -12,6 +12,6 @@ export default async function Home() {
   // Usa JWT app_metadata — mesma fonte que o middleware (D-04)
   const role = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
 
-  if (role === 'vendedor') redirect('/meu-resultado')
+  if (role === 'vendedor') redirect('/vendedor/meu-resultado')
   redirect('/dashboard')
 }
