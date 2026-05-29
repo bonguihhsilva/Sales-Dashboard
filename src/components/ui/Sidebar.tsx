@@ -9,94 +9,99 @@ export function Sidebar({ role, name }: { role: string, name: string }) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
 
-  const links = [
-    { href: '/dashboard', label: 'Vendas', icon: '📊' },
-    { href: '/dashboard/comissao', label: 'Comissões', icon: '💰' },
-    { href: '/dashboard/regras-comissao', label: 'Regras', icon: '⚙️' },
-    { href: '/dashboard/treinamentos', label: 'Treinamentos', icon: '🎓' },
-    { href: '/dashboard/rh', label: 'RH', icon: '👥' },
-    { href: '/dashboard/usuarios', label: 'Gestão de Usuários', icon: '🔑' },
+  const adminLinks = [
+    { href: '/dashboard', label: 'Overview', icon: 'dashboard' },
+    { href: '/dashboard/comissao', label: 'Comissões', icon: 'payments' },
+    { href: '/dashboard/regras-comissao', label: 'Regras', icon: 'rule' },
+    { href: '/dashboard/treinamentos', label: 'Treinamentos', icon: 'school' },
+    { href: '/dashboard/relatorios', label: 'Relatórios', icon: 'summarize' },
+    { href: '/dashboard/rh', label: 'Recursos Humanos', icon: 'groups' },
+    { href: '/dashboard/usuarios', label: 'Usuários', icon: 'manage_accounts' },
   ]
 
+  const vendorLinks = [
+    { href: '/vendedor/meu-resultado', label: 'Meu Resultado', icon: 'payments' },
+    { href: '/vendedor/treinamentos', label: 'Treinamentos', icon: 'school' },
+    { href: '/vendedor/regras', label: 'Regras de Comissão', icon: 'rule' },
+    { href: '/vendedor/rh', label: 'Recursos Humanos', icon: 'groups' },
+  ]
+
+  const links = role === 'vendedor' ? vendorLinks : adminLinks
+
   if (role === 'super_admin') {
-    links.push({ href: '/dashboard/super-admin', label: 'Super Admin', icon: '🛡️' })
+    links.push({ href: '/dashboard/super-admin', label: 'Super Admin', icon: 'admin_panel_settings' })
   }
 
   return (
     <>
       {/* Mobile toggle */}
       <button 
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-surface rounded-md shadow-sm border border-border"
+        className="lg:hidden fixed top-[18px] left-4 z-[60] p-1 bg-surface-container rounded shadow-sm border border-white/5"
         onClick={() => setIsOpen(!isOpen)}
       >
-        ☰
+        <span className="material-symbols-outlined text-on-surface">menu</span>
       </button>
 
       {/* Sidebar */}
       <aside className={`
-        fixed md:static inset-y-0 left-0 z-40 w-64 bg-surface border-r border-border
-        transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
-        transition-transform duration-200 ease-in-out
-        flex flex-col
+        fixed left-0 top-16 h-[calc(100vh-64px)] w-[280px] flex flex-col py-stack-lg border-r border-white/5 bg-surface-container z-40
+        transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
+        transition-transform duration-300 ease-in-out
       `}>
-        <div className="p-6 border-b border-border flex items-center gap-3">
-          <div className="w-8 h-8 rounded bg-accent flex items-center justify-center text-accent-foreground font-bold text-xl">
-            G
-          </div>
-          <div>
-            <h2 className="font-bold text-lg tracking-tight leading-none text-foreground">GDS Frame</h2>
-            <p className="text-xs text-muted-foreground mt-1 capitalize">{role.replace('_', ' ')}</p>
+        <div className="px-6 mb-8">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-primary-container rounded-lg flex items-center justify-center text-on-primary-container">
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>monitoring</span>
+            </div>
+            <div>
+              <h2 className="font-title-md text-title-md text-on-surface">Operações</h2>
+              <p className="font-label-sm text-label-sm text-on-surface-variant capitalize">{role.replace('_', ' ')}</p>
+            </div>
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-          <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-3">Menu</div>
+        <nav className="flex-grow space-y-1">
           {links.map(link => {
             const isActive = pathname === link.href || pathname.startsWith(link.href + '/')
             return (
-              <Link 
-                key={link.href} 
-                href={link.href}
-                onClick={() => setIsOpen(false)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px',
-                  borderRadius: '8px', textDecoration: 'none',
-                  background: isActive ? 'var(--accent)' : 'transparent',
-                  color: isActive ? '#fff' : 'var(--text)',
-                  fontWeight: isActive ? 600 : 500,
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={e => {
-                  if (!isActive) e.currentTarget.style.background = 'var(--surface2)'
-                }}
-                onMouseLeave={e => {
-                  if (!isActive) e.currentTarget.style.background = 'transparent'
-                }}
-              >
-                <span style={{ fontSize: '1.2rem', opacity: isActive ? 1 : 0.7 }}>{link.icon}</span>
-                <span style={{ fontSize: '0.85rem' }}>{link.label}</span>
-              </Link>
+              <div key={link.href} className="px-2">
+                <Link 
+                  href={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`
+                    flex items-center gap-3 px-4 py-3 rounded-lg font-label-sm text-label-sm transition-all duration-300 ease-in-out
+                    ${isActive 
+                      ? 'bg-primary-container text-on-primary-container font-bold' 
+                      : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}
+                  `}
+                >
+                  <span className="material-symbols-outlined">{link.icon}</span>
+                  <span>{link.label}</span>
+                </Link>
+              </div>
             )
           })}
         </nav>
 
-        <div className="p-4 border-t border-border">
-          <div className="flex items-center gap-3 mb-4 px-2">
-            <div className="w-8 h-8 rounded-full bg-surface2 flex items-center justify-center text-sm font-bold text-muted-foreground">
-              {name.charAt(0)}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">{name}</p>
-            </div>
+
+
+        <div className="border-t border-white/5 pt-4 space-y-1">
+          <div className="px-2">
+            <Link href="#" className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 rounded-lg font-label-sm text-label-sm">
+              <span className="material-symbols-outlined">help</span>
+              <span>Support</span>
+            </Link>
           </div>
-          <LogoutButton />
+          <div className="px-2 pb-4">
+            <LogoutButton />
+          </div>
         </div>
       </aside>
 
       {/* Mobile overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-30 md:hidden" 
+          className="fixed inset-0 bg-black/60 z-30 lg:hidden backdrop-blur-sm" 
           onClick={() => setIsOpen(false)}
         />
       )}

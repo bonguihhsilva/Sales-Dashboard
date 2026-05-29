@@ -61,23 +61,14 @@ export default function ExportButton({ activePeriod }: { activePeriod?: number }
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+    <div className="flex items-center gap-2 h-full">
       <button
         onClick={handleExport}
         disabled={loading}
-        style={{
-          background: 'var(--surface2)',
-          border: '1px solid var(--border)',
-          borderRadius: '6px',
-          color: loading ? 'var(--muted)' : 'var(--accent)',
-          fontFamily: 'DM Mono, monospace', fontWeight: 700,
-          fontSize: '0.68rem', padding: '7px 12px',
-          cursor: loading ? 'not-allowed' : 'pointer',
-          whiteSpace: 'nowrap',
-          height: '100%',
-        }}
+        className="bg-surface-container-high hover:bg-surface-container-highest border border-white/5 rounded-xl text-primary font-mono font-bold text-xs px-4 py-[0.6rem] cursor-pointer whitespace-nowrap transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed h-full"
       >
-        {loading ? '⏳ Gerando...' : '⬇ Relatório CSV'}
+        <span className="material-symbols-outlined text-sm">{loading ? 'hourglass_empty' : 'download'}</span>
+        {loading ? 'Gerando...' : 'Relatório CSV'}
       </button>
     </div>
   )

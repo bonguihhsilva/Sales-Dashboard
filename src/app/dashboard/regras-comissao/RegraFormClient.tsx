@@ -82,76 +82,65 @@ export default function RegraFormClient({ regraInicial, tenantId }: { regraInici
     }
   }
 
-  const inputStyle = {
-    width: '100%', padding: '10px 12px', borderRadius: '6px', 
-    border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', 
-    fontSize: '0.85rem', fontFamily: 'Syne, sans-serif'
-  }
-
-  const labelStyle = {
-    display: 'block', fontSize: '0.75rem', fontWeight: 600, 
-    color: 'var(--muted)', marginBottom: '4px', textTransform: 'uppercase' as const, 
-    letterSpacing: '0.05em', fontFamily: 'DM Mono, monospace'
-  }
-
-  const boxStyle = {
-    background: 'var(--surface)', border: '1px solid var(--border)', 
-    borderRadius: '8px', padding: '1.25rem', marginBottom: '1rem'
-  }
+  const inputClass = "w-full bg-background border border-white/10 rounded-xl px-4 py-3 text-on-surface focus:outline-none focus:border-primary transition-colors font-sans text-sm"
+  const labelClass = "block text-xs font-mono tracking-widest text-muted-foreground uppercase mb-2"
+  const boxClass = "glass-card rounded-2xl p-card-padding border border-white/5 mb-6"
 
   return (
-    <form onSubmit={handleSave} style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <form onSubmit={handleSave} className="w-full max-w-3xl mx-auto flex flex-col gap-2">
       
-      <div style={boxStyle}>
+      <div className={boxClass}>
         <SectionTitle>Detalhes da Regra</SectionTitle>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
-          <div style={{ gridColumn: '1 / -1' }}>
-            <label style={labelStyle}>Nome da Regra</label>
-            <input required style={inputStyle} value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Bônus Meta 1" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <div className="md:col-span-2">
+            <label className={labelClass}>Nome da Regra</label>
+            <input required className={inputClass} value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Bônus Meta 1" />
           </div>
-          <div style={{ gridColumn: '1 / -1' }}>
-            <label style={labelStyle}>Descrição (opcional)</label>
-            <textarea style={{ ...inputStyle, minHeight: '80px' }} value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Explicação detalhada da regra..." />
+          <div className="md:col-span-2">
+            <label className={labelClass}>Descrição (opcional)</label>
+            <textarea className={`${inputClass} resize-y min-h-[100px]`} value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Explicação detalhada da regra..." />
           </div>
           <div>
-            <label style={labelStyle}>Prioridade (1 = mais alta)</label>
-            <input type="number" min={1} required style={inputStyle} value={prioridade} onChange={e => setPrioridade(parseInt(e.target.value))} />
+            <label className={labelClass}>Prioridade (1 = mais alta)</label>
+            <input type="number" min={1} required className={inputClass} value={prioridade} onChange={e => setPrioridade(parseInt(e.target.value))} />
           </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: '10px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
-              <input type="checkbox" checked={ativo} onChange={e => setAtivo(e.target.checked)} style={{ width: '16px', height: '16px', accentColor: 'var(--accent)' }} />
+          <div className="flex items-end pb-2">
+            <label className="flex items-center gap-3 text-sm text-on-surface-variant cursor-pointer group font-bold">
+              <input type="checkbox" checked={ativo} onChange={e => setAtivo(e.target.checked)} className="w-5 h-5 rounded border-white/20 text-primary focus:ring-primary focus:ring-offset-background bg-background" />
               Regra Ativa
             </label>
           </div>
         </div>
       </div>
 
-      <div style={boxStyle}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      <div className={boxClass}>
+        <div className="flex justify-between items-center mb-6">
           <SectionTitle>Condições (Se...)</SectionTitle>
-          <button type="button" onClick={addCondicao} style={{ background: 'transparent', color: 'var(--accent)', border: '1px solid var(--accent)', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', cursor: 'pointer' }}>+ Condição</button>
+          <button type="button" onClick={addCondicao} className="bg-transparent hover:bg-primary/10 border border-primary text-primary font-bold px-4 py-2 rounded-xl transition-colors text-sm">
+            + Condição
+          </button>
         </div>
         
         {condicoes.length === 0 ? (
-          <p style={{ color: 'var(--muted)', fontSize: '0.8rem', fontStyle: 'italic' }}>Nenhuma condição específica. A regra será aplicada a todas as vendas/vendedores.</p>
+          <p className="text-muted-foreground font-mono italic text-sm">Nenhuma condição específica. A regra será aplicada a todas as vendas/vendedores.</p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div className="flex flex-col gap-4">
             {condicoes.map((cond, idx) => (
-              <div key={idx} style={{ display: 'flex', gap: '10px', alignItems: 'center', background: 'var(--bg)', padding: '10px', borderRadius: '6px', border: '1px solid var(--border)' }}>
-                <select style={inputStyle} value={cond.tipo} onChange={e => updateCondicao(idx, 'tipo', e.target.value)}>
+              <div key={idx} className="flex flex-wrap gap-4 items-center bg-surface-container-high/50 p-4 rounded-xl border border-white/5">
+                <select className={`${inputClass} flex-1 min-w-[200px]`} value={cond.tipo} onChange={e => updateCondicao(idx, 'tipo', e.target.value)}>
                   <option value="atingimento_meta">Atingimento de Meta</option>
                   <option value="volume_venda">Volume de Venda ($)</option>
                 </select>
                 
                 {cond.tipo === 'atingimento_meta' ? (
-                  <select style={inputStyle} value={cond.meta} onChange={e => updateCondicao(idx, 'meta', e.target.value)}>
+                  <select className={`${inputClass} flex-1 min-w-[150px]`} value={cond.meta} onChange={e => updateCondicao(idx, 'meta', e.target.value)}>
                     <option value="meta1">1ª Meta</option>
                     <option value="meta2">2ª Meta</option>
                     <option value="meta3">3ª Meta</option>
                   </select>
                 ) : null}
 
-                <select style={inputStyle} value={cond.comparador} onChange={e => updateCondicao(idx, 'comparador', e.target.value)}>
+                <select className={`${inputClass} flex-1 min-w-[200px]`} value={cond.comparador} onChange={e => updateCondicao(idx, 'comparador', e.target.value)}>
                   <option value=">=">Maior ou igual a</option>
                   <option value=">">Maior que</option>
                   <option value="==">Igual a</option>
@@ -159,38 +148,40 @@ export default function RegraFormClient({ regraInicial, tenantId }: { regraInici
                 </select>
 
                 {cond.tipo === 'volume_venda' ? (
-                  <input type="number" style={inputStyle} placeholder="Valor ($)" value={cond.valor || ''} onChange={e => updateCondicao(idx, 'valor', parseFloat(e.target.value))} />
+                  <input type="number" className={`${inputClass} flex-1 min-w-[150px]`} placeholder="Valor ($)" value={cond.valor || ''} onChange={e => updateCondicao(idx, 'valor', parseFloat(e.target.value))} />
                 ) : null}
 
-                <button type="button" onClick={() => removeCondicao(idx)} style={{ background: 'transparent', color: 'var(--destructive, #ef4444)', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0 8px' }}>&times;</button>
+                <button type="button" onClick={() => removeCondicao(idx)} className="text-error hover:bg-error/10 w-10 h-10 rounded-xl flex items-center justify-center transition-colors">
+                  <span className="material-symbols-outlined text-lg">delete</span>
+                </button>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      <div style={boxStyle}>
+      <div className={boxClass}>
         <SectionTitle>Ação (Então...)</SectionTitle>
-        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-          <div style={{ flex: 1 }}>
-            <label style={labelStyle}>Tipo de Ação</label>
-            <select style={inputStyle} value={acao.tipo} onChange={e => setAcao({ ...acao, tipo: e.target.value })}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <div>
+            <label className={labelClass}>Tipo de Ação</label>
+            <select className={inputClass} value={acao.tipo} onChange={e => setAcao({ ...acao, tipo: e.target.value })}>
               <option value="comissao_percentual">Comissão Percentual (%)</option>
               <option value="bonus_fixo">Bônus Fixo ($)</option>
             </select>
           </div>
-          <div style={{ flex: 1 }}>
-            <label style={labelStyle}>Valor</label>
-            <input required type="number" step="0.01" style={inputStyle} value={acao.valor} onChange={e => setAcao({ ...acao, valor: e.target.value })} />
+          <div>
+            <label className={labelClass}>Valor</label>
+            <input required type="number" step="0.01" className={inputClass} value={acao.valor} onChange={e => setAcao({ ...acao, valor: e.target.value })} />
           </div>
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-        <button type="button" onClick={() => router.back()} disabled={loading} style={{ background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', padding: '10px 20px', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>
+      <div className="flex gap-4 justify-end mt-4">
+        <button type="button" onClick={() => router.back()} disabled={loading} className="py-3 px-8 bg-transparent border border-white/10 hover:bg-white/5 text-on-surface rounded-xl transition-colors font-bold disabled:opacity-50">
           Cancelar
         </button>
-        <button type="submit" disabled={loading} style={{ background: 'var(--accent)', color: 'var(--bg)', border: 'none', padding: '10px 20px', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>
+        <button type="submit" disabled={loading} className="py-3 px-8 bg-primary hover:bg-primary/90 text-on-primary rounded-xl transition-colors font-bold disabled:opacity-50">
           {loading ? 'Salvando...' : 'Salvar Regra'}
         </button>
       </div>

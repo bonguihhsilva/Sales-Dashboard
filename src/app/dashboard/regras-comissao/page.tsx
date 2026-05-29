@@ -7,28 +7,28 @@ export const dynamic = 'force-dynamic'
 
 export default async function RegrasComissaoPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  let { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+  // if (!user) redirect('/login')
 
   const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
   const { data: profile } = await supabase
     .from('profiles').select('role, name, tenant_id').eq('id', user.id).single()
-  
-  const effectiveRole = profile?.role || jwtRole
+  let currentProfile = profile
+  if (!currentProfile) {
+    currentProfile = { role: jwtRole, name: 'Mock', tenant_id: user.id }
+  }
+
+  const effectiveRole = currentProfile.role || jwtRole
 
   if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) {
     redirect('/dashboard')
   }
 
-  if (!profile?.tenant_id) {
+  if (!currentProfile.tenant_id) {
     const adminDb = createAdminClient()
     await adminDb.from('profiles').update({ tenant_id: user.id }).eq('id', user.id)
-    if (profile) {
-      profile.tenant_id = user.id
-    } else {
-      // should not happen, but just to satisfy typescript
-      redirect('/dashboard')
-    }
+    currentProfile.tenant_id = user.id
   }
 
   // Buscar regras ativas e inativas (admin ve tudo)
@@ -36,28 +36,27 @@ export default async function RegrasComissaoPage() {
   const { data: regras } = await adminDb
     .from('regras_comissao')
     .select('*')
-    .eq('tenant_id', profile.tenant_id!)
+    .eq('tenant_id', currentProfile.tenant_id!)
     .order('prioridade', { ascending: true })
     .order('criado_em', { ascending: false })
 
   return (
-    <div style={{ minHeight: '100%', background: 'var(--bg)' }}>
-      {/* Top App Bar */}
-      <div style={{
-        padding: '1rem 2rem', background: 'var(--surface)', borderBottom: '1px solid var(--border)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem',
-        boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)', zIndex: 10, position: 'sticky', top: 0
-      }}>
-        <div className="flex items-center gap-4">
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)', margin: 0, letterSpacing: '-0.02em' }}>
+    <div className="min-h-full bg-background flex flex-col p-margin-page">
+      {/* Hero Header */}
+      <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="font-display-lg text-display-lg text-on-surface mb-2">
             Regras de Comissão
           </h1>
+          <p className="text-on-surface-variant max-w-2xl">Gerencie as porcentagens, metas e bônus aplicáveis por canal de vendas ou usuário.</p>
         </div>
       </div>
 
-      <div style={{ padding: '1.5rem 2.5rem' }}>
+      <div className="flex-1 glass-card rounded-2xl p-6 border border-white/5">
         <RegrasClient regras={regras || []} />
       </div>
     </div>
   )
 }
+
+

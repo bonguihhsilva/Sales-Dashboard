@@ -184,75 +184,66 @@ export default function UploadModal({ periods }: { periods: Period[] }) {
     if (fileRef.current) fileRef.current.value = ''
   }
 
-  const inputStyle = {
-    background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '8px',
-    color: 'var(--text)', fontFamily: 'DM Mono, monospace', fontSize: '0.82rem',
-    padding: '9px 12px', outline: 'none', width: '100%', marginBottom: '0.85rem',
-  }
-  const labelStyle = {
-    display: 'block' as const, fontSize: '0.65rem', fontFamily: 'DM Mono, monospace',
-    color: 'var(--muted)', textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginBottom: '5px',
-  }
-
   return (
     <>
       <button
         onClick={() => { setOpen(true); setStatus('idle'); setMessage(''); setStats(null); setDetected(null) }}
-        style={{ background: 'var(--accent)', color: '#0e0f11', fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.78rem', border: 'none', borderRadius: '6px', padding: '7px 14px', cursor: 'pointer' }}
+        className="bg-primary hover:bg-primary/90 text-on-primary font-bold text-xs px-4 py-[0.6rem] rounded-xl transition-colors flex items-center gap-2 h-full"
       >
-        + Upload HTML
+        <span className="material-symbols-outlined text-sm">upload_file</span>
+        Upload HTML
       </button>
 
       {open && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '14px', padding: '2rem', width: '100%', maxWidth: '480px' }}>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.4rem' }}>Importar Vendas</h2>
-            <p style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginBottom: '1.5rem' }}>
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[1000] p-4 backdrop-blur-sm">
+          <div className="bg-surface border border-white/10 rounded-2xl p-8 w-full max-w-lg shadow-2xl glass-card">
+            <h2 className="text-xl font-bold mb-2 text-on-surface">Importar Vendas</h2>
+            <p className="text-xs font-mono text-muted-foreground mb-6">
               O período é detectado automaticamente pelo arquivo HTML.
             </p>
 
             {/* File picker */}
-            <label style={labelStyle}>Arquivo HTML</label>
+            <label className="block text-[0.65rem] font-mono text-muted-foreground uppercase tracking-wider mb-2">Arquivo HTML</label>
             <input
               ref={fileRef}
               type="file" accept=".html,.htm"
               onChange={handleFileChange}
-              style={{ ...inputStyle, cursor: 'pointer' }}
+              className="bg-surface-container border border-white/5 rounded-xl text-on-surface font-mono text-sm px-4 py-3 outline-none w-full mb-4 cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-on-primary hover:file:bg-primary/90 transition-all"
             />
 
             {/* Detected period info */}
             {detecting && (
-              <div style={{ padding: '10px 12px', borderRadius: '8px', marginBottom: '0.85rem', fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', background: 'rgba(66,148,245,0.08)', color: 'var(--mkt)', border: '1px solid rgba(66,148,245,0.2)' }}>
+              <div className="p-3 rounded-xl mb-4 text-xs font-mono bg-blue-500/10 text-blue-400 border border-blue-500/20">
                 Detectando período...
               </div>
             )}
 
             {detected && !detecting && (
-              <div style={{ padding: '12px 14px', borderRadius: '10px', marginBottom: '0.85rem', border: `1px solid ${detected.is_new ? 'rgba(200,245,66,0.3)' : 'var(--border)'}`, background: detected.is_new ? 'rgba(200,245,66,0.06)' : 'var(--surface2)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div className={`p-4 rounded-xl mb-4 border ${detected.is_new ? 'border-primary/30 bg-primary/10' : 'border-white/5 bg-surface-container'}`}>
+                <div className="flex items-center gap-3">
                   <div>
-                    <div style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '2px' }}>
+                    <div className="text-[0.6rem] font-mono text-muted-foreground uppercase tracking-widest mb-0.5">
                       Período detectado
                     </div>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: detected.is_new ? 'var(--accent)' : 'var(--text)' }}>
+                    <div className={`text-base font-bold ${detected.is_new ? 'text-primary' : 'text-on-surface'}`}>
                       {detected.label}
                     </div>
                   </div>
-                  <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+                  <div className="ml-auto text-right">
                     {detected.is_new ? (
-                      <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', padding: '3px 8px', borderRadius: '4px', background: 'rgba(200,245,66,0.15)', color: 'var(--accent)', fontWeight: 700 }}>
+                      <span className="text-[0.65rem] font-mono px-2 py-1 rounded bg-primary/20 text-primary font-bold">
                         Novo período
                       </span>
                     ) : (
-                      <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', padding: '3px 8px', borderRadius: '4px', background: 'var(--surface)', color: 'var(--muted)', border: '1px solid var(--border)' }}>
+                      <span className="text-[0.65rem] font-mono px-2 py-1 rounded bg-surface border border-white/10 text-muted-foreground">
                         Já cadastrado
                       </span>
                     )}
                   </div>
                 </div>
                 {detected.is_new && (
-                  <div style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '6px' }}>
-                    O período será criado automaticamente. As metas serão copiadas do mês anterior — ajuste depois em <strong style={{ color: 'var(--text)' }}>Dashboard → Metas</strong>.
+                  <div className="text-[0.62rem] font-mono text-muted-foreground mt-2">
+                    O período será criado automaticamente. As metas serão copiadas do mês anterior — ajuste depois em <strong className="text-on-surface">Dashboard → Metas</strong>.
                   </div>
                 )}
               </div>
@@ -261,8 +252,8 @@ export default function UploadModal({ periods }: { periods: Period[] }) {
             {/* Import mode */}
             {detected && (
               <>
-                <label style={labelStyle}>Modo de importação</label>
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '0.85rem' }}>
+                <label className="block text-[0.65rem] font-mono text-muted-foreground uppercase tracking-wider mb-2">Modo de importação</label>
+                <div className="flex gap-2 mb-4">
                   {[
                     { v: 'incremental', label: '⚡ Incremental', desc: 'Adiciona apenas novas transações' },
                     { v: 'replace',     label: '🔄 Substituir',  desc: 'Apaga tudo e reimporta' },
@@ -270,14 +261,14 @@ export default function UploadModal({ periods }: { periods: Period[] }) {
                     <div
                       key={opt.v}
                       onClick={() => setMode(opt.v as typeof mode)}
-                      style={{
-                        flex: 1, padding: '10px 12px', borderRadius: '8px', cursor: 'pointer',
-                        border: `1px solid ${mode === opt.v ? 'var(--accent)' : 'var(--border)'}`,
-                        background: mode === opt.v ? 'rgba(200,245,66,0.08)' : 'var(--surface2)',
-                      }}
+                      className={`flex-1 p-3 rounded-xl cursor-pointer border transition-colors ${
+                        mode === opt.v 
+                          ? 'border-primary bg-primary/10' 
+                          : 'border-white/5 bg-surface-container-high hover:border-white/20'
+                      }`}
                     >
-                      <div style={{ fontSize: '0.78rem', fontWeight: 600, color: mode === opt.v ? 'var(--accent)' : 'var(--text)', marginBottom: '3px' }}>{opt.label}</div>
-                      <div style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>{opt.desc}</div>
+                      <div className={`text-xs font-bold mb-1 ${mode === opt.v ? 'text-primary' : 'text-on-surface'}`}>{opt.label}</div>
+                      <div className="text-[0.65rem] font-mono text-muted-foreground leading-snug">{opt.desc}</div>
                     </div>
                   ))}
                 </div>
@@ -286,49 +277,47 @@ export default function UploadModal({ periods }: { periods: Period[] }) {
 
             {/* Status message */}
             {message && (
-              <div style={{
-                padding: '10px 12px', borderRadius: '8px', marginBottom: '1rem',
-                fontSize: '0.75rem', fontFamily: 'DM Mono, monospace',
-                background: status === 'error' ? 'rgba(245,92,66,0.1)' : status === 'done' ? 'rgba(200,245,66,0.1)' : 'rgba(66,148,245,0.08)',
-                color: status === 'error' ? '#f55c42' : status === 'done' ? 'var(--meta1)' : 'var(--mkt)',
-                border: `1px solid ${status === 'error' ? 'rgba(245,92,66,0.3)' : status === 'done' ? 'rgba(200,245,66,0.3)' : 'rgba(66,148,245,0.2)'}`,
-              }}>
+              <div className={`p-3 rounded-xl mb-4 text-xs font-mono border ${
+                status === 'error' ? 'bg-red-500/10 text-red-400 border-red-500/30' :
+                status === 'done' ? 'bg-primary/10 text-primary border-primary/30' :
+                'bg-blue-500/10 text-blue-400 border-blue-500/20'
+              }`}>
                 {message}
               </div>
             )}
 
             {/* Done stats */}
             {stats && status === 'done' && (
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '1rem' }}>
-                <div style={{ flex: 1, background: 'rgba(200,245,66,0.08)', border: '1px solid rgba(200,245,66,0.2)', borderRadius: '8px', padding: '8px 12px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--meta1)' }}>{stats.inserted.toLocaleString()}</div>
-                  <div style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase' }}>inseridas</div>
+              <div className="flex gap-2 mb-4">
+                <div className="flex-1 bg-primary/10 border border-primary/20 rounded-xl p-3 text-center">
+                  <div className="text-xl font-bold text-primary">{stats.inserted.toLocaleString()}</div>
+                  <div className="text-[0.6rem] font-mono text-muted-foreground uppercase tracking-widest mt-1">inseridas</div>
                 </div>
                 {stats.skipped > 0 && (
-                  <div style={{ flex: 1, background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 12px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--muted)' }}>{stats.skipped.toLocaleString()}</div>
-                    <div style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase' }}>já existiam</div>
+                  <div className="flex-1 bg-surface-container border border-white/5 rounded-xl p-3 text-center">
+                    <div className="text-xl font-bold text-muted-foreground">{stats.skipped.toLocaleString()}</div>
+                    <div className="text-[0.6rem] font-mono text-muted-foreground uppercase tracking-widest mt-1">já existiam</div>
                   </div>
                 )}
               </div>
             )}
 
             {/* Buttons */}
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={handleClose} style={{ flex: 1, background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--muted)', fontFamily: 'Syne, sans-serif', fontWeight: 600, fontSize: '0.85rem', padding: '10px', cursor: 'pointer' }}>
+            <div className="flex gap-3 mt-6">
+              <button onClick={handleClose} className="flex-1 bg-transparent border border-white/10 hover:bg-white/5 rounded-xl text-muted-foreground font-bold text-sm py-2.5 transition-colors">
                 {status === 'done' ? 'Fechar' : 'Cancelar'}
               </button>
               {status !== 'done' && (
                 <button
                   onClick={handleUpload}
                   disabled={!file || !detected || status === 'uploading' || status === 'parsing' || detecting}
-                  style={{ flex: 2, background: 'var(--accent)', color: '#0e0f11', fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.85rem', border: 'none', borderRadius: '8px', padding: '10px', cursor: 'pointer', opacity: (!file || !detected || status === 'uploading' || status === 'parsing' || detecting) ? 0.5 : 1 }}
+                  className="flex-[2] bg-primary hover:bg-primary/90 text-on-primary font-bold text-sm rounded-xl py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {status === 'parsing' || status === 'uploading' ? 'Processando...' : detected ? `Importar ${detected.label}` : 'Selecione um arquivo'}
                 </button>
               )}
               {status === 'done' && (
-                <button onClick={() => window.location.reload()} style={{ flex: 2, background: 'var(--accent)', color: '#0e0f11', fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.85rem', border: 'none', borderRadius: '8px', padding: '10px', cursor: 'pointer' }}>
+                <button onClick={() => window.location.reload()} className="flex-[2] bg-primary hover:bg-primary/90 text-on-primary font-bold text-sm rounded-xl py-2.5 transition-colors">
                   Atualizar Dashboard
                 </button>
               )}

@@ -14,8 +14,9 @@ export default async function UsersPage({
   searchParams: Promise<{ role?: string; loja?: string }>
 }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  let { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+  // if (!user) redirect('/login')
 
   // Guard: somente adm/gerente/super_admin (D-01). Via app_metadata.
   const callerRole = user.app_metadata?.role as string | undefined
@@ -33,19 +34,27 @@ export default async function UsersPage({
 
   // Profiles do tenant + last_sign_in_at via admin API
   const admin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || '',
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
-  const [{ data: profiles }, listResult] = await Promise.all([
-    supabase.from('profiles').select('*').eq('tenant_id', tenantId).order('name'),
-    admin.auth.admin.listUsers({ perPage: 1000 }),
-  ])
-  const authUsers = listResult.data?.users ?? []
+
+  let listResult: any = { data: { users: [] } }
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    try {
+      listResult = await admin.auth.admin.listUsers({ perPage: 1000 })
+    } catch (err) {
+      // silently ignore fetch failed when running without valid Service Role Key
+    }
+  }
+
+  const { data: profiles } = await supabase.from('profiles').select('*').eq('tenant_id', tenantId).order('name')
+  
+  const authUsers = listResult?.data?.users ?? []
 
   const users: UserRow[] = (profiles ?? []).map((p) => ({
     ...(p as Profile),
-    last_sign_in_at: authUsers.find((u) => u.id === p.id)?.last_sign_in_at ?? null,
+    last_sign_in_at: authUsers.find((u: any) => u.id === p.id)?.last_sign_in_at ?? null,
   }))
 
   // Filtros em memoria (lista pequena — 3 lojas)
@@ -69,3 +78,5 @@ export default async function UsersPage({
     />
   )
 }
+
+

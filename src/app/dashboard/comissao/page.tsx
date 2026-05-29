@@ -14,8 +14,9 @@ export default async function ComissaoPage({
   searchParams: Promise<{ period?: string }>
 }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  let { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+  // if (!user) redirect('/login')
 
   const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
   
@@ -113,28 +114,25 @@ export default async function ComissaoPage({
   const stores = (dbStores || []).map(s => ({ key: s.name, label: s.name, color: s.color }))
 
   return (
-    <div style={{ minHeight: '100%', background: 'var(--bg)' }}>
-      {/* Top App Bar */}
-      <div style={{
-        padding: '1rem 2rem', background: 'var(--surface)', borderBottom: '1px solid var(--border)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem',
-        boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)', zIndex: 10, position: 'sticky', top: 0
-      }}>
-        <div className="flex items-center gap-4">
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)', margin: 0, letterSpacing: '-0.02em' }}>
-            Comissões
-          </h1>
-          <div style={{ padding: '4px 10px', background: 'var(--surface2)', borderRadius: '16px', fontSize: '0.75rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>
-            {activePeriodLabel}
+    <div className="min-h-full bg-background flex flex-col p-margin-page">
+      {/* Hero Header */}
+      <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <div className="flex items-center gap-4 mb-2">
+            <h1 className="font-display-lg text-display-lg text-on-surface m-0">Comissões</h1>
+            <div className="px-3 py-1 bg-surface-container-high rounded-full text-xs font-bold text-muted-foreground border border-white/5">
+              {activePeriodLabel}
+            </div>
           </div>
+          <p className="text-on-surface-variant max-w-2xl">Acompanhe e aprove o cálculo mensal de comissões e bônus dos vendedores.</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <ExportButton />
-          <PeriodSelector periods={periods as Period[]} activePeriod={activePeriod} />
+        <div className="flex gap-stack-sm flex-wrap items-center">
+          <PeriodSelector periods={(periods || []) as Period[]} activePeriod={activePeriod} />
+          <ExportButton activePeriod={activePeriod} />
         </div>
       </div>
 
-      <div style={{ padding: '1.5rem 2.5rem' }}>
+      <div className="flex-1 glass-card rounded-2xl p-6 border border-white/5">
         <ComissaoClient
           vendorRows={vendorRows}
           periodId={activePeriod}
@@ -145,3 +143,5 @@ export default async function ComissaoPage({
     </div>
   )
 }
+
+

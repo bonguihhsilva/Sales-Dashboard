@@ -7,11 +7,20 @@ export const dynamic = 'force-dynamic'
 
 export default async function AdminLmsPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  let { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+  // if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role, tenant_id').eq('id', user.id).single()
-  if (profile?.role !== 'adm' && profile?.role !== 'gerente') {
+  
+  let currentProfile = profile
+  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
+  if (!currentProfile) {
+    currentProfile = { role: jwtRole, tenant_id: user.id }
+  }
+
+  const effectiveRole = currentProfile.role || jwtRole
+  if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) {
     redirect('/dashboard/treinamentos')
   }
 
@@ -19,7 +28,7 @@ export default async function AdminLmsPage() {
   const { data: trilhas } = await supabase
     .from('trilhas')
     .select('*')
-    .eq('tenant_id', profile.tenant_id)
+    .eq('tenant_id', currentProfile.tenant_id)
     .order('ordem')
 
   // 2. Fetch modulos
@@ -72,3 +81,5 @@ export default async function AdminLmsPage() {
     </div>
   )
 }
+
+

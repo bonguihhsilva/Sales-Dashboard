@@ -22,7 +22,7 @@ export default function LicaoClient({
 
   const handleConcluir = async () => {
     if (jaConcluida) {
-      router.push(`/treinamentos/${trilhaId}/${moduloId}`)
+      router.push(`/vendedor/treinamentos/${trilhaId}/${moduloId}`)
       return
     }
 
@@ -42,7 +42,7 @@ export default function LicaoClient({
 
       if (error) throw error
 
-      router.push(`/treinamentos/${trilhaId}/${moduloId}`)
+      router.push(`/vendedor/treinamentos/${trilhaId}/${moduloId}`)
       router.refresh()
     } catch (err: any) {
       alert(err.message)

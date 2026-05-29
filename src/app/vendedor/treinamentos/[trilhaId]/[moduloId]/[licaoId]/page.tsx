@@ -9,7 +9,9 @@ export const dynamic = 'force-dynamic'
 export default async function LicaoPage({ params }: { params: Promise<{ trilhaId: string, moduloId: string, licaoId: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  // if (!user) redirect('/login')
+  const userId = user?.id
+  if (!userId) redirect('/login')
 
   const { trilhaId, moduloId, licaoId } = await params
 
@@ -19,13 +21,13 @@ export default async function LicaoPage({ params }: { params: Promise<{ trilhaId
   const { data: licao } = await supabase
     .from('licoes').select('*').eq('id', licaoId).single()
     
-  if (!licao) redirect(`/treinamentos/${trilhaId}/${moduloId}`)
+  if (!licao) redirect(`/vendedor/treinamentos/${trilhaId}/${moduloId}`)
 
   // Verifica se já concluiu
   const { data: progresso } = await supabase
     .from('progresso_usuario')
     .select('concluida')
-    .eq('usuario_id', user.id)
+    .eq('usuario_id', userId)
     .eq('licao_id', licaoId)
     .maybeSingle()
 
@@ -36,7 +38,7 @@ export default async function LicaoPage({ params }: { params: Promise<{ trilhaId
       {/* Header */}
       <div style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <Link href={`/treinamentos/${trilhaId}/${moduloId}`} style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textDecoration: 'none' }}>
+          <Link href={`/vendedor/treinamentos/${trilhaId}/${moduloId}`} style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textDecoration: 'none' }}>
             ← Voltar para {modulo?.titulo || 'Módulo'}
           </Link>
           <p style={{ fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '4px' }}>

@@ -54,7 +54,7 @@ export default function QuizClient({
         </p>
         <div style={{ marginTop: '2rem', display: 'flex', gap: '10px', justifyContent: 'center' }}>
           <button 
-            onClick={() => router.push(`/treinamentos/${trilhaId}`)}
+            onClick={() => router.push(`/vendedor/treinamentos/${trilhaId}`)}
             style={{ 
               background: 'var(--accent)', color: 'var(--bg)', border: 'none', 
               padding: '12px 24px', borderRadius: '8px', fontWeight: 800, cursor: 'pointer' 

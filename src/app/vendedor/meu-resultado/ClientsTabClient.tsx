@@ -57,7 +57,7 @@ export default function ClientsTabClient({ clients, color }: { clients: Client[]
   function SortTh({ label, k, right }: { label: string; k: SortKey; right?: boolean }) {
     const active = sortKey === k
     return (
-      <th onClick={() => toggleSort(k)} style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: active ? 'var(--accent)' : 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '6px 10px', textAlign: right ? 'right' : 'left', whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none' }}>
+      <th onClick={() => toggleSort(k)} style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', fontWeight: 600, color: active ? 'var(--accent)' : 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '12px 14px', textAlign: right ? 'right' : 'left', whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none' }}>
         {label} {active ? (sortDir === -1 ? '↓' : '↑') : '↕'}
       </th>
     )
@@ -118,11 +118,11 @@ export default function ClientsTabClient({ clients, color }: { clients: Client[]
       </div>
 
       {/* Table */}
-      <div style={{ overflowX: 'auto' }}>
+      <div className="glass-card" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid var(--border)' }}>
-              <th style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: 'var(--muted)', padding: '6px 10px', width: '32px' }}>#</th>
+            <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
+              <th style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', fontWeight: 600, color: 'var(--muted)', padding: '12px 14px', width: '32px' }}>#</th>
               <SortTh label="Cliente"      k="client_name" />
               <SortTh label="Total"        k="total_spent"        right />
               <SortTh label="Visitas"      k="visit_days"         right />

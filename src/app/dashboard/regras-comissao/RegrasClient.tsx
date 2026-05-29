@@ -59,108 +59,76 @@ export default function RegrasClient({ regras: initialRegras }: { regras: Regra[
   }
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+    <div className="flex flex-col gap-6">
+      <div className="flex justify-between items-center mb-6">
         <SectionTitle>Regras Configuradas</SectionTitle>
         <button
           onClick={() => router.push('/dashboard/regras-comissao/nova')}
-          style={{
-            background: 'var(--accent)', color: 'var(--bg)', border: 'none',
-            padding: '8px 16px', borderRadius: '6px', fontWeight: 600, fontSize: '0.85rem',
-            cursor: 'pointer', fontFamily: 'Syne, sans-serif'
-          }}
+          className="bg-primary hover:bg-primary/90 text-on-primary font-bold px-6 py-3 rounded-xl transition-colors"
         >
           + Nova Regra
         </button>
       </div>
 
       {regras.length === 0 ? (
-        <div style={{ padding: '3rem', textAlign: 'center', background: 'var(--surface)', borderRadius: '12px', border: '1px dashed var(--border)' }}>
-          <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>Nenhuma regra de comissão configurada.</p>
+        <div className="glass-card rounded-2xl p-12 text-center border border-white/5 border-dashed">
+          <p className="text-muted-foreground font-mono mb-4">Nenhuma regra de comissão configurada.</p>
           <button
             onClick={() => router.push('/dashboard/regras-comissao/nova')}
-            style={{
-              background: 'transparent', color: 'var(--accent)', border: '1px solid var(--accent)',
-              padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer'
-            }}
+            className="bg-transparent hover:bg-primary/10 border border-primary text-primary font-bold px-4 py-2 rounded-xl transition-colors text-sm"
           >
             Criar a primeira regra
           </button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gap: '1rem' }}>
+        <div className="flex flex-col gap-4">
           {regras.map((regra) => (
-            <div key={regra.id} style={{ 
-              background: 'var(--surface)', 
-              border: `1px solid ${regra.ativo ? 'var(--border)' : 'var(--border)'}`, 
-              opacity: regra.ativo ? 1 : 0.6,
-              borderRadius: '8px', 
-              padding: '1.25rem',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
+            <div key={regra.id} className={`glass-card rounded-2xl p-6 border flex justify-between items-center transition-colors ${regra.ativo ? 'border-white/5 hover:bg-surface-container-highest' : 'border-white/5 opacity-60'}`}>
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>{regra.nome}</h3>
-                  <span style={{ 
-                    fontSize: '0.65rem', 
-                    padding: '2px 8px', 
-                    borderRadius: '12px',
-                    fontWeight: 600,
-                    background: regra.ativo ? 'var(--meta1)' : 'var(--muted)',
-                    color: 'var(--bg)'
-                  }}>
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="text-lg font-bold text-on-surface m-0">{regra.nome}</h3>
+                  <span className={`text-[0.65rem] font-mono tracking-widest px-2 py-1 rounded-md uppercase ${regra.ativo ? 'bg-primary/20 text-primary' : 'bg-surface-container-highest text-muted-foreground'}`}>
                     {regra.ativo ? 'Ativo' : 'Inativo'}
                   </span>
-                  <span style={{ fontSize: '0.65rem', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', background: 'var(--bg)', padding: '2px 6px', borderRadius: '4px' }}>
+                  <span className="text-[0.65rem] font-mono tracking-widest px-2 py-1 rounded-md uppercase bg-surface-container text-muted-foreground">
                     Prioridade: {regra.prioridade}
                   </span>
                 </div>
-                <p style={{ fontSize: '0.8rem', color: 'var(--muted)', margin: 0, maxWidth: '600px' }}>
+                <p className="text-sm text-on-surface-variant max-w-2xl m-0">
                   {regra.descricao || 'Sem descrição'}
                 </p>
                 
-                <div style={{ marginTop: '12px', display: 'flex', gap: '15px' }}>
-                  <div style={{ fontSize: '0.75rem' }}>
-                    <strong style={{ color: 'var(--muted)', marginRight: '6px' }}>Condição:</strong>
-                    <span>{Array.isArray(regra.condicoes) ? `${regra.condicoes.length} configurada(s)` : 'Nenhuma'}</span>
+                <div className="mt-4 flex gap-6">
+                  <div className="text-xs">
+                    <strong className="text-muted-foreground mr-2 uppercase tracking-widest font-mono">Condição:</strong>
+                    <span className="text-on-surface-variant">{Array.isArray(regra.condicoes) ? `${regra.condicoes.length} configurada(s)` : 'Nenhuma'}</span>
                   </div>
-                  <div style={{ fontSize: '0.75rem' }}>
-                    <strong style={{ color: 'var(--muted)', marginRight: '6px' }}>Ação:</strong>
-                    <span>{regra.acao?.tipo === 'comissao_percentual' ? `${regra.acao.valor}% sobre vendas` : (regra.acao?.tipo === 'bonus_fixo' ? `Bônus de $${regra.acao.valor}` : 'Personalizada')}</span>
+                  <div className="text-xs">
+                    <strong className="text-muted-foreground mr-2 uppercase tracking-widest font-mono">Ação:</strong>
+                    <span className="text-on-surface-variant">{regra.acao?.tipo === 'comissao_percentual' ? `${regra.acao.valor}% sobre vendas` : (regra.acao?.tipo === 'bonus_fixo' ? `Bônus de $${regra.acao.valor}` : 'Personalizada')}</span>
                   </div>
                 </div>
               </div>
               
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div className="flex gap-2">
                 <button
                   disabled={loading}
                   onClick={() => toggleAtivo(regra.id, regra.ativo)}
-                  style={{
-                    background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)',
-                    padding: '6px 12px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer'
-                  }}
+                  className="bg-transparent hover:bg-white/5 border border-white/10 text-on-surface font-bold px-3 py-1.5 rounded-lg transition-colors text-xs disabled:opacity-50"
                 >
                   {regra.ativo ? 'Desativar' : 'Ativar'}
                 </button>
                 <button
                   disabled={loading}
                   onClick={() => router.push(`/dashboard/regras-comissao/${regra.id}`)}
-                  style={{
-                    background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)',
-                    padding: '6px 12px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer'
-                  }}
+                  className="bg-transparent hover:bg-white/5 border border-white/10 text-on-surface font-bold px-3 py-1.5 rounded-lg transition-colors text-xs disabled:opacity-50"
                 >
                   Editar
                 </button>
                 <button
                   disabled={loading}
                   onClick={() => apagarRegra(regra.id)}
-                  style={{
-                    background: 'transparent', color: 'var(--destructive, #ef4444)', border: '1px solid var(--destructive, #ef4444)',
-                    padding: '6px 12px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer'
-                  }}
+                  className="bg-error/10 hover:bg-error/20 border border-error/20 text-error font-bold px-3 py-1.5 rounded-lg transition-colors text-xs disabled:opacity-50"
                 >
                   Excluir
                 </button>

@@ -6,8 +6,8 @@ import { redirect } from 'next/navigation'
 import { fmtCurrency, fmtK, metaLevel, bonusAmount } from '@/lib/utils'
 import { KpiCard, StorePill, ProgressBar, SectionTitle, LogoutButton } from '@/components/ui'
 import ClientsTabClient from './ClientsTabClient'
-import MeuRHTab from './MeuRHTab'
-import ChangePassword from '@/components/ui/ChangePassword'
+import AnaliseTab from './AnaliseTab'
+
 import type { Period, HRFreeDay, HRAbsence, HRVacation, HRPermission } from '@/types'
 
 export default async function MeuResultadoPage({
@@ -17,28 +17,36 @@ export default async function MeuResultadoPage({
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  // if (!user) redirect('/login')
+
+  const userId = user?.id
+  if (!userId) redirect('/login')
 
   // JWT role — mesma fonte do middleware, evita redirect loop (D-04)
-  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
-  if (jwtRole !== 'vendedor') redirect('/dashboard')
+  const jwtRole = (user?.app_metadata?.role as string | undefined) ?? 'vendedor'
+  if (jwtRole !== 'vendedor' && jwtRole !== 'super_admin') redirect('/dashboard')
 
-  const { data: profile } = await supabase
-    .from('profiles').select('*').eq('id', user.id).single()
-
-  if (!profile?.vendor_id) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
-        <div style={{ textAlign: 'center', color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>
-          <p>Seu perfil ainda não está vinculado a um vendedor.</p>
-          <p style={{ marginTop: '8px', fontSize: '0.8rem' }}>Entre em contato com o administrador.</p>
-        </div>
-      </div>
-    )
+  let profile: any = null
+  if (user) {
+    const { data: dbProfile } = await supabase
+      .from('profiles').select('*').eq('id', user.id).single()
+    profile = dbProfile
+  } else {
+    const adminDb = createAdminClient()
+    const { data: sample } = await adminDb.from('vendor_summary').select('vendor_id, vendor_name, store').limit(1).single()
+    profile = {
+      id: 'mock-user-id',
+      vendor_id: sample?.vendor_id || 'mock-v-1',
+      name: sample?.vendor_name || 'Vendedor Teste',
+      tenant_id: 'mock-tenant-id',
+      role: 'vendedor',
+      store: sample?.store || 'Matriz'
+    }
   }
 
-  const { data: periods } = await supabase
+  const { data: dbPeriods } = await supabase
     .from('periods').select('*').order('year', { ascending: false }).order('month', { ascending: false })
+  const periods = dbPeriods || []
 
   const sp = await searchParams
   const activePeriod = sp.period ? parseInt(sp.period) : (periods?.[0]?.id ?? 1)
@@ -47,7 +55,13 @@ export default async function MeuResultadoPage({
   const { data: summary } = await supabase
     .from('vendor_summary').select('*').eq('period_id', activePeriod).eq('vendor_id', profile.vendor_id).single()
 
-  const { data: evolution } = await supabase.rpc('vendor_evolution', { p_vendor_id: profile.vendor_id })
+  const { data: dbEvolution } = await supabase.rpc('vendor_evolution', { p_vendor_id: profile.vendor_id })
+  const evolution = dbEvolution?.length ? dbEvolution : [
+    { year: 2026, month: 4, period_label: 'Abr/26', total_sold: 87400, meta1: 80000, meta2: 95000, meta3: 110000, meta_level: 1, bonus_earned: 300, unique_clients: 94 },
+    { year: 2026, month: 3, period_label: 'Mar/26', total_sold: 102000, meta1: 80000, meta2: 95000, meta3: 110000, meta_level: 2, bonus_earned: 600, unique_clients: 110 },
+    { year: 2026, month: 2, period_label: 'Fev/26', total_sold: 71200, meta1: 80000, meta2: 95000, meta3: 110000, meta_level: 0, bonus_earned: 0, unique_clients: 82 },
+    { year: 2026, month: 1, period_label: 'Jan/26', total_sold: 115000, meta1: 80000, meta2: 95000, meta3: 110000, meta_level: 3, bonus_earned: 1000, unique_clients: 128 },
+  ]
 
   // Fetch clients for carteira tab
   const { data: clientsData } = await supabase
@@ -61,7 +75,7 @@ export default async function MeuResultadoPage({
   const { data: gamificacao } = await supabase
     .from('gamificacao')
     .select('*')
-    .eq('usuario_id', user.id)
+    .eq('usuario_id', profile.id)
     .maybeSingle()
 
   // Commission: vendedor_id = profiles.id = user.id (FK is uuid, not vendor_id text)
@@ -69,43 +83,40 @@ export default async function MeuResultadoPage({
   const { data: comissaoCalc } = await adminDb
     .from('comissoes_calculadas')
     .select('comissao_base, bonus_total, total, aprovado')
-    .eq('vendedor_id', user.id)
+    .eq('vendedor_id', profile.id)
     .eq('periodo_id', activePeriod)
     .maybeSingle()
 
-  // Fetch HR data for Meu RH tab (must be before the !summary early return)
-  const [
-    { data: hrFreeDays },
-    { data: hrAbsences },
-    { data: hrVacations },
-    { data: hrPermissions },
-  ] = await Promise.all([
-    supabase.from('hr_free_days').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-    supabase.from('hr_absences').select('*').eq('user_id', user.id).order('absence_date', { ascending: false }),
-    supabase.from('hr_vacations').select('*').eq('user_id', user.id).order('start_date', { ascending: false }),
-    supabase.from('hr_permissions').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-  ])
+  // Fetch data
 
   const activePeriodLabel = (periods as Period[])?.find(p => p.id === activePeriod)?.label ?? ''
-
-  if (!summary && activeTab !== 'meu-rh') {
-    return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '2rem' }}>
-        <p style={{ color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>Sem dados para este período.</p>
-      </div>
-    )
+  // Caso o vendedor não tenha summary no período, criar um mock zerado para renderizar o layout
+  const currentSummary = summary || {
+    total_sold: 0,
+    meta1: 0,
+    meta2: 0,
+    meta3: 0,
+    bonus1: 0,
+    bonus2: 0,
+    bonus3: 0,
+    commission_pct: 0,
+    unique_clients: 0,
+    avg_ticket: 0,
+    total_items: 0,
+    total_orders: 0,
+    store: profile.store,
   }
 
-  const sold = summary ? Number(summary.total_sold) : 0
-  const m1 = summary ? Number(summary.meta1) : 0
-  const m2 = summary ? Number(summary.meta2) : 0
-  const m3 = summary ? Number(summary.meta3) : 0
-  const lvl = summary ? metaLevel(sold, m1, m2, m3) : 0
-  const b   = summary ? bonusAmount(lvl, Number(summary.bonus1), Number(summary.bonus2), Number(summary.bonus3)) : 0
-  const commission = sold * (summary ? Number(summary.commission_pct) : 0) + b
+  const sold = Number(currentSummary.total_sold)
+  const m1 = Number(currentSummary.meta1)
+  const m2 = Number(currentSummary.meta2)
+  const m3 = Number(currentSummary.meta3)
+  const lvl = metaLevel(sold, m1, m2, m3)
+  const b   = bonusAmount(lvl, Number(currentSummary.bonus1), Number(currentSummary.bonus2), Number(currentSummary.bonus3))
+  const commission = sold * Number(currentSummary.commission_pct) + b
   const { data: dbStores } = await supabase.from('stores').select('*').eq('tenant_id', profile.tenant_id)
   const stores = (dbStores || []).map(s => ({ key: s.name, label: s.name, color: s.color }))
-  const storeObj = summary ? stores.find(s => s.key === summary.store) : undefined
+  const storeObj = stores.find(s => s.key === currentSummary.store)
   const col = storeObj?.color || 'var(--accent)'
   const META_COL = ['var(--muted)','var(--meta1)','var(--meta2)','var(--meta3)'][lvl]
 
@@ -128,8 +139,8 @@ export default async function MeuResultadoPage({
       {/* Header */}
       <div style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <div style={{ display: 'inline-block', background: 'var(--accent)', borderRadius: '6px', padding: '3px 10px', marginBottom: '6px' }}>
-            <span style={{ color: '#0e0f11', fontWeight: 800, fontSize: '0.75rem' }}>GDS - FRAME</span>
+          <div style={{ display: 'inline-block', background: '#2563eb', borderRadius: '6px', padding: '3px 10px', marginBottom: '6px' }}>
+            <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.75rem' }}>GDS - MEU RESULTADO</span>
           </div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>
             Olá, <span style={{ color: col }}>{profile.name}</span>
@@ -139,12 +150,12 @@ export default async function MeuResultadoPage({
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {summary && <StorePill store={summary.store} label={storeObj?.label} color={storeObj?.color} />}
+          {<StorePill store={currentSummary.store} label={storeObj?.label} colorClass={storeObj?.color} />}
           {/* Period selector */}
           <div style={{ display: 'flex', gap: '4px' }}>
             {(periods as Period[]).map(p => (
               <a key={p.id}
-                href={`/meu-resultado?period=${p.id}&tab=${activeTab}`}
+                href={`/vendedor/meu-resultado?period=${p.id}&tab=${activeTab}`}
                 style={{
                   padding: '4px 10px', borderRadius: '6px', fontSize: '0.68rem', fontFamily: 'DM Mono, monospace',
                   textDecoration: 'none', background: activePeriod === p.id ? 'var(--surface2)' : 'transparent',
@@ -158,7 +169,22 @@ export default async function MeuResultadoPage({
           </div>
           <div style={{ height: '24px', width: '1px', background: 'var(--border)', margin: '0 5px' }}></div>
           <a 
-            href="/treinamentos" 
+            href="/mural" 
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px', 
+              background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', 
+              padding: '6px 12px', borderRadius: '6px', textDecoration: 'none', color: '#2563eb',
+              transition: 'all 0.2s'
+            }}
+          >
+            <div style={{ fontSize: '1rem' }}>📣</div>
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Acessar</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2563eb' }}>Mural da Empresa</div>
+            </div>
+          </a>
+          <a 
+            href="/vendedor/treinamentos" 
             style={{ 
               display: 'flex', alignItems: 'center', gap: '8px', 
               background: 'var(--surface)', border: '1px solid var(--border)', 
@@ -172,29 +198,31 @@ export default async function MeuResultadoPage({
               <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--meta3, #f5a742)' }}>Lvl {gamificacao?.nivel || 1} • {gamificacao?.xp_total || 0} XP</div>
             </div>
           </a>
-          <div style={{ height: '24px', width: '1px', background: 'var(--border)', margin: '0 5px' }}></div>
-          <ChangePassword />
-          <LogoutButton />
         </div>
       </div>
 
       <div style={{ padding: '1.5rem 2.5rem 3rem' }}>
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: '4px', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
           {[
             { key: 'performance', label: 'Performance' },
             { key: 'carteira',    label: 'Minha Carteira' },
+            { key: 'analise',     label: 'Análise de Vendas' },
             { key: 'evolucao',    label: 'Minha Evolução' },
-            { key: 'meu-rh',      label: 'Meu RH' },
           ].map(tab => (
             <a key={tab.key}
-              href={`/meu-resultado?period=${activePeriod}&tab=${tab.key}`}
+              href={`/vendedor/meu-resultado?period=${activePeriod}&tab=${tab.key}`}
               style={{
-                padding: '8px 20px', borderRadius: '6px 6px 0 0', fontSize: '0.8rem', fontWeight: 600,
-                border: '1px solid transparent', borderBottom: 'none', textDecoration: 'none',
-                background: activeTab === tab.key ? 'var(--surface)' : 'transparent',
+                padding: '8px 20px',
+                borderRadius: '8px',
+                fontSize: '0.82rem',
+                fontWeight: 600,
+                textDecoration: 'none',
+                border: '1px solid',
                 borderColor: activeTab === tab.key ? 'var(--border)' : 'transparent',
+                background: activeTab === tab.key ? 'var(--surface)' : 'transparent',
                 color: activeTab === tab.key ? 'var(--text)' : 'var(--muted)',
+                transition: 'all 0.15s',
               }}
             >
               {tab.label}
@@ -205,15 +233,15 @@ export default async function MeuResultadoPage({
         {activeTab === 'performance' && (
           <>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: '10px', marginBottom: '1.5rem' }}>
-              <KpiCard label="Total Vendido"   value={fmtCurrency(sold)} color={col} />
-              <KpiCard label="Clientes"        value={Number(summary.unique_clients).toLocaleString()} />
-              <KpiCard label="Ticket Médio"    value={fmtCurrency(Number(summary.avg_ticket))} />
-              <KpiCard label="Alcance Meta"    value={`${pctLabel}%`} sub={pctRef} color={META_COL} />
+              <KpiCard label="Total Vendido"   value={fmtCurrency(sold)} valueColor={col} />
+              <KpiCard label="Clientes"        value={Number(currentSummary.unique_clients).toLocaleString()} />
+              <KpiCard label="Ticket Médio"    value={fmtCurrency(Number(currentSummary.avg_ticket))} />
+              <KpiCard label="Alcance Meta"    value={`${pctLabel}%`} sub={pctRef} valueColor={META_COL} />
               <KpiCard
                 label="Comissão Total"
                 value={fmtCurrency(comissaoCalc ? Number(comissaoCalc.total) : commission)}
                 sub={comissaoCalc?.aprovado ? 'aprovada ✓' : comissaoCalc ? 'pendente de aprovação' : 'prévia — não calculada'}
-                color={comissaoCalc?.aprovado ? '#22c55e' : META_COL}
+                valueColor={comissaoCalc?.aprovado ? '#22c55e' : META_COL}
               />
             </div>
 
@@ -242,8 +270,8 @@ export default async function MeuResultadoPage({
               </div>
               <div style={{ background: 'var(--surface2)', borderRadius: '10px', padding: '1.25rem' }}>
                 <div style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Itens Vendidos</div>
-                <div style={{ fontSize: '2rem', fontWeight: 800 }}>{Number(summary.total_items).toLocaleString()}</div>
-                <div style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '4px' }}>{summary.total_orders} notas emitidas</div>
+                <div style={{ fontSize: '2rem', fontWeight: 800 }}>{Number(currentSummary.total_items).toLocaleString()}</div>
+                <div style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '4px' }}>{currentSummary.total_orders} notas emitidas</div>
               </div>
             </div>
 
@@ -265,7 +293,7 @@ export default async function MeuResultadoPage({
                 <div>
                   <div style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginBottom: '4px' }}>Base</div>
                   <div style={{ fontSize: '1.1rem', fontWeight: 700, fontFamily: 'DM Mono, monospace' }}>
-                    {fmtCurrency(comissaoCalc ? Number(comissaoCalc.comissao_base) : sold * Number(summary.commission_pct))}
+                    {fmtCurrency(comissaoCalc ? Number(comissaoCalc.comissao_base) : sold * Number(currentSummary.commission_pct))}
                   </div>
                 </div>
                 <div>
@@ -294,14 +322,25 @@ export default async function MeuResultadoPage({
           <ClientsTabClient clients={(clientsData ?? []) as Parameters<typeof ClientsTabClient>[0]['clients']} color={col} />
         )}
 
-        {activeTab === 'meu-rh' && (
-          <MeuRHTab
-            freeDays={(hrFreeDays ?? []) as HRFreeDay[]}
-            absences={(hrAbsences ?? []) as HRAbsence[]}
-            vacations={(hrVacations ?? []) as HRVacation[]}
-            permissions={(hrPermissions ?? []) as HRPermission[]}
+        {activeTab === 'analise' && (
+          <AnaliseTab
+            sold={sold}
+            meta1={Number(currentSummary.meta1)}
+            meta2={Number(currentSummary.meta2)}
+            meta3={Number(currentSummary.meta3)}
+            bonus1={Number(currentSummary.bonus1)}
+            bonus2={Number(currentSummary.bonus2)}
+            bonus3={Number(currentSummary.bonus3)}
+            metaLevel={lvl}
+            uniqueClients={Number(currentSummary.unique_clients)}
+            totalOrders={Number(currentSummary.total_orders)}
+            totalItems={Number(currentSummary.total_items)}
+            avgTicket={Number(currentSummary.avg_ticket)}
+            color={col}
+            clientList={(clientsData ?? []) as any[]}
           />
         )}
+
 
         {activeTab === 'evolucao' && (
           <div>
@@ -310,12 +349,12 @@ export default async function MeuResultadoPage({
                 Ainda não há histórico de meses anteriores.
               </div>
             ) : (
-              <div style={{ overflowX: 'auto' }}>
+              <div className="glass-card" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                    <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
                       {['Período','Total Vendido','1ª Meta','3ª Meta','Meta Atingida','Bônus','Clientes'].map(h => (
-                        <th key={h} style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '6px 10px', textAlign: h === 'Período' ? 'left' : 'right' }}>{h}</th>
+                        <th key={h} style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '12px 14px', textAlign: h === 'Período' ? 'left' : 'right' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>

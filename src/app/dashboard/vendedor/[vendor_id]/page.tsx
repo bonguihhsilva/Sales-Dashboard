@@ -16,8 +16,9 @@ export default async function VendorDetailPage({
   searchParams: Promise<{ period?: string; tab?: string }>
 }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  let { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+  // if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role, tenant_id').eq('id', user.id).single()
   if (profile?.role !== 'adm') redirect('/meu-resultado')
@@ -72,115 +73,114 @@ export default async function VendorDetailPage({
   const pctLabel = Math.round(sold / pctBase * 100)
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+    <div className="min-h-full bg-background flex flex-col p-margin-page">
       {/* Header */}
-      <div style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <a href={`/dashboard?period=${activePeriod}`} style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textDecoration: 'none' }}>← Voltar ao dashboard</a>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '4px' }}>{summary.vendor_name}</h1>
+          <a href={`/dashboard?period=${activePeriod}`} className="text-xs font-mono text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 mb-2">
+            <span className="material-symbols-outlined text-sm">arrow_back</span>
+            Voltar ao dashboard
+          </a>
+          <h1 className="font-display-lg text-display-lg text-on-surface">{summary.vendor_name}</h1>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <StorePill store={summary.store} label={storeObj?.label} color={storeObj?.color} />
-          <span style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '6px', padding: '4px 10px' }}>{activePeriodLabel}</span>
+        <div className="flex gap-stack-sm flex-wrap items-center">
+          <StorePill store={summary.store} label={storeObj?.label} colorClass={storeObj?.color} />
+          <div className="px-4 py-2 bg-surface-container-high rounded-xl border border-white/5 flex items-center gap-2">
+            <span className="material-symbols-outlined text-muted-foreground text-sm">calendar_month</span>
+            <span className="text-xs font-mono font-bold text-on-surface-variant">{activePeriodLabel}</span>
+          </div>
           <LogoutButton />
         </div>
       </div>
 
-      <div style={{ padding: '1.5rem 2.5rem 3rem' }}>
+      <div className="flex-1 flex flex-col">
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: '4px', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)' }}>
+        <div className="flex gap-stack-sm overflow-x-auto pb-4 no-scrollbar mb-6 border-b border-white/5">
           {[
-            { key: 'performance', label: 'Performance' },
-            { key: 'carteira',    label: 'Carteira de Clientes' },
-            { key: 'evolucao',    label: 'Evolução' },
+            { key: 'performance', label: 'Performance', icon: 'monitoring' },
+            { key: 'carteira',    label: 'Carteira de Clientes', icon: 'groups' },
+            { key: 'evolucao',    label: 'Evolução', icon: 'trending_up' },
           ].map(tab => (
             <a key={tab.key}
               href={`/dashboard/vendedor/${vendor_id}?period=${activePeriod}&tab=${tab.key}`}
-              style={{
-                padding: '8px 20px', borderRadius: '6px 6px 0 0', fontSize: '0.8rem', fontWeight: 600,
-                border: '1px solid transparent', borderBottom: 'none', textDecoration: 'none',
-                background: activeTab === tab.key ? 'var(--surface)' : 'transparent',
-                borderColor: activeTab === tab.key ? 'var(--border)' : 'transparent',
-                color: activeTab === tab.key ? 'var(--text)' : 'var(--muted)',
-              }}
+              className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors flex items-center gap-2 ${
+                activeTab === tab.key 
+                  ? 'bg-tertiary-container text-on-tertiary-container' 
+                  : 'bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-white/5'
+              }`}
             >
+              <span className="material-symbols-outlined text-sm">{tab.icon}</span>
               {tab.label}
             </a>
           ))}
         </div>
 
         {activeTab === 'performance' && (
-          <>
+          <div className="flex flex-col gap-6">
             {/* KPIs */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: '10px', marginBottom: '1.5rem' }}>
-              <KpiCard label="Total Vendido"  value={fmtCurrency(sold)} color={col} />
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <KpiCard label="Total Vendido"  value={fmtCurrency(sold)} valueClassName="text-accent" />
               <KpiCard label="Clientes"       value={Number(summary.unique_clients).toLocaleString()} />
               <KpiCard label="Ticket Médio"   value={fmtCurrency(Number(summary.avg_ticket))} />
-              <KpiCard label="Alcance Meta"   value={`${pctLabel}%`} sub={pctRef} color={['var(--muted)','var(--meta1)','var(--meta2)','var(--meta3)'][lvl]} />
+              <KpiCard label="Alcance Meta"   value={`${pctLabel}%`} sub={pctRef} valueClassName={['text-muted-foreground','text-meta1','text-meta2','text-meta3'][lvl]} />
               <KpiCard
                 label="Comissão Total"
                 value={fmtCurrency(commission)}
                 sub={`0,3% × vendas + bônus $${b}`}
-                color={['var(--muted)','var(--meta1)','var(--meta2)','var(--meta3)'][lvl]}
+                valueClassName={['text-muted-foreground','text-meta1','text-meta2','text-meta3'][lvl]}
               />
             </div>
 
             {/* Progress */}
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '1.25rem 1.5rem', marginBottom: '1.25rem' }}>
+            <div className="glass-card rounded-2xl p-card-padding border border-white/5">
               <SectionTitle>Progresso das Metas</SectionTitle>
-              <ProgressBar sold={sold} meta1={m1} meta2={m2} meta3={m3} metaLevel={lvl} />
+              <div className="mt-4">
+                <ProgressBar sold={sold} meta1={m1} meta2={m2} meta3={m3} metaLevel={lvl} />
+              </div>
 
               {/* Current % + next meta gap */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px', flexWrap: 'wrap', gap: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                  <span style={{ fontSize: '1.1rem', fontWeight: 800, color: ['var(--muted)','var(--meta1)','var(--meta2)','var(--meta3)'][lvl] }}>{pctLabel}%</span>
-                  <span style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>{pctRef}</span>
+              <div className="flex items-center justify-between mt-6 flex-wrap gap-4">
+                <div className="flex items-baseline gap-2">
+                  <span className={`text-2xl font-bold ${['text-muted-foreground','text-meta1','text-meta2','text-meta3'][lvl]}`}>{pctLabel}%</span>
+                  <span className="text-xs font-mono text-muted-foreground">{pctRef}</span>
                 </div>
 
                 {nextMetaDiff !== null && nextMetaDiff > 0 ? (
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: '10px',
-                    background: 'var(--surface2)', borderRadius: '8px',
-                    padding: '8px 14px', border: '1px solid var(--border)',
-                  }}>
+                  <div className="flex items-center gap-6 bg-surface-container-high rounded-xl p-4 border border-white/5">
                     <div>
-                      <div style={{ fontSize: '0.58rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '2px' }}>
+                      <div className="text-[0.6rem] font-mono text-muted-foreground uppercase tracking-widest mb-1">
                         Falta para {nextMetaLabel}
                       </div>
-                      <div style={{ fontSize: '1rem', fontWeight: 800, color: ['var(--meta1)','var(--meta2)','var(--meta3)'][lvl] }}>
+                      <div className={`text-xl font-bold ${['text-meta1','text-meta2','text-meta3'][lvl]}`}>
                         {fmtCurrency(nextMetaDiff)}
                       </div>
                     </div>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '0.58rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '2px' }}>
+                    <div className="text-center">
+                      <div className="text-[0.6rem] font-mono text-muted-foreground uppercase tracking-widest mb-1">
                         Progresso
                       </div>
-                      <div style={{ fontSize: '1rem', fontWeight: 800, color: ['var(--meta1)','var(--meta2)','var(--meta3)'][lvl] }}>
+                      <div className={`text-xl font-bold ${['text-meta1','text-meta2','text-meta3'][lvl]}`}>
                         {nextMetaPct}%
                       </div>
                     </div>
                     {/* Mini progress bar for next meta only */}
-                    <div style={{ width: '80px' }}>
-                      <div style={{ height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{
-                          height: '100%', borderRadius: '4px',
-                          width: `${Math.min(nextMetaPct, 100)}%`,
-                          background: ['var(--meta1)','var(--meta2)','var(--meta3)'][lvl],
-                          transition: 'width 0.4s ease',
-                        }} />
+                    <div className="w-24 ml-2">
+                      <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full transition-all duration-500 ${['bg-meta1','bg-meta2','bg-meta3'][lvl]}`}
+                          style={{ width: `${Math.min(nextMetaPct, 100)}%` }} />
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3px' }}>
-                        <span style={{ fontSize: '0.5rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>{fmtK(sold)}</span>
-                        <span style={{ fontSize: '0.5rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>{fmtK(nextMetaValue!)}</span>
+                      <div className="flex justify-between mt-1">
+                        <span className="text-[0.55rem] font-mono text-muted-foreground">{fmtK(sold)}</span>
+                        <span className="text-[0.55rem] font-mono text-muted-foreground">{fmtK(nextMetaValue!)}</span>
                       </div>
                     </div>
                   </div>
                 ) : lvl === 3 ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(245,167,66,0.08)', border: '1px solid rgba(245,167,66,0.3)', borderRadius: '8px', padding: '8px 14px' }}>
-                    <span style={{ fontSize: '1.2rem' }}>🏆</span>
+                  <div className="flex items-center gap-3 bg-meta3/10 border border-meta3/30 rounded-xl px-4 py-3">
+                    <span className="text-2xl">🏆</span>
                     <div>
-                      <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--meta3)' }}>3ª meta atingida!</div>
-                      <div style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>
+                      <div className="text-sm font-bold text-meta3">3ª meta atingida!</div>
+                      <div className="text-[0.65rem] font-mono text-muted-foreground mt-0.5">
                         +{fmtCurrency(sold - m3)} acima do teto
                       </div>
                     </div>
@@ -190,25 +190,23 @@ export default async function VendorDetailPage({
             </div>
 
             {/* Ranking + Bonus */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <div style={{
-                borderRadius: '10px', padding: '1.25rem', textAlign: 'center', border: '1px solid',
-                background: ['rgba(107,111,122,0.1)','rgba(200,245,66,0.08)','rgba(66,217,245,0.08)','rgba(245,167,66,0.08)'][lvl],
-                borderColor: ['rgba(107,111,122,0.3)','rgba(200,245,66,0.3)','rgba(66,217,245,0.3)','rgba(245,167,66,0.3)'][lvl],
-              }}>
-                <div style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px', color: ['var(--muted)','var(--meta1)','var(--meta2)','var(--meta3)'][lvl] }}>Bônus</div>
-                <div style={{ fontSize: '2rem', fontWeight: 800, color: ['var(--muted)','var(--meta1)','var(--meta2)','var(--meta3)'][lvl] }}>{b > 0 ? `+$${b}` : '—'}</div>
-                <div style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', marginTop: '5px', opacity: 0.75, color: ['var(--muted)','var(--meta1)','var(--meta2)','var(--meta3)'][lvl] }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className={`rounded-2xl p-8 text-center border ${
+                ['bg-surface-container-high/50 border-white/5', 'bg-meta1/10 border-meta1/30', 'bg-meta2/10 border-meta2/30', 'bg-meta3/10 border-meta3/30'][lvl]
+              }`}>
+                <div className={`text-[0.65rem] font-mono uppercase tracking-widest mb-2 ${['text-muted-foreground','text-meta1','text-meta2','text-meta3'][lvl]}`}>Bônus</div>
+                <div className={`text-4xl font-bold ${['text-muted-foreground','text-meta1','text-meta2','text-meta3'][lvl]}`}>{b > 0 ? `+$${b}` : '—'}</div>
+                <div className={`text-xs font-mono mt-3 opacity-80 ${['text-muted-foreground','text-meta1','text-meta2','text-meta3'][lvl]}`}>
                   {['Ainda não atingiu a 1ª meta','1ª meta atingida!','2ª meta atingida!','3ª meta atingida! 🏆'][lvl]}
                 </div>
               </div>
-              <div style={{ background: 'var(--surface2)', borderRadius: '10px', padding: '1.25rem' }}>
-                <div style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Ranking</div>
-                <div style={{ fontSize: '2.2rem', fontWeight: 800, color: col }}>#{rankAll} geral</div>
-                <div style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '4px' }}>de {allSummaries?.length ?? 0} vendedores</div>
+              <div className="bg-surface-container-high rounded-2xl p-8 text-center border border-white/5 flex flex-col justify-center items-center">
+                <div className="text-[0.65rem] font-mono text-muted-foreground uppercase tracking-widest mb-2">Ranking</div>
+                <div className="text-4xl font-bold text-accent">#{rankAll} <span className="text-2xl font-medium text-on-surface">geral</span></div>
+                <div className="text-xs font-mono text-muted-foreground mt-3">de {allSummaries?.length ?? 0} vendedores no período</div>
               </div>
             </div>
-          </>
+          </div>
         )}
 
         {activeTab === 'carteira' && (

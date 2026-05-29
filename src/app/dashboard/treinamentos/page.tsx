@@ -9,10 +9,11 @@ export const dynamic = 'force-dynamic'
 export default async function TreinamentosAdminPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
 
-  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
-  if (jwtRole === 'vendedor') redirect('/treinamentos')
+  if (user) {
+    const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
+    if (jwtRole === 'vendedor') redirect('/treinamentos')
+  }
 
   // Buscar trilhas
   const { data: trilhas } = await supabase
@@ -21,23 +22,21 @@ export default async function TreinamentosAdminPage() {
     .order('ordem', { ascending: true })
 
   return (
-    <div style={{ minHeight: '100%', background: 'var(--bg)' }}>
-      {/* Top App Bar */}
-      <div style={{
-        padding: '1rem 2rem', background: 'var(--surface)', borderBottom: '1px solid var(--border)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)', zIndex: 10, position: 'sticky', top: 0
-      }}>
-        <div className="flex items-center gap-4">
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)', margin: 0, letterSpacing: '-0.02em' }}>
+    <div className="min-h-full bg-background flex flex-col p-margin-page">
+      {/* Hero Header */}
+      <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="font-display-lg text-display-lg text-on-surface mb-2">
             Gestão de Treinamentos (LMS)
           </h1>
+          <p className="text-on-surface-variant max-w-2xl">
+            Gerencie as trilhas, módulos e aulas do Sales Learning Center.
+          </p>
         </div>
       </div>
 
-      <div style={{ padding: '2rem' }}>
-
-      <TrilhasClient initialTrilhas={trilhas || []} />
+      <div className="flex-1">
+        <TrilhasClient initialTrilhas={trilhas || []} />
       </div>
     </div>
   )

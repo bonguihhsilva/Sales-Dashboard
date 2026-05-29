@@ -9,13 +9,15 @@ export const dynamic = 'force-dynamic'
 export default async function QuizPage({ params }: { params: Promise<{ trilhaId: string, moduloId: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  // if (!user) redirect('/login')
+  const userId = user?.id
+  if (!userId) redirect('/login')
 
   const { trilhaId, moduloId } = await params
 
   const { data: modulo } = await supabase
     .from('modulos').select('titulo').eq('id', moduloId).single()
-  if (!modulo) redirect(`/treinamentos/${trilhaId}`)
+  if (!modulo) redirect(`/vendedor/treinamentos/${trilhaId}`)
 
   // Verificar se o usuário completou as lições deste módulo
   const { data: licoes } = await supabase
@@ -24,7 +26,7 @@ export default async function QuizPage({ params }: { params: Promise<{ trilhaId:
   const { data: progresso } = await supabase
     .from('progresso_usuario')
     .select('licao_id')
-    .eq('usuario_id', user.id)
+    .eq('usuario_id', userId)
     .eq('concluida', true)
   
   const licoesIds = new Set(licoes?.map(l => l.id) || [])
@@ -33,14 +35,14 @@ export default async function QuizPage({ params }: { params: Promise<{ trilhaId:
   const allDone = Array.from(licoesIds).every(id => concluidas.has(id))
   
   if (!allDone) {
-    redirect(`/treinamentos/${trilhaId}/${moduloId}`) // Bloqueado, precisa fazer as lições
+    redirect(`/vendedor/treinamentos/${trilhaId}/${moduloId}`) // Bloqueado, precisa fazer as lições
   }
 
   // Buscar resultado anterior se houver
   const { data: quizResult } = await supabase
     .from('quiz_resultados')
     .select('pontuacao, aprovado')
-    .eq('usuario_id', user.id)
+    .eq('usuario_id', userId)
     .eq('modulo_id', moduloId)
     .order('criado_em', { ascending: false })
     .limit(1)
@@ -57,7 +59,7 @@ export default async function QuizPage({ params }: { params: Promise<{ trilhaId:
       {/* Header */}
       <div style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <Link href={`/treinamentos/${trilhaId}/${moduloId}`} style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textDecoration: 'none' }}>
+          <Link href={`/vendedor/treinamentos/${trilhaId}/${moduloId}`} style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textDecoration: 'none' }}>
             ← Voltar para Módulo
           </Link>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '4px' }}>

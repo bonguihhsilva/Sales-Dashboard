@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { HRFreeDay, HRAbsence, HRVacation, HRPermission } from '@/types'
+import DelayUploadModal from './DelayUploadModal'
 
 interface Props {
   profiles: Array<{ id: string; name: string; role: string; active: boolean }>
@@ -9,6 +10,7 @@ interface Props {
   absences: HRAbsence[]
   vacations: HRVacation[]
   permissions: HRPermission[]
+  delays: any[]
 }
 
 // ── Badge helpers ──────────────────────────────────────────────────────────────
@@ -115,12 +117,13 @@ const PERMISSION_STATUS_LABELS: Record<string, string> = {
 // Main component
 // ══════════════════════════════════════════════════════════════════════════════
 
-export default function RHClient({ profiles, freeDays, absences, vacations, permissions }: Props) {
+export default function RHClient({ profiles, freeDays, absences, vacations, permissions, delays }: Props) {
   const [activeTab, setActiveTab] = useState<string>('dia-livre')
 
   const tabs = [
     { key: 'dia-livre',  label: 'Dia Livre' },
     { key: 'faltas',     label: 'Faltas' },
+    { key: 'atrasos',    label: 'Atrasos' },
     { key: 'ferias',     label: 'Férias' },
     { key: 'permissoes', label: 'Permissões' },
   ]
@@ -152,6 +155,7 @@ export default function RHClient({ profiles, freeDays, absences, vacations, perm
 
       {activeTab === 'dia-livre'  && <DiaLivreTab  profiles={profiles} freeDays={freeDays} />}
       {activeTab === 'faltas'     && <FaltasTab     profiles={profiles} absences={absences} freeDays={freeDays} />}
+      {activeTab === 'atrasos'    && <AtrasosTab    profiles={profiles} delays={delays} />}
       {activeTab === 'ferias'     && <FeriasTab     profiles={profiles} vacations={vacations} />}
       {activeTab === 'permissoes' && <PermissoesTab profiles={profiles} permissions={permissions} />}
     </div>
@@ -777,6 +781,118 @@ function PermissoesTab({
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Tab: Atrasos
+// ══════════════════════════════════════════════════════════════════════════════
+
+function AtrasosTab({
+  profiles,
+  delays,
+}: {
+  profiles: Props['profiles']
+  delays: any[]
+}) {
+  const [showUploadModal, setShowUploadModal] = useState(false)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
+
+  async function handleReview(id: string, status: 'approved' | 'rejected') {
+    setActionLoading(id + status)
+    try {
+      await fetch(`/api/admin/hr/delays/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      })
+      window.location.reload()
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  return (
+    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+        <h2 style={{ fontSize: '1rem', fontWeight: 700, fontFamily: 'Syne, sans-serif' }}>Controle de Atrasos</h2>
+        <button onClick={() => setShowUploadModal(true)} style={BTN_PRIMARY}>Importar Biometria</button>
+      </div>
+
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              <th style={TH_STYLE}>Data</th>
+              <th style={TH_STYLE}>Funcionário</th>
+              <th style={{ ...TH_STYLE, textAlign: 'center' }}>Minutos</th>
+              <th style={TH_STYLE}>Status</th>
+              <th style={TH_STYLE}>Justificativa do Vendedor</th>
+              <th style={TH_STYLE}>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {delays.map(d => (
+              <tr key={d.id}>
+                <td style={{ ...TD_STYLE, fontFamily: 'DM Mono, monospace' }}>{fmtDate(d.delay_date)}</td>
+                <td style={TD_STYLE}>{d.user_name}</td>
+                <td style={{ ...TD_STYLE, textAlign: 'center', fontWeight: 700, color: 'var(--destructive)' }}>{d.delay_minutes}m</td>
+                <td style={TD_STYLE}>
+                  <span style={BADGES[d.status as keyof typeof BADGES] ?? BADGES.none}>
+                    {d.status === 'pending' ? 'Pendente' : d.status === 'justified' ? 'Justificado' : d.status === 'approved' ? 'Abonado' : 'Descontar'}
+                  </span>
+                </td>
+                <td style={{ ...TD_STYLE, color: 'var(--muted)', fontSize: '0.75rem', maxWidth: '200px' }}>{d.justification ?? '—'}</td>
+                <td style={TD_STYLE}>
+                  {d.status === 'justified' && (
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        onClick={() => handleReview(d.id, 'approved')}
+                        disabled={actionLoading === d.id + 'approved'}
+                        style={{
+                          padding: '3px 10px', borderRadius: '5px', fontSize: '0.72rem', cursor: 'pointer',
+                          fontFamily: 'Syne, sans-serif', fontWeight: 600, border: 'none',
+                          background: '#dcfce7', color: '#166534',
+                          opacity: actionLoading ? 0.6 : 1,
+                        }}
+                      >
+                        Abonar
+                      </button>
+                      <button
+                        onClick={() => handleReview(d.id, 'rejected')}
+                        disabled={actionLoading === d.id + 'rejected'}
+                        style={{
+                          padding: '3px 10px', borderRadius: '5px', fontSize: '0.72rem', cursor: 'pointer',
+                          fontFamily: 'Syne, sans-serif', fontWeight: 600, border: 'none',
+                          background: '#fef2f2', color: '#991b1b',
+                          opacity: actionLoading ? 0.6 : 1,
+                        }}
+                      >
+                        Rejeitar (Descontar)
+                      </button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {delays.length === 0 && (
+              <tr>
+                <td colSpan={6} style={{ ...TD_STYLE, textAlign: 'center', color: 'var(--muted)', padding: '2rem' }}>
+                  Nenhum atraso registrado. Importe um relatório biométrico.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <DelayUploadModal 
+        open={showUploadModal} 
+        onOpenChange={setShowUploadModal} 
+        onSuccess={() => window.location.reload()} 
+        profiles={profiles}
+      />
     </div>
   )
 }

@@ -7,23 +7,22 @@ interface KpiProps {
   label: string
   value: string
   sub?: string
-  color?: string
+  className?: string
+  valueClassName?: string
+  valueColor?: string
 }
 
-export function KpiCard({ label, value, sub, color }: KpiProps) {
+export function KpiCard({ label, value, sub, className, valueClassName, valueColor }: KpiProps) {
   return (
-    <div style={{
-      background: 'var(--surface)', border: '1px solid var(--border)',
-      borderRadius: '10px', padding: '1rem 1.25rem',
-    }}>
-      <div style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
+    <div className={`glass-card rounded-xl p-card-padding flex flex-col gap-stack-sm hover:border-primary/40 transition-colors ${className || ''}`}>
+      <div className="font-label-sm text-label-sm text-muted-foreground uppercase tracking-widest mb-1.5">
         {label}
       </div>
-      <div style={{ fontSize: '1.55rem', fontWeight: 800, lineHeight: 1, color: color || 'var(--text)' }}>
+      <div className={`font-headline-lg text-3xl font-bold text-on-surface ${valueClassName || ''}`} style={valueColor ? { color: valueColor } : undefined}>
         {value}
       </div>
       {sub && (
-        <div style={{ fontSize: '0.68rem', color: 'var(--muted)', marginTop: '4px', fontFamily: 'DM Mono, monospace' }}>
+        <div className="text-[0.68rem] text-on-surface-variant mt-2 font-mono">
           {sub}
         </div>
       )}
@@ -32,15 +31,11 @@ export function KpiCard({ label, value, sub, color }: KpiProps) {
 }
 
 // ── Store Pill ────────────────────────────────────────────────────────────
-export function StorePill({ store, label, color }: { store: string; label?: string; color?: string }) {
-  const col = color || 'var(--muted)'
+export function StorePill({ store, label, colorClass }: { store: string; label?: string; colorClass?: string }) {
+  const col = colorClass || 'text-muted-foreground bg-muted'
   const displayLabel = label || store
   return (
-    <span style={{
-      fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', padding: '2px 7px',
-      borderRadius: '4px', fontWeight: 500, whiteSpace: 'nowrap',
-      background: col + '22', color: col,
-    }}>
+    <span className={`text-[0.65rem] font-mono px-2 py-0.5 rounded font-medium whitespace-nowrap ${col}`}>
       {displayLabel}
     </span>
   )
@@ -55,35 +50,39 @@ interface ProgressBarProps {
   metaLevel: number
 }
 
-const META_COLORS = ['var(--muted)', 'var(--meta1)', 'var(--meta2)', 'var(--meta3)']
+const META_BG_COLORS = ['bg-muted', 'bg-meta1', 'bg-meta2', 'bg-meta3']
 
 export function ProgressBar({ sold, meta1, meta2, meta3, metaLevel }: ProgressBarProps) {
-  const scale = meta3
-  const barW  = Math.min(sold / scale * 100, 100).toFixed(1)
-  const m1pct = (meta1 / scale * 100).toFixed(1)
-  const m2pct = (meta2 / scale * 100).toFixed(1)
-  const m3pct = Math.min(meta3 / scale * 100, 99).toFixed(1)
-  const mc    = META_COLORS[metaLevel]
+  const scale = meta3 || 1 // prevent div by zero
+  const barW  = Math.min((sold / scale) * 100, 100).toFixed(1)
+  const m1pct = ((meta1 / scale) * 100).toFixed(1)
+  const m2pct = ((meta2 / scale) * 100).toFixed(1)
+  const m3pct = Math.min((meta3 / scale) * 100, 99).toFixed(1)
+  const mcBg  = META_BG_COLORS[metaLevel] || 'bg-muted'
 
   return (
     <div>
-      <div style={{ position: 'relative', height: '12px', background: 'var(--surface2)', borderRadius: '8px', overflow: 'hidden' }}>
-        <div style={{ width: `${barW}%`, height: '100%', borderRadius: '8px', background: mc }} />
+      <div className="relative h-2 bg-secondary rounded-full overflow-hidden">
+        <div className={`h-full rounded-full ${mcBg} transition-all duration-500`} style={{ width: `${barW}%` }} />
       </div>
       {/* Marker lines */}
-      <div style={{ position: 'relative', height: '26px', marginTop: '2px' }}>
+      <div className="relative h-6 mt-1.5">
         {[
-          { pct: m1pct, label: `1ª ${fmtK(meta1)}`, color: metaLevel >= 1 ? 'var(--meta1)' : 'var(--muted)' },
-          { pct: m2pct, label: `2ª ${fmtK(meta2)}`, color: metaLevel >= 2 ? 'var(--meta2)' : 'var(--muted)' },
-          { pct: m3pct, label: `3ª ${fmtK(meta3)}`, color: metaLevel >= 3 ? 'var(--meta3)' : 'var(--muted)' },
-        ].map(({ pct, label, color }) => (
-          <div key={pct} style={{ position: 'absolute', left: `${pct}%`, transform: 'translateX(-50%)', textAlign: 'center' }}>
-            <div style={{ width: '1px', height: '5px', background: color, margin: '0 auto' }} />
-            <div style={{ fontSize: '0.56rem', fontFamily: 'DM Mono, monospace', color, whiteSpace: 'nowrap', marginTop: '1px' }}>
-              {label}
+          { pct: m1pct, label: `1ª ${fmtK(meta1)}`, colorClass: metaLevel >= 1 ? 'bg-meta1 text-meta1' : 'bg-border text-muted-foreground' },
+          { pct: m2pct, label: `2ª ${fmtK(meta2)}`, colorClass: metaLevel >= 2 ? 'bg-meta2 text-meta2' : 'bg-border text-muted-foreground' },
+          { pct: m3pct, label: `3ª ${fmtK(meta3)}`, colorClass: metaLevel >= 3 ? 'bg-meta3 text-meta3' : 'bg-border text-muted-foreground' },
+        ].map(({ pct, label, colorClass }, idx) => {
+          const isBg = colorClass.split(' ')[0]
+          const isText = colorClass.split(' ')[1]
+          return (
+            <div key={`${pct}-${idx}`} className="absolute text-center" style={{ left: `${pct}%`, transform: 'translateX(-50%)' }}>
+              <div className={`w-px h-1.5 mx-auto ${isBg}`} />
+              <div className={`text-[0.56rem] font-mono whitespace-nowrap mt-[1px] ${isText}`}>
+                {label}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
@@ -92,17 +91,14 @@ export function ProgressBar({ sold, meta1, meta2, meta3, metaLevel }: ProgressBa
 // ── Bonus Badge ───────────────────────────────────────────────────────────
 export function BonusBadge({ level, amount }: { level: number; amount: number }) {
   const configs = [
-    { bg: 'rgba(107,111,122,0.15)', color: 'var(--muted)' },
-    { bg: 'rgba(200,245,66,0.12)',  color: 'var(--meta1)' },
-    { bg: 'rgba(66,217,245,0.12)', color: 'var(--meta2)' },
-    { bg: 'rgba(245,167,66,0.12)', color: 'var(--meta3)' },
+    'bg-muted/30 text-muted-foreground',
+    'bg-meta1/15 text-meta1',
+    'bg-meta2/15 text-meta2',
+    'bg-meta3/15 text-meta3',
   ]
-  const { bg, color } = configs[level]
+  const cls = configs[level] || configs[0]
   return (
-    <span style={{
-      fontFamily: 'DM Mono, monospace', fontSize: '0.63rem', padding: '2px 8px',
-      borderRadius: '4px', whiteSpace: 'nowrap', background: bg, color,
-    }}>
+    <span className={`font-mono text-[0.65rem] px-2 py-1 rounded whitespace-nowrap font-medium ${cls}`}>
       {level > 0 ? `+$${amount}` : '—'}
     </span>
   )
@@ -111,10 +107,7 @@ export function BonusBadge({ level, amount }: { level: number; amount: number })
 // ── Section Title ─────────────────────────────────────────────────────────
 export function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{
-      fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)',
-      textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem', marginTop: '1.5rem',
-    }}>
+    <div className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-4 mt-8 font-semibold">
       {children}
     </div>
   )
@@ -141,15 +134,10 @@ export function LogoutButton() {
   return (
     <button
       onClick={handleLogout}
-      style={{
-        background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px',
-        color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem',
-        padding: '5px 12px', cursor: 'pointer', transition: 'all 0.15s',
-      }}
-      onMouseEnter={e => { (e.target as HTMLElement).style.color = 'var(--text)' }}
-      onMouseLeave={e => { (e.target as HTMLElement).style.color = 'var(--muted)' }}
+      className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg font-label-sm text-label-sm transition-colors w-full"
     >
-      Sair
+      <span className="material-symbols-outlined">logout</span>
+      <span>Sair</span>
     </button>
   )
 }

@@ -75,20 +75,20 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
   return (
     <div>
       {/* KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '24px' }}>
-        <KpiCard label="Total Comissão" value={fmtCurrency(totalPreview)} sub={`${rows.length} vendedores`} color="var(--accent)" />
-        <KpiCard label="Total Aprovado" value={fmtCurrency(totalAprovado)} sub={`${rows.filter(r => r.comissao?.aprovado).length} aprovados`} color="#22c55e" />
-        <KpiCard label="Aguardando" value={String(pendentes)} sub={hasCalculated ? 'pendentes de aprovação' : 'período não calculado'} color="var(--muted)" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <KpiCard label="Total Comissão" value={fmtCurrency(totalPreview)} sub={`${rows.length} vendedores`} color="text-primary" />
+        <KpiCard label="Total Aprovado" value={fmtCurrency(totalAprovado)} sub={`${rows.filter(r => r.comissao?.aprovado).length} aprovados`} color="text-success" />
+        <KpiCard label="Aguardando" value={String(pendentes)} sub={hasCalculated ? 'pendentes de aprovação' : 'período não calculado'} color="text-muted-foreground" />
       </div>
 
       {/* Action bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-        <span style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>
-          {hasCalculated ? '✓ Comissões calculadas' : '— Período ainda não calculado'}
+      <div className="flex items-center justify-between mb-6 bg-surface-container-high/30 p-4 rounded-xl border border-white/5">
+        <span className="text-sm font-mono text-muted-foreground flex items-center gap-2">
+          {hasCalculated ? <><span className="material-symbols-outlined text-success">check_circle</span> Comissões calculadas</> : <><span className="material-symbols-outlined text-muted-foreground">pending</span> Período ainda não calculado</>}
         </span>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div className="flex gap-4 items-center">
           {calcError && (
-            <span style={{ fontSize: '0.7rem', color: '#ef4444', fontFamily: 'DM Mono, monospace' }}>
+            <span className="text-sm text-error font-mono font-bold">
               {calcError}
             </span>
           )}
@@ -96,11 +96,7 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
             <button
               onClick={handleCalcular}
               disabled={isPending}
-              style={{
-                background: 'var(--accent)', color: '#0e0f11', border: 'none', borderRadius: '6px',
-                padding: '8px 16px', fontWeight: 700, fontSize: '0.78rem', cursor: isPending ? 'not-allowed' : 'pointer',
-                opacity: isPending ? 0.6 : 1, fontFamily: 'DM Mono, monospace',
-              }}
+              className="bg-primary hover:bg-primary/90 text-on-primary font-bold px-6 py-2.5 rounded-xl transition-colors text-sm disabled:opacity-50"
             >
               {isPending ? 'Calculando...' : hasCalculated ? 'Recalcular' : 'Calcular Período'}
             </button>
@@ -224,15 +220,15 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
 
 function KpiCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
-    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '1rem 1.25rem' }}>
-      <div style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
+    <div className="glass-card rounded-2xl p-6 border border-white/5 flex flex-col justify-center">
+      <div className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-2">
         {label}
       </div>
-      <div style={{ fontSize: '1.55rem', fontWeight: 800, lineHeight: 1, color: color || 'var(--text)' }}>
+      <div className={`text-3xl font-display-sm font-bold leading-none ${color || 'text-on-surface'}`}>
         {value}
       </div>
       {sub && (
-        <div style={{ fontSize: '0.68rem', color: 'var(--muted)', marginTop: '4px', fontFamily: 'DM Mono, monospace' }}>
+        <div className="text-xs text-muted-foreground mt-2 font-mono">
           {sub}
         </div>
       )}

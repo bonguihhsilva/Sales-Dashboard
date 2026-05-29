@@ -1,4 +1,5 @@
 'use server'
+import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -6,17 +7,26 @@ import { revalidatePath } from 'next/cache'
 
 async function checkAuth() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autorizado')
+  let { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role, tenant_id').eq('id', user.id).single()
-  if (profile?.role !== 'adm' && profile?.role !== 'gerente') {
+  
+  let currentProfile = profile
+  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
+  if (!currentProfile) {
+    currentProfile = { role: jwtRole, tenant_id: user.id }
+  }
+
+  const effectiveRole = currentProfile.role || jwtRole
+  if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) {
     throw new Error('Acesso negado')
   }
-  if (!profile?.tenant_id) {
+  if (!currentProfile.tenant_id) {
     throw new Error('Tenant não encontrado')
   }
-  return { user, profile }
+  return { user, profile: currentProfile }
 }
 
 // --- TRILHAS ---
@@ -162,3 +172,4 @@ export async function deleteQuestaoAction(id: number) {
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard/treinamentos/admin')
 }
+

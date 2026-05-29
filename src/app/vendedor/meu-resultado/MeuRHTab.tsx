@@ -8,20 +8,22 @@ interface Props {
   absences: HRAbsence[]
   vacations: HRVacation[]
   permissions: HRPermission[]
+  delays?: any[]
 }
 
 const thStyle = {
-  fontFamily: 'DM Mono, monospace',
-  fontSize: '0.6rem',
+  padding: '12px 16px',
+  fontWeight: 600,
   color: 'var(--muted)',
   textTransform: 'uppercase' as const,
-  letterSpacing: '0.07em',
-  padding: '6px 8px',
+  letterSpacing: '0.05em',
+  fontSize: '0.7rem',
   textAlign: 'left' as const,
 }
 const tdStyle = {
-  padding: '8px',
-  fontSize: '0.8rem',
+  padding: '12px 16px',
+  color: 'var(--text)',
+  fontSize: '0.85rem',
   fontFamily: 'DM Mono, monospace',
   borderBottom: '1px solid var(--border)',
 }
@@ -68,8 +70,11 @@ function fmtDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('pt-BR')
 }
 
-export default function MeuRHTab({ freeDays, absences, vacations, permissions }: Props) {
+export default function MeuRHTab({ freeDays, absences, vacations, permissions, delays = [] }: Props) {
   const [showModal, setShowModal] = useState(false)
+  const [showDelayModal, setShowDelayModal] = useState(false)
+  const [selectedDelay, setSelectedDelay] = useState<any>(null)
+  const [delayJustification, setDelayJustification] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({
     type: 'medical_certificate',
@@ -134,6 +139,28 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions }:
       window.location.reload()
     } catch {
       alert('Erro ao enviar solicitação. Tente novamente.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleJustifyDelay(e: React.FormEvent) {
+    e.preventDefault()
+    if (!selectedDelay) return
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/vendor/hr/delays/${selectedDelay.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ justification: delayJustification, status: 'justified' }),
+      })
+      if (!res.ok) throw new Error('Falha ao enviar justificativa')
+      setShowDelayModal(false)
+      setSelectedDelay(null)
+      setDelayJustification('')
+      window.location.reload()
+    } catch {
+      alert('Erro ao enviar justificativa. Tente novamente.')
     } finally {
       setSubmitting(false)
     }
@@ -214,10 +241,10 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions }:
             Nenhum dia livre registrado.
           </p>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="glass-card" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
                   {['Emissão', 'Vencimento', 'Motivo', 'Status'].map((h) => (
                     <th key={h} style={thStyle}>{h}</th>
                   ))}
@@ -259,10 +286,10 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions }:
             Nenhum período de férias registrado.
           </p>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="glass-card" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
                   {['Início', 'Fim', 'Duração', 'Obs.'].map((h) => (
                     <th key={h} style={thStyle}>{h}</th>
                   ))}
@@ -311,10 +338,10 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions }:
             Nenhuma falta registrada.
           </p>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="glass-card" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
                   {['Data', 'Tipo', 'Obs.'].map((h) => (
                     <th key={h} style={thStyle}>{h}</th>
                   ))}
@@ -353,8 +380,8 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions }:
           <button
             onClick={() => setShowModal(true)}
             style={{
-              background: 'var(--accent)',
-              color: '#0e0f11',
+              background: '#2563eb',
+              color: '#ffffff',
               border: 'none',
               borderRadius: '6px',
               padding: '6px 14px',
@@ -373,10 +400,10 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions }:
             Nenhuma permissão solicitada.
           </p>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="glass-card" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
                   {['Tipo', 'Data solicitada', 'Status', 'Obs.'].map((h) => (
                     <th key={h} style={thStyle}>{h}</th>
                   ))}
@@ -397,7 +424,76 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions }:
         )}
       </div>
 
-      {/* Modal */}
+      {/* Section 5 — Atrasos */}
+      <div style={{ marginBottom: '2rem' }}>
+        <h3
+          style={{
+            fontSize: '0.9rem',
+            fontWeight: 700,
+            fontFamily: 'Syne, sans-serif',
+            marginBottom: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          ⏱️ Atrasos
+        </h3>
+
+        {delays.length === 0 ? (
+          <p style={{ color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.8rem' }}>
+            Nenhum atraso registrado.
+          </p>
+        ) : (
+          <div className="glass-card" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
+                  {['Data', 'Minutos', 'Status', 'Ações'].map((h) => (
+                    <th key={h} style={thStyle}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {delays.map((d) => (
+                  <tr key={d.id}>
+                    <td style={tdStyle}>{fmtDate(d.delay_date)}</td>
+                    <td style={{ ...tdStyle, color: 'var(--destructive)', fontWeight: 700 }}>{d.delay_minutes}m</td>
+                    <td style={tdStyle}>
+                      {d.status === 'pending' ? badge('#92400e', '#fef3c7', 'Pendente de Justificativa') :
+                       d.status === 'justified' ? badge('#1e40af', '#dbeafe', 'Aguardando Aprovação') :
+                       d.status === 'approved' ? badge('#166534', '#dcfce7', 'Abonado') :
+                       badge('#991b1b', '#fef2f2', 'Descontado')}
+                    </td>
+                    <td style={tdStyle}>
+                      {d.status === 'pending' && (
+                        <button
+                          onClick={() => { setSelectedDelay(d); setShowDelayModal(true); }}
+                          style={{
+                            background: 'var(--surface2)',
+                            color: 'var(--text)',
+                            border: '1px solid var(--border)',
+                            borderRadius: '6px',
+                            padding: '4px 10px',
+                            fontSize: '0.7rem',
+                            fontFamily: 'Syne, sans-serif',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                          }}
+                        >
+                          Justificar
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Modal Permissões */}
       {showModal && (
         <div
           style={{
@@ -472,6 +568,97 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions }:
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
+                  style={{
+                    background: 'var(--surface2)',
+                    color: 'var(--text)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    padding: '6px 16px',
+                    fontSize: '0.78rem',
+                    fontFamily: 'DM Mono, monospace',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  style={{
+                    background: '#2563eb',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '6px 16px',
+                    fontSize: '0.78rem',
+                    fontFamily: 'DM Mono, monospace',
+                    fontWeight: 700,
+                    cursor: submitting ? 'not-allowed' : 'pointer',
+                    opacity: submitting ? 0.7 : 1,
+                  }}
+                >
+                  {submitting ? 'Enviando...' : 'Enviar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delay Justification Modal */}
+      {showDelayModal && selectedDelay && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.75)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowDelayModal(false) }}
+        >
+          <div
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: '14px',
+              padding: '2rem',
+              width: '100%',
+              maxWidth: '400px',
+            }}
+          >
+            <h3
+              style={{
+                fontSize: '1rem',
+                fontWeight: 700,
+                fontFamily: 'Syne, sans-serif',
+                marginBottom: '1rem',
+                marginTop: 0,
+              }}
+            >
+              Justificar Atraso
+            </h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '1.5rem', fontFamily: 'DM Mono, monospace' }}>
+              Atraso de <strong>{selectedDelay.delay_minutes} minutos</strong> no dia <strong>{fmtDate(selectedDelay.delay_date)}</strong>.
+            </p>
+            <form onSubmit={handleJustifyDelay}>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={labelStyle}>Sua Justificativa</label>
+                <textarea
+                  style={{ ...inputStyle, resize: 'vertical', minHeight: '90px' }}
+                  value={delayJustification}
+                  onChange={(e) => setDelayJustification(e.target.value)}
+                  placeholder="Explique o motivo do atraso..."
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowDelayModal(false)}
                   style={{
                     background: 'var(--surface2)',
                     color: 'var(--text)',

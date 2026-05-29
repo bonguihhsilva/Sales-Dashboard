@@ -8,7 +8,9 @@ export const dynamic = 'force-dynamic'
 export default async function TrilhaPage({ params }: { params: Promise<{ trilhaId: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  // if (!user) redirect('/login')
+  const userId = user?.id
+  if (!userId) redirect('/login')
 
   const { trilhaId } = await params
 
@@ -24,7 +26,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ trilhaI
   const { data: resultados } = await supabase
     .from('quiz_resultados')
     .select('modulo_id, aprovado')
-    .eq('usuario_id', user.id)
+    .eq('usuario_id', userId)
     .eq('aprovado', true)
 
   const modulosAprovados = new Set(resultados?.map(r => r.modulo_id) || [])
@@ -34,7 +36,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ trilhaI
       {/* Header */}
       <div style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <Link href="/treinamentos" style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textDecoration: 'none' }}>
+          <Link href="/vendedor/treinamentos" style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textDecoration: 'none' }}>
             ← Voltar para Trilhas
           </Link>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '4px' }}>
@@ -61,7 +63,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ trilhaI
             {modulos.map((mod, index) => {
               const concluido = modulosAprovados.has(mod.id)
               return (
-                <Link key={mod.id} href={`/treinamentos/${trilhaId}/${mod.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Link key={mod.id} href={`/vendedor/treinamentos/${trilhaId}/${mod.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                   <div style={{ 
                     background: 'var(--surface)', 
                     border: `1px solid ${concluido ? '#22c55e' : 'var(--border)'}`, 

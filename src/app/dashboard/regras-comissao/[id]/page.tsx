@@ -8,8 +8,9 @@ export const dynamic = 'force-dynamic'
 
 export default async function EditarRegraPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  let { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+  // if (!user) redirect('/login')
 
   const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
   const { data: profile } = await supabase

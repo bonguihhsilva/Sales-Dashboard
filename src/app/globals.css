@@ -4,91 +4,84 @@
 
 @layer base {
   :root {
-    /* Google Material Light Theme */
-    --background:        0 0% 96%;      /* #F3F4F6 or #f1f3f4 */
-    --foreground:        220 10% 20%;   /* #202124 */
-    --card:              0 0% 100%;     /* #FFFFFF */
-    --card-foreground:   220 10% 20%;
-    --popover:           0 0% 100%;
-    --popover-foreground: 220 10% 20%;
-    --primary:           217 89% 61%;   /* #3B82F6 Google Blue */
-    --primary-foreground: 0 0% 100%;
-    --secondary:         210 40% 96%;
-    --secondary-foreground: 220 10% 20%;
-    --muted:             210 20% 94%;   /* #F1F3F4 */
-    --muted-foreground:  215 16% 47%;   /* #5F6368 */
-    --accent:            217 89% 61%;   /* #1A73E8 */
-    --accent-foreground: 0 0% 100%;
-    --destructive:       0 84% 60%;     /* #EA4335 */
-    --destructive-foreground: 0 0% 100%;
-    --border:            214 32% 91%;   /* #E0E0E0 or #DADCE0 */
-    --input:             214 32% 91%;
-    --ring:              217 89% 61%;
-    --radius: 0.5rem;
-
+    --background: 224 55% 10%; /* #0b1326 */
+    --foreground: 225 93% 92%; /* #dae2fd */
+    --card: 224 55% 10%;
+    --card-foreground: 225 93% 92%;
+    --popover: 224 55% 10%;
+    --popover-foreground: 225 93% 92%;
+    --border: 225 21% 22%; /* #2d3449 */
+    --input: 225 21% 22%;
+    --ring: 261 100% 87%; /* #d2bbff */
+    
     /* GDS store colors */
-    --jebai: 147 51 234;   /* #9333ea */
-    --paje1: 6 182 212;    /* #06b6d4 */
-    --paje2: 249 115 22;   /* #f97316 */
+    --jebai: 271 81% 56%;
+    --paje1: 188 94% 43%;
+    --paje2: 24 94% 53%;
 
-    /* Fixed aliases for inline usage */
-    --bg:       #F3F4F6;
-    --text:     #202124;
-    --surface:  #FFFFFF;
-    --surface2: #F8F9FA;
-    --meta1:    #34A853; /* Google Green */
-    --meta2:    #FBBC05; /* Google Yellow */
-    --meta3:    #EA4335; /* Google Red */
-    --mkt:      #4285F4; /* Google Blue */
-    --caixa:    #f5a742;
-    --border:   #DADCE0;
-    --muted:    #5F6368;
-    --accent:   #1A73E8;
-  }
+    /* Status & Meta Colors */
+    --meta1: 142 71% 45%; 
+    --meta2: 43 96% 50%; 
+    --meta3: 0 84% 60%; 
+    --mkt: 217 91% 60%; 
+    --caixa: 33 90% 61%;
 
-  .dark {
-    --background:        220 10% 10%;   /* #171717 */
-    --foreground:        0 0% 100%;     /* #FFFFFF */
-    --card:              220 10% 15%;   /* #262626 */
-    --card-foreground:   0 0% 100%;
-    --popover:           220 10% 15%;
-    --popover-foreground: 0 0% 100%;
-    --primary:           217 89% 61%;
-    --primary-foreground: 0 0% 100%;
-    --secondary:         220 10% 20%;
-    --secondary-foreground: 0 0% 100%;
-    --muted:             220 10% 20%;
-    --muted-foreground:  215 16% 65%;   /* #9AA0A6 */
-    --accent:            217 89% 61%;
-    --accent-foreground: 0 0% 100%;
-    --destructive:       0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border:            220 10% 20%;   /* #3C4043 */
-    --input:             220 10% 20%;
-    --ring:              217 89% 61%;
-
-    --bg:       #202124;
-    --text:     #E8EAED;
-    --surface:  #292A2D;
-    --surface2: #3C4043;
-    --border:   #3C4043;
-    --muted:    #9AA0A6;
-    --accent:   #8AB4F8;
+    /* Aliases de retrocompatibilidade para componentes antigos */
+    --bg: #0b1326;
+    --surface: #171f33;
+    --surface2: #2d3449;
+    --text: #dae2fd;
+    --muted-color: #958da1;
   }
 }
 
 @layer base {
-  * { border-color: var(--border); box-sizing: border-box; }
+  * {
+    @apply border-border;
+  }
   body {
-    @apply bg-background text-foreground;
-    font-family: var(--font-inter), 'Inter', sans-serif;
-    min-height: 100vh;
+    background-color: #0b1326;
+    color: #dae2fd;
+    font-family: var(--font-manrope), 'sans-serif';
+    @apply antialiased overflow-x-hidden;
   }
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+@layer utilities {
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  .glass-card {
+    background: rgba(23, 31, 51, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .podium-gold {
+    box-shadow: 0 0 15px rgba(233, 195, 73, 0.2);
+    border: 1px solid rgba(233, 195, 73, 0.5);
+  }
+  .podium-silver {
+    border: 1px solid #958da1;
+  }
+  .podium-bronze {
+    border: 1px solid #af8d11;
+  }
+  .featured-gradient {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(11, 19, 38, 0) 100%);
+  }
+  .inner-glow {
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  }
+  .neon-border-active {
+    border: 1px solid transparent;
+    background-image: linear-gradient(#171f33, #171f33), linear-gradient(to right, #d2bbff, #4cd7f6);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+  }
+}
 
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0b1326; }
+::-webkit-scrollbar-thumb { background: #2d3449; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #d2bbff; }

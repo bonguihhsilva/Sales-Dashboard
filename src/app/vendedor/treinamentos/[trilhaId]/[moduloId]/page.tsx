@@ -8,13 +8,15 @@ export const dynamic = 'force-dynamic'
 export default async function ModuloPage({ params }: { params: Promise<{ trilhaId: string, moduloId: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  // if (!user) redirect('/login')
+  const userId = user?.id
+  if (!userId) redirect('/login')
 
   const { trilhaId, moduloId } = await params
 
   const { data: modulo } = await supabase
     .from('modulos').select('*').eq('id', moduloId).single()
-  if (!modulo) redirect(`/treinamentos/${trilhaId}`)
+  if (!modulo) redirect(`/vendedor/treinamentos/${trilhaId}`)
 
   const { data: licoes } = await supabase
     .from('licoes').select('*').eq('modulo_id', moduloId).order('ordem', { ascending: true })
@@ -22,7 +24,7 @@ export default async function ModuloPage({ params }: { params: Promise<{ trilhaI
   const { data: progresso } = await supabase
     .from('progresso_usuario')
     .select('licao_id')
-    .eq('usuario_id', user.id)
+    .eq('usuario_id', userId)
     .eq('concluida', true)
 
   const licoesConcluidas = new Set(progresso?.map(p => p.licao_id) || [])
@@ -30,7 +32,7 @@ export default async function ModuloPage({ params }: { params: Promise<{ trilhaI
   const { data: quizResult } = await supabase
     .from('quiz_resultados')
     .select('aprovado, pontuacao')
-    .eq('usuario_id', user.id)
+    .eq('usuario_id', userId)
     .eq('modulo_id', moduloId)
     .eq('aprovado', true)
     .maybeSingle()
@@ -42,7 +44,7 @@ export default async function ModuloPage({ params }: { params: Promise<{ trilhaI
       {/* Header */}
       <div style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <Link href={`/treinamentos/${trilhaId}`} style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textDecoration: 'none' }}>
+          <Link href={`/vendedor/treinamentos/${trilhaId}`} style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textDecoration: 'none' }}>
             ← Voltar para Módulos
           </Link>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '4px' }}>
@@ -66,7 +68,7 @@ export default async function ModuloPage({ params }: { params: Promise<{ trilhaI
             const isUnlocked = index === 0 || licoesConcluidas.has(licoes![index - 1]?.id) || concluida
 
             return (
-              <Link key={licao.id} href={isUnlocked ? `/treinamentos/${trilhaId}/${moduloId}/${licao.id}` : '#'} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Link key={licao.id} href={isUnlocked ? `/vendedor/treinamentos/${trilhaId}/${moduloId}/${licao.id}` : '#'} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div style={{ 
                   background: 'var(--surface)', 
                   border: `1px solid ${concluida ? '#22c55e' : 'var(--border)'}`, 
@@ -106,7 +108,7 @@ export default async function ModuloPage({ params }: { params: Promise<{ trilhaI
           })}
 
           {/* Quiz Card */}
-          <Link href={allLessonsDone ? `/treinamentos/${trilhaId}/${moduloId}/quiz` : '#'} style={{ textDecoration: 'none', color: 'inherit' }}>
+          <Link href={allLessonsDone ? `/vendedor/treinamentos/${trilhaId}/${moduloId}/quiz` : '#'} style={{ textDecoration: 'none', color: 'inherit' }}>
             <div style={{ 
               background: 'var(--surface)', 
               border: `2px dashed ${quizResult ? '#22c55e' : (allLessonsDone ? 'var(--meta3, #f5a742)' : 'var(--border)')}`, 
