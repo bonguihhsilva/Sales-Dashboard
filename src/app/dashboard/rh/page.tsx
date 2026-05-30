@@ -24,10 +24,15 @@ export default async function RHPage() {
 
   const admin = createAdminClient()
 
-  const { data: profiles } = await admin.from('profiles')
+  let query = admin.from('profiles')
     .select('id, name, role, ativo')
-    .eq('tenant_id', currentProfile.tenant_id!)
     .order('name')
+
+  if (effectiveRole !== 'super_admin') {
+    query = query.eq('tenant_id', currentProfile.tenant_id!)
+  }
+
+  const { data: profiles } = await query
     
   const userIds = profiles ? profiles.map(p => p.id) : []
 
