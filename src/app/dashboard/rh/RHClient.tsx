@@ -15,71 +15,32 @@ interface Props {
 
 // ── Badge helpers ──────────────────────────────────────────────────────────────
 
-const badge = (color: string, bg: string) => ({
-  padding: '2px 8px', borderRadius: '12px', fontSize: '11px',
-  background: bg, color, fontFamily: 'DM Mono, monospace',
-  display: 'inline-block',
-} as const)
+const badge = (colorClass: string) => "px-2.5 py-0.5 rounded-full text-[11px] font-mono inline-block " + colorClass;
 
-const BADGES = {
-  available:       badge('#166534', '#dcfce7'),
-  approved:        badge('#166534', '#dcfce7'),
-  expired:         badge('#991b1b', '#fef2f2'),
-  denied:          badge('#991b1b', '#fef2f2'),
-  used:            badge('#374151', '#f3f4f6'),
-  deducted:        badge('#374151', '#f3f4f6'),
-  pending:         badge('#854d0e', '#fef9c3'),
-  deduct_free_day: badge('#0369a1', '#e0f2fe'),
-  justified:       badge('#854d0e', '#fef9c3'),
-  no_balance:      badge('#991b1b', '#fef2f2'),
-  none:            badge('var(--muted)', 'var(--surface2)' as string),
-} as const
+const BADGES: Record<string, string> = {
+  available:       badge('bg-green-500/20 text-green-500'),
+  approved:        badge('bg-green-500/20 text-green-500'),
+  expired:         badge('bg-red-500/20 text-red-500'),
+  denied:          badge('bg-red-500/20 text-red-500'),
+  used:            badge('bg-surface-container-highest text-muted-foreground'),
+  deducted:        badge('bg-surface-container-highest text-muted-foreground'),
+  pending:         badge('bg-yellow-500/20 text-yellow-500'),
+  deduct_free_day: badge('bg-blue-500/20 text-blue-500'),
+  justified:       badge('bg-yellow-500/20 text-yellow-500'),
+  no_balance:      badge('bg-red-500/20 text-red-500'),
+  none:            badge('bg-surface-container-highest text-muted-foreground'),
+};
 
 // ── Shared UI primitives ───────────────────────────────────────────────────────
 
-const INPUT_STYLE: React.CSSProperties = {
-  width: '100%', padding: '8px 10px', background: 'var(--surface2)',
-  border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)',
-  fontFamily: 'DM Mono, monospace', fontSize: '0.8rem', boxSizing: 'border-box',
-}
-
-const LABEL_STYLE: React.CSSProperties = {
-  fontSize: '0.68rem', fontFamily: 'DM Mono, monospace',
-  color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em',
-  display: 'block', marginBottom: '4px',
-}
-
-const TH_STYLE: React.CSSProperties = {
-  fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: 'var(--muted)',
-  textTransform: 'uppercase', letterSpacing: '0.07em', padding: '6px 10px',
-  textAlign: 'left', whiteSpace: 'nowrap', borderBottom: '1px solid var(--border)',
-}
-
-const TD_STYLE: React.CSSProperties = {
-  padding: '9px 10px', fontSize: '0.8rem', borderBottom: '1px solid var(--border)',
-}
-
-const BTN_PRIMARY: React.CSSProperties = {
-  background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '6px',
-  padding: '8px 16px', fontFamily: 'Syne, sans-serif', fontWeight: 700,
-  fontSize: '0.8rem', cursor: 'pointer',
-}
-
-const BTN_GHOST: React.CSSProperties = {
-  background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)',
-  borderRadius: '6px', padding: '7px 14px', fontFamily: 'Syne, sans-serif',
-  fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
-}
-
-const MODAL_OVERLAY: React.CSSProperties = {
-  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
-  display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
-}
-
-const MODAL_BOX: React.CSSProperties = {
-  background: 'var(--surface)', border: '1px solid var(--border)',
-  borderRadius: '14px', padding: '2rem', width: '100%', maxWidth: '420px',
-}
+const INPUT_STYLE = "w-full px-3 py-2.5 bg-surface border border-white/10 rounded-lg text-sm font-mono text-on-surface focus:outline-none focus:border-primary transition-colors";
+const LABEL_STYLE = "block text-[0.65rem] font-mono text-muted-foreground uppercase tracking-wider mb-1.5 font-bold";
+const TH_STYLE = "font-mono text-[0.65rem] uppercase tracking-wider py-3 px-4 text-muted-foreground font-semibold whitespace-nowrap text-left border-b border-white/5";
+const TD_STYLE = "py-3 px-4 text-sm border-b border-white/5";
+const BTN_PRIMARY = "bg-primary hover:bg-primary/90 text-primary-foreground border-none rounded-lg px-4 py-2.5 font-bold text-sm transition-colors disabled:opacity-50 cursor-pointer font-display-lg";
+const BTN_GHOST = "bg-transparent hover:bg-white/5 text-muted-foreground border border-white/10 rounded-lg px-4 py-2.5 font-bold text-sm transition-colors cursor-pointer font-display-lg";
+const MODAL_OVERLAY = "fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4";
+const MODAL_BOX = "glass-card border border-white/10 rounded-2xl p-8 w-full max-w-md shadow-xl";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -237,51 +198,51 @@ function DiaLivreTab({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+    <div className="flex flex-col gap-8">
       {/* Section 1 — Atribuir dia livre */}
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' }}>
-        <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem', fontFamily: 'Syne, sans-serif' }}>
+      <div className="glass-card rounded-2xl p-6 border border-white/5">
+        <h2 className="text-base font-bold mb-4 font-display-lg">
           Atribuir dia livre
         </h2>
 
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={LABEL_STYLE}>Motivo (opcional)</label>
+        <div className="mb-4">
+          <label className={LABEL_STYLE}>Motivo (opcional)</label>
           <input
             value={notes}
             onChange={e => setNotes(e.target.value)}
             placeholder="Ex: folga compensatória"
-            style={INPUT_STYLE}
+            className={INPUT_STYLE}
           />
         </div>
 
-        <div style={{ overflowX: 'auto', marginBottom: '1rem' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th style={{ ...TH_STYLE, width: '40px' }}>
+        <div className="overflow-x-auto mb-4">
+          <table className="w-full text-sm text-left border-collapse">
+            <thead className="bg-surface-container-high/50 border-b border-white/5">
+              <tr className="hover:bg-secondary/10 transition-colors">
+                <th className={`${TH_STYLE} w-[40px]`}>
                   <input
                     type="checkbox"
                     checked={selectedIds.length === profiles.length && profiles.length > 0}
                     onChange={e => toggleAll(e.target.checked)}
                   />
                 </th>
-                <th style={TH_STYLE}>Funcionário</th>
-                <th style={TH_STYLE}>Cargo</th>
+                <th className={TH_STYLE}>Funcionário</th>
+                <th className={TH_STYLE}>Cargo</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-border">
               {profiles.map(p => (
-                <tr key={p.id}>
-                  <td style={TD_STYLE}>
+                <tr key={p.id} className="hover:bg-secondary/10 transition-colors">
+                  <td className={TD_STYLE}>
                     <input
                       type="checkbox"
                       checked={selectedIds.includes(p.id)}
                       onChange={() => toggleOne(p.id)}
                     />
                   </td>
-                  <td style={TD_STYLE}>{p.name}</td>
-                  <td style={TD_STYLE}>
-                    <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: 'var(--muted)' }}>
+                  <td className={TD_STYLE}>{p.name}</td>
+                  <td className={TD_STYLE}>
+                    <span className="font-mono text-xs text-muted-foreground">
                       {p.role}
                     </span>
                   </td>
@@ -294,45 +255,45 @@ function DiaLivreTab({
         <button
           onClick={handleAssign}
           disabled={loading || selectedIds.length === 0}
-          style={{ ...BTN_PRIMARY, opacity: selectedIds.length === 0 ? 0.5 : 1 }}
+          className={`${BTN_PRIMARY} ${selectedIds.length ? "opacity-50" : ""}`}
         >
           {loading ? 'Atribuindo…' : `Atribuir dia livre aos selecionados (${selectedIds.length})`}
         </button>
       </div>
 
       {/* Section 2 — Status atual */}
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' }}>
-        <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem', fontFamily: 'Syne, sans-serif' }}>
+      <div className="glass-card rounded-2xl p-6 border border-white/5">
+        <h2 className="text-base font-bold mb-4 font-display-lg">
           Status atual — dias livres
         </h2>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th style={TH_STYLE}>Funcionário</th>
-                <th style={{ ...TH_STYLE, textAlign: 'center' }}>Dias livres ativos</th>
-                <th style={TH_STYLE}>Próximo vencimento</th>
-                <th style={TH_STYLE}>Status</th>
+        <div className="overflow-x-auto rounded-xl border border-white/5 bg-surface-container-high/20">
+          <table className="w-full text-sm text-left border-collapse">
+            <thead className="bg-surface-container-high/50 border-b border-white/5">
+              <tr className="hover:bg-secondary/10 transition-colors">
+                <th className={TH_STYLE}>Funcionário</th>
+                <th className={`${TH_STYLE} text-center`}>Dias livres ativos</th>
+                <th className={TH_STYLE}>Próximo vencimento</th>
+                <th className={TH_STYLE}>Status</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-border">
               {summary.map(s => {
                 const statusBadge = s.available > 0
-                  ? <span style={BADGES.available}>Disponível</span>
+                  ? <span className={BADGES.available}>Disponível</span>
                   : freeDays.some(fd => fd.user_id === s.user_id)
-                    ? <span style={BADGES.expired}>Vencido</span>
-                    : <span style={BADGES.none}>Sem dia livre</span>
+                    ? <span className={BADGES.expired}>Vencido</span>
+                    : <span className={BADGES.none}>Sem dia livre</span>
 
                 return (
-                  <tr key={s.user_id}>
-                    <td style={TD_STYLE}>{s.user_name}</td>
-                    <td style={{ ...TD_STYLE, textAlign: 'center', fontFamily: 'DM Mono, monospace', fontWeight: 700 }}>
+                  <tr key={s.user_id} className="hover:bg-secondary/10 transition-colors">
+                    <td className={TD_STYLE}>{s.user_name}</td>
+                    <td className={`${TD_STYLE} text-center font-mono font-bold`}>
                       {s.available}
                     </td>
-                    <td style={{ ...TD_STYLE, fontFamily: 'DM Mono, monospace' }}>
+                    <td className={`${TD_STYLE} font-mono`}>
                       {s.next_expiry ? fmtDate(s.next_expiry) : '—'}
                     </td>
-                    <td style={TD_STYLE}>{statusBadge}</td>
+                    <td className={TD_STYLE}>{statusBadge}</td>
                   </tr>
                 )
               })}
@@ -393,36 +354,36 @@ function FaltasTab({
   }
 
   return (
-    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+    <div className="glass-card rounded-2xl p-6 border border-white/5">
+      <div className="flex items-center justify-between mb-4">
         <h2 style={{ fontSize: '1rem', fontWeight: 700, fontFamily: 'Syne, sans-serif' }}>Faltas</h2>
-        <button onClick={() => setShowModal(true)} style={BTN_PRIMARY}>+ Registrar falta</button>
+        <button onClick={() => setShowModal(true)} className={BTN_PRIMARY}>+ Registrar falta</button>
       </div>
 
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th style={TH_STYLE}>Data</th>
-              <th style={TH_STYLE}>Funcionário</th>
-              <th style={TH_STYLE}>Tipo</th>
-              <th style={TH_STYLE}>Obs.</th>
+      <div className="overflow-x-auto rounded-xl border border-white/5 bg-surface-container-high/20">
+        <table className="w-full text-sm text-left border-collapse">
+          <thead className="bg-surface-container-high/50 border-b border-white/5">
+            <tr className="hover:bg-secondary/10 transition-colors">
+              <th className={TH_STYLE}>Data</th>
+              <th className={TH_STYLE}>Funcionário</th>
+              <th className={TH_STYLE}>Tipo</th>
+              <th className={TH_STYLE}>Obs.</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-border">
             {absences.map(a => (
-              <tr key={a.id}>
-                <td style={{ ...TD_STYLE, fontFamily: 'DM Mono, monospace' }}>{fmtDate(a.absence_date)}</td>
-                <td style={TD_STYLE}>{a.user_name}</td>
-                <td style={TD_STYLE}>
-                  <span style={BADGES[a.type] ?? BADGES.none}>{ABSENCE_LABELS[a.type] ?? a.type}</span>
+              <tr key={a.id} className="hover:bg-secondary/10 transition-colors">
+                <td className={`${TD_STYLE} font-mono`}>{fmtDate(a.absence_date)}</td>
+                <td className={TD_STYLE}>{a.user_name}</td>
+                <td className={TD_STYLE}>
+                  <span className={BADGES[a.type] ?? BADGES.none}>{ABSENCE_LABELS[a.type] ?? a.type}</span>
                 </td>
-                <td style={{ ...TD_STYLE, color: 'var(--muted)', fontSize: '0.75rem' }}>{a.notes ?? '—'}</td>
+                <td className={`${TD_STYLE} text-muted-foreground text-xs`}>{a.notes ?? '—'}</td>
               </tr>
             ))}
             {absences.length === 0 && (
               <tr>
-                <td colSpan={4} style={{ ...TD_STYLE, textAlign: 'center', color: 'var(--muted)', padding: '2rem' }}>
+                <td colSpan={4} className={`${TD_STYLE} text-center text-muted-foreground p-8`}>
                   Nenhuma falta registrada
                 </td>
               </tr>
@@ -432,29 +393,29 @@ function FaltasTab({
       </div>
 
       {showModal && (
-        <div style={MODAL_OVERLAY} onClick={e => { if (e.target === e.currentTarget) setShowModal(false) }}>
-          <div style={MODAL_BOX}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem', fontFamily: 'Syne, sans-serif' }}>
+        <div className={MODAL_OVERLAY} onClick={e => { if (e.target === e.currentTarget) setShowModal(false) }}>
+          <div className={MODAL_BOX}>
+            <h3 className="text-base font-bold mb-5 font-display-lg">
               Registrar falta
             </h3>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
-                <label style={LABEL_STYLE}>Funcionário</label>
-                <select value={userId} onChange={e => { setUserId(e.target.value); setFreeDayId('') }} required style={INPUT_STYLE}>
+                <label className={LABEL_STYLE}>Funcionário</label>
+                <select value={userId} onChange={e => { setUserId(e.target.value); setFreeDayId('') }} required className={INPUT_STYLE}>
                   <option value="">Selecionar…</option>
                   {profiles.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
               <div>
-                <label style={LABEL_STYLE}>Data da falta</label>
-                <input type="date" value={absenceDate} onChange={e => setAbsenceDate(e.target.value)} required style={INPUT_STYLE} />
+                <label className={LABEL_STYLE}>Data da falta</label>
+                <input type="date" value={absenceDate} onChange={e => setAbsenceDate(e.target.value)} required className={INPUT_STYLE} />
               </div>
               <div>
-                <label style={LABEL_STYLE}>Tipo</label>
+                <label className={LABEL_STYLE}>Tipo</label>
                 <select
                   value={absenceType}
                   onChange={e => setAbsenceType(e.target.value as typeof absenceType)}
-                  style={INPUT_STYLE}
+                  className={INPUT_STYLE}
                 >
                   <option value="justified">Justificada</option>
                   <option value="deduct_free_day">Descontar dia livre</option>
@@ -463,8 +424,8 @@ function FaltasTab({
               </div>
               {absenceType === 'deduct_free_day' && (
                 <div>
-                  <label style={LABEL_STYLE}>Dia livre a descontar</label>
-                  <select value={freeDayId} onChange={e => setFreeDayId(e.target.value)} style={INPUT_STYLE}>
+                  <label className={LABEL_STYLE}>Dia livre a descontar</label>
+                  <select value={freeDayId} onChange={e => setFreeDayId(e.target.value)} className={INPUT_STYLE}>
                     <option value="">Automático (mais antigo)</option>
                     {availableFreeDays.map(fd => (
                       <option key={fd.id} value={fd.id}>
@@ -474,19 +435,19 @@ function FaltasTab({
                     ))}
                   </select>
                   {availableFreeDays.length === 0 && userId && (
-                    <p style={{ fontSize: '0.72rem', color: '#991b1b', marginTop: '4px', fontFamily: 'DM Mono, monospace' }}>
+                    <p className="text-xs text-red-500 mt-1 font-mono">
                       Nenhum dia livre disponível para este funcionário
                     </p>
                   )}
                 </div>
               )}
               <div>
-                <label style={LABEL_STYLE}>Observações</label>
-                <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} style={{ ...INPUT_STYLE, resize: 'vertical' }} />
+                <label className={LABEL_STYLE}>Observações</label>
+                <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} className={`${INPUT_STYLE} resize-y`} />
               </div>
-              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
-                <button type="button" onClick={() => setShowModal(false)} style={BTN_GHOST}>Cancelar</button>
-                <button type="submit" disabled={loading} style={BTN_PRIMARY}>
+              <div className="flex justify-end gap-2 mt-2">
+                <button type="button" onClick={() => setShowModal(false)} className={BTN_GHOST}>Cancelar</button>
+                <button type="submit" disabled={loading} className={BTN_PRIMARY}>
                   {loading ? 'Salvando…' : 'Registrar'}
                 </button>
               </div>
@@ -532,38 +493,38 @@ function FeriasTab({
   }
 
   return (
-    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+    <div className="glass-card rounded-2xl p-6 border border-white/5">
+      <div className="flex items-center justify-between mb-4">
         <h2 style={{ fontSize: '1rem', fontWeight: 700, fontFamily: 'Syne, sans-serif' }}>Férias</h2>
-        <button onClick={() => setShowModal(true)} style={BTN_PRIMARY}>+ Novo registro</button>
+        <button onClick={() => setShowModal(true)} className={BTN_PRIMARY}>+ Novo registro</button>
       </div>
 
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th style={TH_STYLE}>Funcionário</th>
-              <th style={TH_STYLE}>Início</th>
-              <th style={TH_STYLE}>Fim</th>
-              <th style={{ ...TH_STYLE, textAlign: 'center' }}>Duração</th>
-              <th style={TH_STYLE}>Obs.</th>
+      <div className="overflow-x-auto rounded-xl border border-white/5 bg-surface-container-high/20">
+        <table className="w-full text-sm text-left border-collapse">
+          <thead className="bg-surface-container-high/50 border-b border-white/5">
+            <tr className="hover:bg-secondary/10 transition-colors">
+              <th className={TH_STYLE}>Funcionário</th>
+              <th className={TH_STYLE}>Início</th>
+              <th className={TH_STYLE}>Fim</th>
+              <th className={`${TH_STYLE} text-center`}>Duração</th>
+              <th className={TH_STYLE}>Obs.</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-border">
             {vacations.map(v => (
-              <tr key={v.id}>
-                <td style={TD_STYLE}>{v.user_name}</td>
-                <td style={{ ...TD_STYLE, fontFamily: 'DM Mono, monospace' }}>{fmtDate(v.start_date)}</td>
-                <td style={{ ...TD_STYLE, fontFamily: 'DM Mono, monospace' }}>{fmtDate(v.end_date)}</td>
-                <td style={{ ...TD_STYLE, textAlign: 'center', fontFamily: 'DM Mono, monospace' }}>
+              <tr key={v.id} className="hover:bg-secondary/10 transition-colors">
+                <td className={TD_STYLE}>{v.user_name}</td>
+                <td className={`${TD_STYLE} font-mono`}>{fmtDate(v.start_date)}</td>
+                <td className={`${TD_STYLE} font-mono`}>{fmtDate(v.end_date)}</td>
+                <td className={`${TD_STYLE} text-center font-mono`}>
                   {daysBetween(v.start_date, v.end_date)} dias
                 </td>
-                <td style={{ ...TD_STYLE, color: 'var(--muted)', fontSize: '0.75rem' }}>{v.notes ?? '—'}</td>
+                <td className={`${TD_STYLE} text-muted-foreground text-xs`}>{v.notes ?? '—'}</td>
               </tr>
             ))}
             {vacations.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ ...TD_STYLE, textAlign: 'center', color: 'var(--muted)', padding: '2rem' }}>
+                <td colSpan={5} className={`${TD_STYLE} text-center text-muted-foreground p-8`}>
                   Nenhum registro de férias
                 </td>
               </tr>
@@ -573,39 +534,39 @@ function FeriasTab({
       </div>
 
       {showModal && (
-        <div style={MODAL_OVERLAY} onClick={e => { if (e.target === e.currentTarget) setShowModal(false) }}>
-          <div style={MODAL_BOX}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem', fontFamily: 'Syne, sans-serif' }}>
+        <div className={MODAL_OVERLAY} onClick={e => { if (e.target === e.currentTarget) setShowModal(false) }}>
+          <div className={MODAL_BOX}>
+            <h3 className="text-base font-bold mb-5 font-display-lg">
               Novo registro de férias
             </h3>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
-                <label style={LABEL_STYLE}>Funcionário</label>
-                <select value={userId} onChange={e => setUserId(e.target.value)} required style={INPUT_STYLE}>
+                <label className={LABEL_STYLE}>Funcionário</label>
+                <select value={userId} onChange={e => setUserId(e.target.value)} required className={INPUT_STYLE}>
                   <option value="">Selecionar…</option>
                   {profiles.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
               <div>
-                <label style={LABEL_STYLE}>Data de início</label>
-                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required style={INPUT_STYLE} />
+                <label className={LABEL_STYLE}>Data de início</label>
+                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required className={INPUT_STYLE} />
               </div>
               <div>
-                <label style={LABEL_STYLE}>Data de fim</label>
-                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} required style={INPUT_STYLE} />
+                <label className={LABEL_STYLE}>Data de fim</label>
+                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} required className={INPUT_STYLE} />
               </div>
               {startDate && endDate && endDate >= startDate && (
-                <p style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>
+                <p className="text-xs text-muted-foreground font-mono">
                   Duração: {daysBetween(startDate, endDate)} dias
                 </p>
               )}
               <div>
-                <label style={LABEL_STYLE}>Observações</label>
-                <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} style={{ ...INPUT_STYLE, resize: 'vertical' }} />
+                <label className={LABEL_STYLE}>Observações</label>
+                <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} className={`${INPUT_STYLE} resize-y`} />
               </div>
-              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
-                <button type="button" onClick={() => setShowModal(false)} style={BTN_GHOST}>Cancelar</button>
-                <button type="submit" disabled={loading} style={BTN_PRIMARY}>
+              <div className="flex justify-end gap-2 mt-2">
+                <button type="button" onClick={() => setShowModal(false)} className={BTN_GHOST}>Cancelar</button>
+                <button type="submit" disabled={loading} className={BTN_PRIMARY}>
                   {loading ? 'Salvando…' : 'Registrar'}
                 </button>
               </div>
@@ -666,62 +627,52 @@ function PermissoesTab({
   }
 
   return (
-    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+    <div className="glass-card rounded-2xl p-6 border border-white/5">
+      <div className="flex items-center justify-between mb-4">
         <h2 style={{ fontSize: '1rem', fontWeight: 700, fontFamily: 'Syne, sans-serif' }}>Permissões</h2>
-        <button onClick={() => setShowModal(true)} style={BTN_PRIMARY}>+ Registrar pelo RH</button>
+        <button onClick={() => setShowModal(true)} className={BTN_PRIMARY}>+ Registrar pelo RH</button>
       </div>
 
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th style={TH_STYLE}>Funcionário</th>
-              <th style={TH_STYLE}>Tipo</th>
-              <th style={TH_STYLE}>Data solicitada</th>
-              <th style={TH_STYLE}>Status</th>
-              <th style={TH_STYLE}>Obs.</th>
-              <th style={TH_STYLE}>Ações</th>
+      <div className="overflow-x-auto rounded-xl border border-white/5 bg-surface-container-high/20">
+        <table className="w-full text-sm text-left border-collapse">
+          <thead className="bg-surface-container-high/50 border-b border-white/5">
+            <tr className="hover:bg-secondary/10 transition-colors">
+              <th className={TH_STYLE}>Funcionário</th>
+              <th className={TH_STYLE}>Tipo</th>
+              <th className={TH_STYLE}>Data solicitada</th>
+              <th className={TH_STYLE}>Status</th>
+              <th className={TH_STYLE}>Obs.</th>
+              <th className={TH_STYLE}>Ações</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-border">
             {permissions.map(p => (
-              <tr key={p.id}>
-                <td style={TD_STYLE}>{p.user_name}</td>
-                <td style={TD_STYLE}>
+              <tr key={p.id} className="hover:bg-secondary/10 transition-colors">
+                <td className={TD_STYLE}>{p.user_name}</td>
+                <td className={TD_STYLE}>
                   {PERMISSION_TYPE_LABELS[p.type] ?? p.type}
                 </td>
-                <td style={{ ...TD_STYLE, fontFamily: 'DM Mono, monospace' }}>{fmtDate(p.requested_date)}</td>
-                <td style={TD_STYLE}>
-                  <span style={BADGES[p.status] ?? BADGES.none}>
+                <td className={`${TD_STYLE} font-mono`}>{fmtDate(p.requested_date)}</td>
+                <td className={TD_STYLE}>
+                  <span className={BADGES[p.status] ?? BADGES.none}>
                     {PERMISSION_STATUS_LABELS[p.status] ?? p.status}
                   </span>
                 </td>
-                <td style={{ ...TD_STYLE, color: 'var(--muted)', fontSize: '0.75rem' }}>{p.notes ?? '—'}</td>
-                <td style={TD_STYLE}>
+                <td className={`${TD_STYLE} text-muted-foreground text-xs`}>{p.notes ?? '—'}</td>
+                <td className={TD_STYLE}>
                   {p.status === 'pending' && (
-                    <div style={{ display: 'flex', gap: '6px' }}>
+                    <div className="flex gap-2">
                       <button
                         onClick={() => handleReview(p.id, 'approved')}
                         disabled={actionLoading === p.id + 'approved'}
-                        style={{
-                          padding: '3px 10px', borderRadius: '5px', fontSize: '0.72rem', cursor: 'pointer',
-                          fontFamily: 'Syne, sans-serif', fontWeight: 600, border: 'none',
-                          background: '#dcfce7', color: '#166534',
-                          opacity: actionLoading ? 0.6 : 1,
-                        }}
+                        className={`px-3 py-1.5 rounded-md text-xs cursor-pointer font-display-lg font-bold border-none bg-green-500/20 text-green-500 transition-colors hover:bg-green-500/30 ${actionLoading ? "opacity-60" : ""}`}
                       >
                         Aprovar
                       </button>
                       <button
                         onClick={() => handleReview(p.id, 'denied')}
                         disabled={actionLoading === p.id + 'denied'}
-                        style={{
-                          padding: '3px 10px', borderRadius: '5px', fontSize: '0.72rem', cursor: 'pointer',
-                          fontFamily: 'Syne, sans-serif', fontWeight: 600, border: 'none',
-                          background: '#fef2f2', color: '#991b1b',
-                          opacity: actionLoading ? 0.6 : 1,
-                        }}
+                        className={`px-3 py-1.5 rounded-md text-xs cursor-pointer font-display-lg font-bold border-none bg-red-500/20 text-red-500 transition-colors hover:bg-red-500/30 ${actionLoading ? "opacity-60" : ""}`}
                       >
                         Negar
                       </button>
@@ -732,7 +683,7 @@ function PermissoesTab({
             ))}
             {permissions.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ ...TD_STYLE, textAlign: 'center', color: 'var(--muted)', padding: '2rem' }}>
+                <td colSpan={6} className={`${TD_STYLE} text-center text-muted-foreground p-8`}>
                   Nenhuma permissão registrada
                 </td>
               </tr>
@@ -742,38 +693,38 @@ function PermissoesTab({
       </div>
 
       {showModal && (
-        <div style={MODAL_OVERLAY} onClick={e => { if (e.target === e.currentTarget) setShowModal(false) }}>
-          <div style={MODAL_BOX}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem', fontFamily: 'Syne, sans-serif' }}>
+        <div className={MODAL_OVERLAY} onClick={e => { if (e.target === e.currentTarget) setShowModal(false) }}>
+          <div className={MODAL_BOX}>
+            <h3 className="text-base font-bold mb-5 font-display-lg">
               Registrar permissão pelo RH
             </h3>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
-                <label style={LABEL_STYLE}>Funcionário</label>
-                <select value={userId} onChange={e => setUserId(e.target.value)} required style={INPUT_STYLE}>
+                <label className={LABEL_STYLE}>Funcionário</label>
+                <select value={userId} onChange={e => setUserId(e.target.value)} required className={INPUT_STYLE}>
                   <option value="">Selecionar…</option>
                   {profiles.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
               <div>
-                <label style={LABEL_STYLE}>Tipo</label>
-                <select value={permType} onChange={e => setPermType(e.target.value as typeof permType)} style={INPUT_STYLE}>
+                <label className={LABEL_STYLE}>Tipo</label>
+                <select value={permType} onChange={e => setPermType(e.target.value as typeof permType)} className={INPUT_STYLE}>
                   <option value="appointment">Consulta médica</option>
                   <option value="medical_certificate">Atestado médico</option>
                   <option value="document">Gestão de documentos</option>
                 </select>
               </div>
               <div>
-                <label style={LABEL_STYLE}>Data</label>
-                <input type="date" value={requestedDate} onChange={e => setRequestedDate(e.target.value)} required style={INPUT_STYLE} />
+                <label className={LABEL_STYLE}>Data</label>
+                <input type="date" value={requestedDate} onChange={e => setRequestedDate(e.target.value)} required className={INPUT_STYLE} />
               </div>
               <div>
-                <label style={LABEL_STYLE}>Observações</label>
-                <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} style={{ ...INPUT_STYLE, resize: 'vertical' }} />
+                <label className={LABEL_STYLE}>Observações</label>
+                <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} className={`${INPUT_STYLE} resize-y`} />
               </div>
-              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
-                <button type="button" onClick={() => setShowModal(false)} style={BTN_GHOST}>Cancelar</button>
-                <button type="submit" disabled={loading} style={BTN_PRIMARY}>
+              <div className="flex justify-end gap-2 mt-2">
+                <button type="button" onClick={() => setShowModal(false)} className={BTN_GHOST}>Cancelar</button>
+                <button type="submit" disabled={loading} className={BTN_PRIMARY}>
                   {loading ? 'Salvando…' : 'Registrar'}
                 </button>
               </div>
@@ -814,60 +765,50 @@ function AtrasosTab({
   }
 
   return (
-    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+    <div className="glass-card rounded-2xl p-6 border border-white/5">
+      <div className="flex items-center justify-between mb-4">
         <h2 style={{ fontSize: '1rem', fontWeight: 700, fontFamily: 'Syne, sans-serif' }}>Controle de Atrasos</h2>
-        <button onClick={() => setShowUploadModal(true)} style={BTN_PRIMARY}>Importar Biometria</button>
+        <button onClick={() => setShowUploadModal(true)} className={BTN_PRIMARY}>Importar Biometria</button>
       </div>
 
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th style={TH_STYLE}>Data</th>
-              <th style={TH_STYLE}>Funcionário</th>
-              <th style={{ ...TH_STYLE, textAlign: 'center' }}>Minutos</th>
-              <th style={TH_STYLE}>Status</th>
-              <th style={TH_STYLE}>Justificativa do Vendedor</th>
-              <th style={TH_STYLE}>Ações</th>
+      <div className="overflow-x-auto rounded-xl border border-white/5 bg-surface-container-high/20">
+        <table className="w-full text-sm text-left border-collapse">
+          <thead className="bg-surface-container-high/50 border-b border-white/5">
+            <tr className="hover:bg-secondary/10 transition-colors">
+              <th className={TH_STYLE}>Data</th>
+              <th className={TH_STYLE}>Funcionário</th>
+              <th className={`${TH_STYLE} text-center`}>Minutos</th>
+              <th className={TH_STYLE}>Status</th>
+              <th className={TH_STYLE}>Justificativa do Vendedor</th>
+              <th className={TH_STYLE}>Ações</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-border">
             {delays.map(d => (
-              <tr key={d.id}>
-                <td style={{ ...TD_STYLE, fontFamily: 'DM Mono, monospace' }}>{fmtDate(d.delay_date)}</td>
-                <td style={TD_STYLE}>{d.user_name}</td>
-                <td style={{ ...TD_STYLE, textAlign: 'center', fontWeight: 700, color: 'var(--destructive)' }}>{d.delay_minutes}m</td>
-                <td style={TD_STYLE}>
-                  <span style={BADGES[d.status as keyof typeof BADGES] ?? BADGES.none}>
+              <tr key={d.id} className="hover:bg-secondary/10 transition-colors">
+                <td className={`${TD_STYLE} font-mono`}>{fmtDate(d.delay_date)}</td>
+                <td className={TD_STYLE}>{d.user_name}</td>
+                <td className={`${TD_STYLE} text-center font-bold text-red-500`}>{d.delay_minutes}m</td>
+                <td className={TD_STYLE}>
+                  <span className={BADGES[d.status as keyof typeof BADGES] ?? BADGES.none}>
                     {d.status === 'pending' ? 'Pendente' : d.status === 'justified' ? 'Justificado' : d.status === 'approved' ? 'Abonado' : 'Descontar'}
                   </span>
                 </td>
-                <td style={{ ...TD_STYLE, color: 'var(--muted)', fontSize: '0.75rem', maxWidth: '200px' }}>{d.justification ?? '—'}</td>
-                <td style={TD_STYLE}>
+                <td className={`${TD_STYLE} text-muted-foreground text-xs max-w-[200px] truncate`}>{d.justification ?? '—'}</td>
+                <td className={TD_STYLE}>
                   {d.status === 'justified' && (
-                    <div style={{ display: 'flex', gap: '6px' }}>
+                    <div className="flex gap-2">
                       <button
                         onClick={() => handleReview(d.id, 'approved')}
                         disabled={actionLoading === d.id + 'approved'}
-                        style={{
-                          padding: '3px 10px', borderRadius: '5px', fontSize: '0.72rem', cursor: 'pointer',
-                          fontFamily: 'Syne, sans-serif', fontWeight: 600, border: 'none',
-                          background: '#dcfce7', color: '#166534',
-                          opacity: actionLoading ? 0.6 : 1,
-                        }}
+                        className={`px-3 py-1.5 rounded-md text-xs cursor-pointer font-display-lg font-bold border-none bg-green-500/20 text-green-500 transition-colors hover:bg-green-500/30 ${actionLoading ? "opacity-60" : ""}`}
                       >
                         Abonar
                       </button>
                       <button
                         onClick={() => handleReview(d.id, 'rejected')}
                         disabled={actionLoading === d.id + 'rejected'}
-                        style={{
-                          padding: '3px 10px', borderRadius: '5px', fontSize: '0.72rem', cursor: 'pointer',
-                          fontFamily: 'Syne, sans-serif', fontWeight: 600, border: 'none',
-                          background: '#fef2f2', color: '#991b1b',
-                          opacity: actionLoading ? 0.6 : 1,
-                        }}
+                        className={`px-3 py-1.5 rounded-md text-xs cursor-pointer font-display-lg font-bold border-none bg-red-500/20 text-red-500 transition-colors hover:bg-red-500/30 ${actionLoading ? "opacity-60" : ""}`}
                       >
                         Rejeitar (Descontar)
                       </button>
@@ -878,7 +819,7 @@ function AtrasosTab({
             ))}
             {delays.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ ...TD_STYLE, textAlign: 'center', color: 'var(--muted)', padding: '2rem' }}>
+                <td colSpan={6} className={`${TD_STYLE} text-center text-muted-foreground p-8`}>
                   Nenhum atraso registrado. Importe um relatório biométrico.
                 </td>
               </tr>

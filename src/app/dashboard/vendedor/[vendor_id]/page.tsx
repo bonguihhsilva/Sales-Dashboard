@@ -59,7 +59,7 @@ export default async function VendorDetailPage({
 
   // Ranking position
   const { data: allSummaries } = await supabase
-    .from('vendor_summary').select('vendor_id, total_sold').eq('period_id', activePeriod).order('total_sold', { ascending: false })
+    .from('vendor_summary').select('vendor_id, total_sold, store').eq('period_id', activePeriod).order('total_sold', { ascending: false })
   const rankAll   = (allSummaries ?? []).findIndex(s => s.vendor_id === vendor_id) + 1
   const rankStore = (allSummaries ?? []).filter(s => s.store === summary.store).findIndex(s => s.vendor_id === vendor_id) + 1
 
