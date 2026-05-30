@@ -61,7 +61,7 @@ export default async function VendorDetailPage({
   const { data: allSummaries } = await supabase
     .from('vendor_summary').select('vendor_id, total_sold').eq('period_id', activePeriod).order('total_sold', { ascending: false })
   const rankAll   = (allSummaries ?? []).findIndex(s => s.vendor_id === vendor_id) + 1
-  const rankStore = (allSummaries ?? []).filter(s => {}).findIndex(s => s.vendor_id === vendor_id) + 1
+  const rankStore = (allSummaries ?? []).filter(s => s.store === summary.store).findIndex(s => s.vendor_id === vendor_id) + 1
 
   const pctRef = lvl === 0
     ? `da 1ª meta (${fmtK(m1)})`
@@ -167,7 +167,7 @@ export default async function VendorDetailPage({
                     <div className="w-24 ml-2">
                       <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
                         <div className={`h-full rounded-full transition-all duration-500 ${['bg-meta1','bg-meta2','bg-meta3'][lvl]}`}
-                          style={{ width: `${Math.min(nextMetaPct, 100)}%` }} />
+                          style={{ width: `${isNaN(nextMetaPct) ? 0 : Math.min(nextMetaPct, 100)}%` }} />
                       </div>
                       <div className="flex justify-between mt-1">
                         <span className="text-[0.55rem] font-mono text-muted-foreground">{fmtK(sold)}</span>

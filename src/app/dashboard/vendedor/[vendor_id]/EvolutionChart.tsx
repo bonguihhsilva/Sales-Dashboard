@@ -16,13 +16,13 @@ export default function EvolutionChart({ data, vendorName }: { data: VendorEvolu
   }
 
   const chartData = data.map(d => ({
-    name: d.period_label.replace(' 20', ' \''),
-    total: Number(d.total_sold),
-    meta1: Number(d.meta1),
-    meta3: Number(d.meta3),
-    metaLevel: d.meta_level,
-    clients: Number(d.unique_clients),
-    bonus: Number(d.bonus_earned),
+    name: (d.period_label || '').replace(' 20', ' \''),
+    total: Number(d.total_sold || 0),
+    meta1: Number(d.meta1 || 0),
+    meta3: Number(d.meta3 || 0),
+    metaLevel: d.meta_level || 0,
+    clients: Number(d.unique_clients || 0),
+    bonus: Number(d.bonus_earned || 0),
   }))
 
   return (
