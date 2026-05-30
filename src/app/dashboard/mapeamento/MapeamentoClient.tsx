@@ -18,7 +18,6 @@ export default function MapeamentoClient({
   orphanVendors: Vendor[]
   stores: { key: string; label: string; color: string }[]
 }) {
-  // Current vendor_id → user_id mapping (from profiles)
   const [links, setLinks] = useState<Record<string, string>>(() =>
     Object.fromEntries(profiles.filter(p => p.vendor_id).map(p => [p.vendor_id!, p.id]))
   )
@@ -26,7 +25,6 @@ export default function MapeamentoClient({
   const [msg, setMsg]           = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
 
-  // Add new vendor form state
   const [addVendor, setAddVendor] = useState<Vendor | null>(null)
   const [addName, setAddName]     = useState('')
   const [addStore, setAddStore]   = useState(stores.length > 0 ? stores[0].key : '')
@@ -37,7 +35,6 @@ export default function MapeamentoClient({
   const [addPeriod, setAddPeriod] = useState(1)
   const [addingVendor, setAddingVendor] = useState(false)
 
-  // Periods for goal assignment
   const currentYear  = new Date().getFullYear()
   const currentMonth = new Date().getMonth()
   const periodOptions = Array.from({ length: 6 }, (_, i) => {
@@ -49,20 +46,9 @@ export default function MapeamentoClient({
     }
   })
 
-  const selStyle = {
-    background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '6px',
-    color: 'var(--text)', fontFamily: 'DM Mono, monospace', fontSize: '0.78rem',
-    padding: '7px 10px', outline: 'none', cursor: 'pointer', width: '100%',
-  }
-  const inputStyle = {
-    background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '6px',
-    color: 'var(--text)', fontFamily: 'DM Mono, monospace', fontSize: '0.78rem',
-    padding: '7px 10px', outline: 'none', width: '100%',
-  }
-  const labelStyle = {
-    display: 'block' as const, fontSize: '0.62rem', fontFamily: 'DM Mono, monospace',
-    color: 'var(--muted)', textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginBottom: '4px',
-  }
+  const selStyle = "w-full bg-surface-container-high/50 border border-white/10 rounded-lg text-white font-mono text-xs px-3 py-2 outline-none focus:border-accent transition-colors cursor-pointer"
+  const inputStyle = "w-full bg-surface-container-high/50 border border-white/10 rounded-lg text-white font-mono text-xs px-3 py-2 outline-none focus:border-accent transition-colors"
+  const labelStyle = "block text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1"
 
   async function saveMapping(vendor_id: string, user_id: string) {
     setSaving(vendor_id); setMsg('')
@@ -89,7 +75,6 @@ export default function MapeamentoClient({
     const store       = addVendor ? addVendor.store : addStore
 
     try {
-      // 1. Create goal entry for this vendor
       const goalRes = await fetch('/api/admin/update-goals', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -105,7 +90,6 @@ export default function MapeamentoClient({
       const goalData = await goalRes.json()
       if (goalData.error) throw new Error(goalData.error)
 
-      // 2. Link to user if selected
       if (addUserId) {
         const linkRes = await fetch('/api/admin/update-user', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -134,33 +118,30 @@ export default function MapeamentoClient({
     const [selected, setSelected] = useState(currentUserId)
     const changed = selected !== currentUserId && selected !== ''
     return (
-      <tr style={{ borderBottom: '1px solid var(--border)' }}>
-        <td style={{ padding: '10px 12px', fontWeight: 600 }}>{v.vendor_name}</td>
-        <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: 'var(--muted)' }}>{v.store}</td>
-        <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: 'var(--accent)' }}>{v.vendor_id}</td>
-        <td style={{ padding: '10px 12px', minWidth: '240px' }}>
-          <select value={selected} onChange={e => setSelected(e.target.value)} style={selStyle}>
+      <tr className="hover:bg-secondary/10 transition-colors">
+        <td className="px-4 py-3 font-semibold">{v.vendor_name}</td>
+        <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{v.store}</td>
+        <td className="px-4 py-3 font-mono text-xs text-accent">{v.vendor_id}</td>
+        <td className="px-4 py-3 min-w-[240px]">
+          <select value={selected} onChange={e => setSelected(e.target.value)} className={selStyle}>
             <option value="">— Selecionar usuário —</option>
             {profiles.filter(p => p.role === 'vendedor').map(p => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
           </select>
         </td>
-        <td style={{ padding: '10px 12px' }}>
+        <td className="px-4 py-3">
           {currentUserId && !changed ? (
-            <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: 'var(--meta1)' }}>✓ Vinculado</span>
+            <span className="font-mono text-[11px] text-green-400">✓ Vinculado</span>
           ) : (
             <button
               onClick={() => { if (selected) saveMapping(v.vendor_id, selected) }}
               disabled={!selected || !changed || saving === v.vendor_id}
-              style={{
-                background: changed ? 'var(--accent)' : 'transparent',
-                color: changed ? '#0e0f11' : 'var(--muted)',
-                fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.72rem',
-                border: '1px solid var(--border)', borderRadius: '6px',
-                padding: '6px 14px', cursor: changed ? 'pointer' : 'default',
-                opacity: saving === v.vendor_id ? 0.6 : 1, whiteSpace: 'nowrap',
-              }}
+              className={`font-display font-bold text-[11px] border rounded-md px-3 py-1.5 whitespace-nowrap transition-colors ${
+                changed 
+                  ? 'bg-accent text-bg border-accent cursor-pointer' 
+                  : 'bg-transparent text-muted-foreground border-white/10 cursor-default'
+              } ${saving === v.vendor_id ? 'opacity-60' : ''}`}
             >
               {saving === v.vendor_id ? '...' : 'Vincular'}
             </button>
@@ -172,189 +153,187 @@ export default function MapeamentoClient({
 
   return (
     <div>
-      <p style={{ fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+      <p className="text-xs font-mono text-muted-foreground mb-6 leading-relaxed">
         Vincule cada vendedor do HTML ao usuário do sistema. Vendedores do HTML não registrados aparecem na seção abaixo para cadastro.
       </p>
 
       {msg && (
-        <div style={{ padding: '10px 14px', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', background: msg.startsWith('✓') ? 'rgba(200,245,66,0.1)' : 'rgba(245,92,66,0.1)', color: msg.startsWith('✓') ? 'var(--meta1)' : '#f55c42', border: `1px solid ${msg.startsWith('✓') ? 'rgba(200,245,66,0.3)' : 'rgba(245,92,66,0.3)'}` }}>
+        <div className={`px-4 py-3 rounded-lg mb-6 text-xs font-mono border ${msg.startsWith('✓') ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30'}`}>
           {msg}
         </div>
       )}
 
       {/* Summary pills */}
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-        <div style={{ background: 'rgba(200,245,66,0.08)', border: '1px solid rgba(200,245,66,0.2)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace' }}>
-          <span style={{ color: 'var(--meta1)', fontWeight: 700 }}>{mappedCount}</span>
-          <span style={{ color: 'var(--muted)' }}> vinculados</span>
+      <div className="flex gap-3 mb-6 flex-wrap items-center">
+        <div className="bg-green-500/10 border border-green-500/20 rounded-lg px-4 py-2 text-xs font-mono">
+          <span className="text-green-400 font-bold">{mappedCount}</span>
+          <span className="text-muted-foreground"> vinculados</span>
         </div>
-        <div style={{ background: unmappedCount > 0 ? 'rgba(245,200,66,0.08)' : 'var(--surface2)', border: `1px solid ${unmappedCount > 0 ? 'rgba(245,200,66,0.25)' : 'var(--border)'}`, borderRadius: '8px', padding: '8px 16px', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace' }}>
-          <span style={{ color: unmappedCount > 0 ? '#f5c842' : 'var(--muted)', fontWeight: 700 }}>{unmappedCount}</span>
-          <span style={{ color: 'var(--muted)' }}> sem usuário</span>
+        <div className={`border rounded-lg px-4 py-2 text-xs font-mono ${unmappedCount > 0 ? 'bg-yellow-500/10 border-yellow-500/20' : 'bg-surface-container-high/30 border-white/5'}`}>
+          <span className={`font-bold ${unmappedCount > 0 ? 'text-yellow-400' : 'text-muted-foreground'}`}>{unmappedCount}</span>
+          <span className="text-muted-foreground"> sem usuário</span>
         </div>
         {orphanVendors.length > 0 && (
-          <div style={{ background: 'rgba(245,92,66,0.08)', border: '1px solid rgba(245,92,66,0.2)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.78rem', fontFamily: 'DM Mono, monospace' }}>
-            <span style={{ color: '#f55c42', fontWeight: 700 }}>{orphanVendors.length}</span>
-            <span style={{ color: 'var(--muted)' }}> não registrados</span>
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2 text-xs font-mono">
+            <span className="text-red-400 font-bold">{orphanVendors.length}</span>
+            <span className="text-muted-foreground"> não registrados</span>
           </div>
         )}
         <button
           onClick={() => setShowAddModal(true)}
-          style={{ marginLeft: 'auto', background: 'var(--accent)', color: '#0e0f11', fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.78rem', border: 'none', borderRadius: '6px', padding: '8px 16px', cursor: 'pointer' }}
+          className="ml-auto bg-accent text-bg font-display font-bold text-xs border-none rounded-lg px-4 py-2 cursor-pointer transition-transform hover:scale-105 active:scale-95"
         >
           + Adicionar Novo Vendedor
         </button>
       </div>
 
       {/* === REGISTERED VENDORS TABLE === */}
-      <div style={{ overflowX: 'auto', marginBottom: '2.5rem' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid var(--border)' }}>
-              {['Vendedor (HTML)', 'Loja', 'ID', 'Usuário do sistema', ''].map(h => (
-                <th key={h} style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.07em', padding: '6px 12px', textAlign: 'left', whiteSpace: 'nowrap' }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {vendors.length === 0 ? (
-              <tr><td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.8rem' }}>
-                Nenhum vendedor registrado ainda.
-              </td></tr>
-            ) : vendors.map(v => <VendorRow key={v.vendor_id} v={v} />)}
-          </tbody>
-        </table>
+      <div className="glass-card rounded-2xl p-6 border border-white/5 mb-10">
+        <div className="overflow-x-auto rounded-xl border border-white/5 bg-surface-container-high/20">
+          <table className="w-full text-sm text-left border-collapse">
+            <thead className="bg-surface-container-high/50 border-b border-white/5">
+              <tr>
+                {['Vendedor (HTML)', 'Loja', 'ID', 'Usuário do sistema', ''].map(h => (
+                  <th key={h} className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest px-4 py-3 text-left whitespace-nowrap">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {vendors.length === 0 ? (
+                <tr><td colSpan={5} className="p-8 text-center text-muted-foreground font-mono text-xs">
+                  Nenhum vendedor registrado ainda.
+                </td></tr>
+              ) : vendors.map(v => <VendorRow key={v.vendor_id} v={v} />)}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* === ORPHAN VENDORS (in HTML but not in goals) === */}
+      {/* === ORPHAN VENDORS === */}
       {orphanVendors.length > 0 && (
         <div>
-          <div style={{ marginBottom: '1rem' }}>
-            <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#f55c42' }}>
+          <div className="mb-4">
+            <h2 className="text-base font-bold text-red-400 font-display-lg">
               ⚠ Vendedores não registrados
             </h2>
-            <p style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '4px' }}>
+            <p className="text-xs font-mono text-muted-foreground mt-1">
               Estes IDs aparecem nas vendas importadas mas não têm metas cadastradas. Clique em "Registrar" para adicionar.
             </p>
           </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                  {['Nome (no HTML)', 'Loja', 'ID', ''].map(h => (
-                    <th key={h} style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.07em', padding: '6px 12px', textAlign: 'left', whiteSpace: 'nowrap' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {orphanVendors.map(v => (
-                  <tr key={v.vendor_id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '10px 12px', fontWeight: 600 }}>{v.vendor_name}</td>
-                    <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: 'var(--muted)' }}>{v.store}</td>
-                    <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: '#f55c42' }}>{v.vendor_id}</td>
-                    <td style={{ padding: '10px 12px' }}>
-                      <button
-                        onClick={() => {
-                          setAddVendor(v)
-                          setAddName(v.vendor_name)
-                          setAddStore(v.store)
-                          setShowAddModal(true)
-                        }}
-                        style={{ background: 'rgba(245,92,66,0.15)', color: '#f55c42', fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.72rem', border: '1px solid rgba(245,92,66,0.3)', borderRadius: '6px', padding: '6px 14px', cursor: 'pointer', whiteSpace: 'nowrap' }}
-                      >
-                        Registrar
-                      </button>
-                    </td>
+          <div className="glass-card rounded-2xl p-6 border border-white/5">
+            <div className="overflow-x-auto rounded-xl border border-white/5 bg-surface-container-high/20">
+              <table className="w-full text-sm text-left border-collapse">
+                <thead className="bg-surface-container-high/50 border-b border-white/5">
+                  <tr>
+                    {['Nome (no HTML)', 'Loja', 'ID', ''].map(h => (
+                      <th key={h} className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest px-4 py-3 text-left whitespace-nowrap">{h}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {orphanVendors.map(v => (
+                    <tr key={v.vendor_id} className="hover:bg-secondary/10 transition-colors">
+                      <td className="px-4 py-3 font-semibold">{v.vendor_name}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{v.store}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-red-400">{v.vendor_id}</td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => {
+                            setAddVendor(v)
+                            setAddName(v.vendor_name)
+                            setAddStore(v.store)
+                            setShowAddModal(true)
+                          }}
+                          className="bg-red-500/10 text-red-400 font-display font-bold text-[11px] border border-red-500/30 rounded-md px-3 py-1.5 cursor-pointer whitespace-nowrap hover:bg-red-500/20 transition-colors"
+                        >
+                          Registrar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
 
       {/* === ADD VENDOR MODAL === */}
       {showAddModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.78)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '14px', padding: '2rem', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.4rem' }}>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-surface border border-white/10 rounded-2xl p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto glass-card shadow-2xl">
+            <h2 className="text-xl font-bold mb-2 font-display-lg">
               {addVendor ? `Registrar ${addVendor.vendor_name}` : 'Adicionar Novo Vendedor'}
             </h2>
-            <p style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginBottom: '1.5rem' }}>
+            <p className="text-xs font-mono text-muted-foreground mb-6">
               {addVendor
                 ? `ID ${addVendor.vendor_id} encontrado nas vendas. Defina as metas e vincule ao usuário.`
                 : 'Cadastre um novo vendedor manualmente com metas e usuário vinculado.'}
             </p>
 
-            {/* Vendor info — editable if manual, locked if from orphan */}
             {addVendor ? (
-              <div style={{ display: 'flex', gap: '12px', marginBottom: '0.85rem', padding: '10px 14px', background: 'var(--surface2)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <div className="flex gap-4 mb-4 p-4 bg-surface-container-high/30 rounded-xl border border-white/5">
                 <div>
-                  <div style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '3px' }}>ID</div>
-                  <div style={{ fontWeight: 700, color: 'var(--accent)' }}>{addVendor.vendor_id}</div>
+                  <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1">ID</div>
+                  <div className="font-bold text-accent font-mono text-sm">{addVendor.vendor_id}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '3px' }}>Nome</div>
-                  <div style={{ fontWeight: 600 }}>{addVendor.vendor_name}</div>
+                  <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1">Nome</div>
+                  <div className="font-semibold text-sm">{addVendor.vendor_name}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '3px' }}>Loja</div>
-                  <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.8rem' }}>{addVendor.store}</div>
+                  <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1">Loja</div>
+                  <div className="font-mono text-xs">{addVendor.store}</div>
                 </div>
               </div>
             ) : (
-              <>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '0.85rem' }}>
-                  <div>
-                    <label style={labelStyle}>Nome completo</label>
-                    <input value={addName} onChange={e => setAddName(e.target.value)} placeholder="Ex: João Silva" style={inputStyle} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Loja</label>
-                    <select value={addStore} onChange={e => setAddStore(e.target.value)} style={selStyle}>
-                      {stores.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
-                    </select>
-                  </div>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className={labelStyle}>Nome completo</label>
+                  <input value={addName} onChange={e => setAddName(e.target.value)} placeholder="Ex: João Silva" className={inputStyle} />
                 </div>
-              </>
+                <div>
+                  <label className={labelStyle}>Loja</label>
+                  <select value={addStore} onChange={e => setAddStore(e.target.value)} className={selStyle}>
+                    {stores.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+                  </select>
+                </div>
+              </div>
             )}
 
-            {/* Period */}
-            <label style={labelStyle}>Período das metas</label>
-            <select value={addPeriod} onChange={e => setAddPeriod(Number(e.target.value))} style={{ ...selStyle, marginBottom: '0.85rem' }}>
+            <label className={labelStyle}>Período das metas</label>
+            <select value={addPeriod} onChange={e => setAddPeriod(Number(e.target.value))} className={`${selStyle} mb-3`}>
               {periodOptions.map(p => <option key={p.label} value={0}>{p.label}</option>)}
             </select>
 
-            {/* Meta values */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '0.85rem' }}>
+            <div className="grid grid-cols-3 gap-3 mb-4">
               {[['1ª Meta ($)', addM1, setAddM1], ['2ª Meta ($)', addM2, setAddM2], ['3ª Meta ($)', addM3, setAddM3]].map(([label, val, set]) => (
                 <div key={label as string}>
-                  <label style={labelStyle}>{label as string}</label>
-                  <input type="number" value={val as string} onChange={e => (set as (v:string)=>void)(e.target.value)} style={{ ...inputStyle, textAlign: 'right' }} />
+                  <label className={labelStyle}>{label as string}</label>
+                  <input type="number" value={val as string} onChange={e => (set as (v:string)=>void)(e.target.value)} className={`${inputStyle} text-right`} />
                 </div>
               ))}
             </div>
 
-            {/* Link to user */}
-            <label style={labelStyle}>Vincular ao usuário (opcional)</label>
-            <select value={addUserId} onChange={e => setAddUserId(e.target.value)} style={{ ...selStyle, marginBottom: '1.5rem' }}>
+            <label className={labelStyle}>Vincular ao usuário (opcional)</label>
+            <select value={addUserId} onChange={e => setAddUserId(e.target.value)} className={`${selStyle} mb-6`}>
               <option value="">— Sem vínculo por enquanto —</option>
               {profiles.filter(p => p.role === 'vendedor').map(p => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
 
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div className="flex gap-3 mt-2">
               <button
                 onClick={() => { setShowAddModal(false); setAddVendor(null); setAddName(''); setAddM1(''); setAddM2(''); setAddM3(''); setAddUserId('') }}
-                style={{ flex: 1, background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--muted)', fontFamily: 'Syne, sans-serif', fontWeight: 600, fontSize: '0.85rem', padding: '10px', cursor: 'pointer' }}
+                className="flex-1 bg-transparent border border-white/10 rounded-lg text-muted-foreground font-display font-semibold text-sm p-3 cursor-pointer hover:bg-surface-container-high transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={registerAndLink}
                 disabled={addingVendor || (!addVendor && !addName)}
-                style={{ flex: 2, background: 'var(--accent)', color: '#0e0f11', fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.85rem', border: 'none', borderRadius: '8px', padding: '10px', cursor: 'pointer', opacity: (addingVendor || (!addVendor && !addName)) ? 0.6 : 1 }}
+                className={`flex-[2] bg-accent text-bg font-display font-bold text-sm border-none rounded-lg p-3 cursor-pointer transition-opacity ${(addingVendor || (!addVendor && !addName)) ? 'opacity-50' : 'hover:opacity-90'}`}
               >
                 {addingVendor ? 'Salvando...' : 'Registrar Vendedor'}
               </button>

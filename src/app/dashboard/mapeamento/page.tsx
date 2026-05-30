@@ -64,17 +64,19 @@ export default async function MapeamentoPage() {
   ).sort((a, b) => a.vendor_name.localeCompare(b.vendor_name))
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-      <div style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div className="min-h-screen bg-bg">
+      <div className="px-10 py-6 border-b border-white/5 flex items-center justify-between bg-surface-container-high/30">
         <div>
-          <a href="/dashboard" style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textDecoration: 'none' }}>← Voltar ao dashboard</a>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '4px' }}>
-            Mapeamento <span style={{ color: 'var(--accent)' }}>// Vendedor → Usuário</span>
+          <a href="/dashboard" className="text-[11px] font-mono text-muted-foreground hover:text-white transition-colors no-underline">
+            ← Voltar ao dashboard
+          </a>
+          <h1 className="text-2xl font-bold mt-1 font-display-lg tracking-tight">
+            Mapeamento <span className="text-accent font-normal">// Vendedor → Usuário</span>
           </h1>
         </div>
         <LogoutButton />
       </div>
-      <div style={{ padding: '1.5rem 2.5rem' }}>
+      <div className="p-10">
         <MapeamentoClient
           profiles={profiles ?? []}
           vendors={uniqueVendors}
