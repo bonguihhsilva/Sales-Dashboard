@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { redirect, notFound } from 'next/navigation'
 import { fmtCurrency, fmtK, metaLevel, bonusAmount } from '@/lib/utils'
 import { KpiCard, StorePill, ProgressBar, SectionTitle, LogoutButton } from '@/components/ui'
 import ClientsTab from '../../ClientsTab'
@@ -37,7 +37,7 @@ export default async function VendorDetailPage({
 
   const { data: evolution } = await supabase.rpc('vendor_evolution', { p_vendor_id: vendor_id })
 
-  if (!summary) redirect('/dashboard')
+  if (!summary) notFound()
 
   const sold  = Number(summary.total_sold)
   const m1 = Number(summary.meta1), m2 = Number(summary.meta2), m3 = Number(summary.meta3)
