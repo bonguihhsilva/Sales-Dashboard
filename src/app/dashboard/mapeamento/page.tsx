@@ -12,12 +12,24 @@ export default async function MapeamentoPage() {
   // if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role, tenant_id').eq('id', user.id).single()
-  if (!profile || !['adm', 'gerente', 'super_admin'].includes(profile.role)) redirect('/vendedor/meu-resultado')
+  
+  let currentProfile = profile
+  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
+  if (!currentProfile) {
+    currentProfile = { role: jwtRole, tenant_id: user.id }
+  }
+
+  const effectiveRole = currentProfile.role || jwtRole
+  if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) {
+    redirect('/vendedor/meu-resultado')
+  }
+
+  const tenant_id = currentProfile.tenant_id || user.id
 
   const { data: storesData } = await supabase
     .from('stores')
     .select('key, label, color')
-    .eq('tenant_id', profile.tenant_id)
+    .eq('tenant_id', tenant_id)
     .order('label')
 
   const stores = storesData ?? []

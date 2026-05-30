@@ -12,7 +12,17 @@ export default async function MetasPage() {
   // if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['adm', 'gerente', 'super_admin'].includes(profile.role)) redirect('/vendedor/meu-resultado')
+  
+  let currentProfile = profile
+  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
+  if (!currentProfile) {
+    currentProfile = { role: jwtRole }
+  }
+
+  const effectiveRole = currentProfile.role || jwtRole
+  if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) {
+    redirect('/vendedor/meu-resultado')
+  }
 
   const { data: periods } = await supabase.from('periods').select('*').order('id', { ascending: false })
   const { data: goals }   = await supabase.from('goals').select('*').order('vendor_name')
