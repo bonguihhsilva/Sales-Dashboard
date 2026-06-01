@@ -1,13 +1,13 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { getTenantContext } from '@/lib/auth/tenant'
 
 export async function fetchClientHistory(clientId: string) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, profile } = await getTenantContext()
   if (!user) throw new Error('Unauthorized')
 
-  const { data: profile } = await supabase.from('profiles').select('tenant_id').eq('id', user.id).single()
   if (!profile?.tenant_id) throw new Error('Tenant não encontrado')
 
   const { data, error } = await supabase

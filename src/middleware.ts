@@ -11,10 +11,12 @@ const ROLE_RULES: Array<{ prefix: string; allowed: string[] }> = [
   { prefix: '/mural', allowed: ['vendedor', 'adm', 'gerente', 'super_admin'] },
   { prefix: '/perfil', allowed: ['vendedor', 'adm', 'gerente', 'super_admin'] },
   { prefix: '/configuracoes', allowed: ['vendedor', 'adm', 'gerente', 'super_admin'] },
+  { prefix: '/api/admin', allowed: ['adm', 'gerente', 'super_admin'] },
+  { prefix: '/api/vendor', allowed: ['vendedor', 'adm', 'gerente', 'super_admin'] },
 ]
 
 // Rotas publicas - sem auth check. /convite permite acesso sem sessao.
-const PUBLIC_PREFIXES = ['/login', '/convite', '/api']
+const PUBLIC_PREFIXES = ['/login', '/convite', '/api/admin/accept-invite']
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -57,7 +59,6 @@ export async function middleware(request: NextRequest) {
 
   const rule = ROLE_RULES.find(r => pathname.startsWith(r.prefix))
   if (rule && !rule.allowed.includes(role)) {
-    // BYPASS ROLES PARA TESTES
     const url = request.nextUrl.clone()
     url.pathname = role === 'vendedor' ? '/vendedor/meu-resultado' : '/dashboard'
     return NextResponse.redirect(url)

@@ -43,7 +43,7 @@ export default async function VendorDetailPage({
   const activeTab    = sp.tab ?? 'performance'
 
   const { data: summary } = await supabase
-    .from('vendor_summary').select('*').eq('period_id', activePeriod).eq('vendor_id', vendor_id).single()
+    .from('vendor_summary').select('*').eq('period_id', activePeriod).eq('vendor_id', vendor_id).eq('tenant_id', currentProfile?.tenant_id).single()
 
   const { data: evolution } = await supabase.rpc('vendor_evolution', { p_vendor_id: vendor_id })
 
@@ -69,7 +69,7 @@ export default async function VendorDetailPage({
 
   // Ranking position
   const { data: allSummaries } = await supabase
-    .from('vendor_summary').select('vendor_id, total_sold, store').eq('period_id', activePeriod).order('total_sold', { ascending: false })
+    .from('vendor_summary').select('vendor_id, total_sold, store').eq('period_id', activePeriod).eq('tenant_id', currentProfile?.tenant_id).order('total_sold', { ascending: false })
   const rankAll   = (allSummaries ?? []).findIndex(s => s.vendor_id === vendor_id) + 1
   const rankStore = (allSummaries ?? []).filter(s => s.store === summary.store).findIndex(s => s.vendor_id === vendor_id) + 1
 

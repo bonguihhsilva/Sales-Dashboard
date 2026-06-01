@@ -18,8 +18,11 @@ export function ConviteForm({ token }: { token: string }) {
     e.preventDefault()
     setError('')
 
-    if (password.length < 8) {
-      setError('A senha deve ter pelo menos 8 caracteres.')
+    const pwdValid = password && password.length >= 8
+      && /[A-Z]/.test(password)
+      && /[0-9]/.test(password)
+    if (!pwdValid) {
+      setError('A senha deve ter pelo menos 8 caracteres, incluindo uma letra maiúscula e um número.')
       return
     }
     if (password !== confirm) {
@@ -68,6 +71,9 @@ export function ConviteForm({ token }: { token: string }) {
           value={password}
           onChange={e => setPassword(e.target.value)}
         />
+        <p className="text-[10px] text-muted-foreground font-mono mt-1">
+          Mínimo 8 caracteres, uma letra maiúscula e um número.
+        </p>
       </div>
 
       <div className="space-y-1.5">

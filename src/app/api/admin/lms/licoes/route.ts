@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   }
 
   const role = user.app_metadata?.role as string | undefined
-  if (role !== 'adm' && role !== 'gerente') {
+  if (!['adm', 'gerente', 'super_admin'].includes(role || '')) {
     return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
   }
 

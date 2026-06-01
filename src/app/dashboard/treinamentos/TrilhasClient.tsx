@@ -9,7 +9,7 @@ export default function TrilhasClient({ initialTrilhas }: { initialTrilhas: any[
   const [trilhas, setTrilhas] = useState(initialTrilhas)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({ titulo: '', descricao: '', ativo: true })
+  const [formData, setFormData] = useState({ titulo: '', descricao: '', ativa: true })
   const router = useRouter()
 
   async function handleSave(e: React.FormEvent) {
@@ -22,7 +22,7 @@ export default function TrilhasClient({ initialTrilhas }: { initialTrilhas: any[
         throw new Error(res.error)
       }
       setIsModalOpen(false)
-      setFormData({ titulo: '', descricao: '', ativo: true })
+      setFormData({ titulo: '', descricao: '', ativa: true })
       router.refresh()
     } catch (e: any) {
       console.error(e)
@@ -55,7 +55,7 @@ export default function TrilhasClient({ initialTrilhas }: { initialTrilhas: any[
                 <div>
                   <h3 className="text-xl font-bold text-on-surface mb-2 flex items-center gap-3">
                     {trilha.titulo}
-                    {!trilha.ativo && (
+                    {!trilha.ativa && (
                       <span className="text-[0.65rem] font-mono tracking-widest bg-error/10 text-error px-2 py-1 rounded-md uppercase">
                         Inativo
                       </span>
@@ -99,8 +99,8 @@ export default function TrilhasClient({ initialTrilhas }: { initialTrilhas: any[
               <label className="flex items-center gap-3 text-sm text-on-surface-variant cursor-pointer group">
                 <input
                   type="checkbox"
-                  checked={formData.ativo}
-                  onChange={e => setFormData({ ...formData, ativo: e.target.checked })}
+                  checked={formData.ativa}
+                  onChange={e => setFormData({ ...formData, ativa: e.target.checked })}
                   className="w-5 h-5 rounded border-white/20 text-primary focus:ring-primary focus:ring-offset-background bg-background"
                 />
                 Trilha Ativa (visível para vendedores)

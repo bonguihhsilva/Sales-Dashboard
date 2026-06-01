@@ -1,25 +1,15 @@
 export const dynamic = 'force-dynamic'
 
-import { createClient } from '@/lib/supabase/server'
+import { getTenantContext } from '@/lib/auth/tenant'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import RHClient from './RHClient'
 
 export default async function RHPage() {
-  const supabase = await createClient()
-  let { data: { user } } = await supabase.auth.getUser()
+  const { user, profile } = await getTenantContext()
   if (!user) redirect('/login')
-  // if (!user) redirect('/login')
   
-  const { data: profile } = await supabase.from('profiles').select('role, tenant_id').eq('id', user.id).single()
-  
-  let currentProfile = profile
-  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
-  if (!currentProfile) {
-    currentProfile = { role: jwtRole, tenant_id: user.id }
-  }
-
-  const effectiveRole = currentProfile.role || jwtRole
+  const effectiveRole = profile.role
   if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) redirect('/vendedor/meu-resultado')
 
   const admin = createAdminClient()
@@ -28,8 +18,8 @@ export default async function RHPage() {
     .select('id, name, role, ativo')
     .order('name')
 
-  if (effectiveRole !== 'super_admin') {
-    query = query.eq('tenant_id', currentProfile.tenant_id!)
+  if (profile.tenant_id) {
+    query = query.eq('tenant_id', profile.tenant_id)
   }
 
   const { data: profiles } = await query

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { getTenantContext } from '@/lib/auth/tenant'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import RegrasClient from './RegrasClient'
@@ -6,29 +6,12 @@ import RegrasClient from './RegrasClient'
 export const dynamic = 'force-dynamic'
 
 export default async function RegrasComissaoPage() {
-  const supabase = await createClient()
-  let { data: { user } } = await supabase.auth.getUser()
+  const { user, profile } = await getTenantContext()
   if (!user) redirect('/login')
-  // if (!user) redirect('/login')
 
-  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
-  const { data: profile } = await supabase
-    .from('profiles').select('role, name, tenant_id').eq('id', user.id).single()
-  let currentProfile = profile
-  if (!currentProfile) {
-    currentProfile = { role: jwtRole, name: 'Mock', tenant_id: user.id }
-  }
-
-  const effectiveRole = currentProfile.role || jwtRole
-
+  const effectiveRole = profile.role
   if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) {
     redirect('/dashboard')
-  }
-
-  if (!currentProfile.tenant_id) {
-    const adminDb = createAdminClient()
-    await adminDb.from('profiles').update({ tenant_id: user.id }).eq('id', user.id)
-    currentProfile.tenant_id = user.id
   }
 
   // Buscar regras ativas e inativas (admin ve tudo)
@@ -36,7 +19,7 @@ export default async function RegrasComissaoPage() {
   const { data: regras } = await adminDb
     .from('regras_comissao')
     .select('*')
-    .eq('tenant_id', currentProfile.tenant_id!)
+    .eq('tenant_id', profile.tenant_id)
     .order('prioridade', { ascending: true })
     .order('criado_em', { ascending: false })
 

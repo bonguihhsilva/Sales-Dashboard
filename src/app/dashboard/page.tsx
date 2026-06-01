@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getTenantContext } from '@/lib/auth/tenant'
 import { redirect } from 'next/navigation'
 import { fmtCurrency, fmtK, metaLevel, bonusAmount } from '@/lib/utils'
 import { KpiCard, StorePill, ProgressBar, BonusBadge, SectionTitle, LogoutButton } from '@/components/ui'
@@ -21,33 +22,21 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<{ period?: string; store?: string; tab?: string }>
 }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  
+  const { user, profile } = await getTenantContext()
   const adminDb = createAdminClient()
-  let profile = { role: (user?.app_metadata?.role as string | undefined) ?? 'vendedor', name: user?.email?.split('@')[0] || 'Usuário', tenant_id: null as string | null }
 
-  if (!user) redirect('/login')
+  if (profile.role === 'vendedor') redirect('/vendedor/meu-resultado')
 
-  if (user) {
-    const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
-    if (jwtRole === 'vendedor') redirect('/vendedor/meu-resultado')
-
-    const { data: dbProfile } = await supabase
-      .from('profiles').select('role, name, tenant_id').eq('id', user.id).single()
-      
-    if (dbProfile) profile = dbProfile
-
-    // Removido auto-escalonamento para permitir testar outras roles
-
-    if (profile && !profile.tenant_id) {
-      await adminDb.from('profiles').update({ tenant_id: user.id }).eq('id', user.id)
-      profile.tenant_id = user.id
-    }
+  if (profile.role === 'super_admin' && !profile.tenant_id) {
+    redirect('/dashboard/super-admin')
   }
 
   const { data: periods } = await adminDb
-    .from('periods').select('*').order('year', { ascending: false }).order('month', { ascending: false })
+    .from('periods')
+    .select('*')
+    .eq('tenant_id', profile.tenant_id)
+    .order('year', { ascending: false })
+    .order('month', { ascending: false })
 
   const params = await searchParams
   const activePeriod = params.period
@@ -60,21 +49,25 @@ export default async function DashboardPage({
     .from('vendor_summary')
     .select('*')
     .eq('period_id', activePeriod)
+    .eq('tenant_id', profile.tenant_id)
     .order('total_sold', { ascending: false })
 
   const allPeriodIds = (periods ?? []).map(p => p.id)
   const { data: evolutionData } = await adminDb
-    .rpc('store_daily_evolution_multi', { p_period_ids: allPeriodIds })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .rpc('store_daily_evolution_multi', { p_period_ids: allPeriodIds, p_tenant_id: profile.tenant_id } as any)
 
   const { data: allVendorSummaries } = await adminDb
     .from('vendor_summary')
     .select('vendor_id, vendor_name, store, period_id, total_sold, unique_clients, avg_ticket, total_orders')
     .in('period_id', allPeriodIds)
+    .eq('tenant_id', profile.tenant_id)
 
   const { data: allClients } = await adminDb
     .from('client_portfolio')
     .select('*')
     .eq('period_id', activePeriod)
+    .eq('tenant_id', profile.tenant_id)
     .order('total_spent', { ascending: false })
     .limit(2000)
 

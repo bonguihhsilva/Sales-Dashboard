@@ -18,7 +18,22 @@ export default async function SuperAdminPage() {
   }
 
   const adminDb = createAdminClient()
-  const { data: tenants } = await adminDb.from('tenants').select('*').order('nome')
+  const { data: tenantsData } = await adminDb.from('tenants').select('*').order('nome')
+
+  // Get user counts
+  const { data: profiles } = await adminDb.from('profiles').select('tenant_id')
+  
+  const userCounts = (profiles || []).reduce((acc: Record<string, number>, p: any) => {
+    if (p.tenant_id) {
+      acc[p.tenant_id] = (acc[p.tenant_id] || 0) + 1
+    }
+    return acc
+  }, {})
+
+  const tenants = (tenantsData || []).map((t: any) => ({
+    ...t,
+    user_count: userCounts[t.id] || 0
+  }))
 
   return (
     <div style={{ minHeight: '100%', background: 'var(--bg)' }}>

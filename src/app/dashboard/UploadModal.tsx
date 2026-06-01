@@ -2,8 +2,9 @@
 
 import { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { parseSalesHtml, toIsoDate, detectPeriodFromHtml } from '@/lib/parser'
+import { toIsoDate } from '@/lib/parser'
 import type { Period } from '@/types'
+import type { SaleTransaction } from '@/lib/parser'
 
 interface DetectedInfo {
   year: number
@@ -15,7 +16,7 @@ interface DetectedInfo {
   is_new?: boolean
 }
 
-export default function UploadModal({ periods }: { periods: Period[] }) {
+export default function UploadModal({ periods, tenantId }: { periods: Period[], tenantId: string }) {
   const [open, setOpen]           = useState(false)
   const [file, setFile]           = useState<File | null>(null)
   const [mode, setMode]           = useState<'incremental' | 'replace'>('incremental')
@@ -24,6 +25,7 @@ export default function UploadModal({ periods }: { periods: Period[] }) {
   const [status, setStatus]       = useState<'idle' | 'parsing' | 'uploading' | 'done' | 'error'>('idle')
   const [message, setMessage]     = useState('')
   const [stats, setStats]         = useState<{ inserted: number; skipped: number; period: string } | null>(null)
+  const [parsedData, setParsedData] = useState<SaleTransaction[]>([])
   const fileRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
@@ -39,23 +41,34 @@ export default function UploadModal({ periods }: { periods: Period[] }) {
     setDetecting(true)
 
     try {
-      const html  = await f.text()
-      const info  = detectPeriodFromHtml(html)
-      if (!info) {
+      const formData = new FormData()
+      formData.append('file', f)
+
+      const res = await fetch('/api/admin/parse-upload', {
+        method: 'POST',
+        body: formData,
+      })
+      
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+
+      setParsedData(data.transactions)
+
+      if (!data.detected) {
         setMessage('⚠ Não foi possível detectar o período automaticamente.')
         setDetecting(false)
         return
       }
 
-      // Check if period already exists in the list passed from server
+      const info = data.detected
       const existing = periods.find(p => p.year === info.year && p.month === info.month)
       setDetected({
         ...info,
         period_id: existing?.id,
         is_new: !existing,
       })
-    } catch {
-      setMessage('⚠ Erro ao ler o arquivo.')
+    } catch (err: any) {
+      setMessage(`⚠ Erro ao processar o arquivo: ${err.message}`)
     }
     setDetecting(false)
   }
@@ -67,8 +80,7 @@ export default function UploadModal({ periods }: { periods: Period[] }) {
     setMessage('Lendo arquivo...')
 
     try {
-      const html = await file.text()
-      const transactions = parseSalesHtml(html)
+      const transactions = parsedData
       setMessage(`${transactions.length} transações encontradas. Verificando período...`)
       setStatus('uploading')
 
@@ -102,6 +114,7 @@ export default function UploadModal({ periods }: { periods: Period[] }) {
 
       // Build rows — if no goals for a vendor, use name/store from the HTML data itself
       const rows = filteredTransactions.map(t => ({
+        tenant_id:   tenantId,
         period_id:   periodId!,
         vendor_id:   t.vendor_id,
         vendor_name: vendorMap[t.vendor_id]?.name ?? `Vendedor ${t.vendor_id}`,
@@ -122,6 +135,7 @@ export default function UploadModal({ periods }: { periods: Period[] }) {
         const placeholders = newVendorIds.map(vendor_id => {
           const sample = rows.find(r => r.vendor_id === vendor_id)!
           return {
+            tenant_id: tenantId,
             period_id: periodId!,
             vendor_id,
             vendor_name: sample.vendor_name,
@@ -191,7 +205,7 @@ export default function UploadModal({ periods }: { periods: Period[] }) {
         className="bg-primary hover:bg-primary/90 text-on-primary font-bold text-xs px-4 py-[0.6rem] rounded-xl transition-colors flex items-center gap-2 h-full"
       >
         <span className="material-symbols-outlined text-sm">upload_file</span>
-        Upload HTML
+        Upload Relatório
       </button>
 
       {open && (
@@ -199,14 +213,14 @@ export default function UploadModal({ periods }: { periods: Period[] }) {
           <div className="bg-surface border border-white/10 rounded-2xl p-8 w-full max-w-lg shadow-2xl glass-card">
             <h2 className="text-xl font-bold mb-2 text-on-surface">Importar Vendas</h2>
             <p className="text-xs font-mono text-muted-foreground mb-6">
-              O período é detectado automaticamente pelo arquivo HTML.
+              Faça upload de planilhas (XLSX, CSV), Word (DOCX), PDF ou relatórios HTML.
             </p>
 
             {/* File picker */}
-            <label className="block text-[0.65rem] font-mono text-muted-foreground uppercase tracking-wider mb-2">Arquivo HTML</label>
+            <label className="block text-[0.65rem] font-mono text-muted-foreground uppercase tracking-wider mb-2">Arquivo</label>
             <input
               ref={fileRef}
-              type="file" accept=".html,.htm"
+              type="file" accept=".html,.htm,.xlsx,.xls,.csv,.pdf,.docx"
               onChange={handleFileChange}
               className="bg-surface-container border border-white/5 rounded-xl text-on-surface font-mono text-sm px-4 py-3 outline-none w-full mb-4 cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-on-primary hover:file:bg-primary/90 transition-all"
             />

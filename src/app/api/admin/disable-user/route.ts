@@ -1,16 +1,16 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient as createServerClient } from '@/lib/supabase/server'
+import { getTenantContext } from '@/lib/auth/tenant'
 import { canInvite } from '@/lib/auth/roles'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(req: NextRequest) {
-  // Caller: mesmos roles que podem gerir usuarios (adm|gerente|super_admin)
-  const caller = await createServerClient()
-  const { data: { user } } = await caller.auth.getUser()
+  const { user, profile } = await getTenantContext()
+  
   if (!user) {
     return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
   }
-  const callerRole = user.app_metadata?.role as string | undefined
+  const callerRole = profile.role
   if (!canInvite(callerRole)) {
     return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
   }
@@ -25,11 +25,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Voce nao pode desativar a si mesmo' }, { status: 400 })
   }
 
-  const admin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  )
+  const admin = createAdminClient()
+
+  // Prevent disabling users outside caller's tenant
+  if (profile.role !== 'super_admin') {
+    const { data: targetUser } = await admin.from('profiles').select('tenant_id').eq('id', userId).single()
+    if (!targetUser || targetUser.tenant_id !== profile.tenant_id) {
+       return NextResponse.json({ error: 'Usuario nao pertence a esta empresa' }, { status: 403 })
+    }
+  }
 
   // ativo=false -> banir (invalida refresh tokens). ativo=true -> remover ban.
   // O parametro correto do SDK JS e ban_duration string (D-09 / RESEARCH).

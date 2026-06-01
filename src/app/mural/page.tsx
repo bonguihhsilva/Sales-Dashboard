@@ -40,6 +40,7 @@ export default async function MuralPage({
     .from('vendor_summary')
     .select('*')
     .eq('period_id', activePeriod)
+    .eq('tenant_id', profile?.tenant_id)
 
   const { data: dbStores } = await supabase
     .from('stores')

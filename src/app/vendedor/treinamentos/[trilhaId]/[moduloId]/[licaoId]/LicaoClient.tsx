@@ -2,22 +2,21 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { SectionTitle } from '@/components/ui'
+import { markLicaoComplete } from './actions'
 
-export default function LicaoClient({ 
-  licao, 
-  trilhaId, 
-  moduloId, 
-  jaConcluida 
-}: { 
-  licao: any, 
-  trilhaId: string, 
-  moduloId: string, 
-  jaConcluida: boolean 
+export default function LicaoClient({
+  licao,
+  trilhaId,
+  moduloId,
+  jaConcluida
+}: {
+  licao: any,
+  trilhaId: string,
+  moduloId: string,
+  jaConcluida: boolean
 }) {
   const router = useRouter()
-  const supabase = createClient()
   const [loading, setLoading] = useState(false)
 
   const handleConcluir = async () => {
@@ -28,20 +27,7 @@ export default function LicaoClient({
 
     setLoading(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      const { error } = await supabase
-        .from('progresso_usuario')
-        .insert({
-          usuario_id: user.id,
-          licao_id: licao.id,
-          concluida: true,
-          concluida_em: new Date().toISOString()
-        })
-
-      if (error) throw error
-
+      await markLicaoComplete(licao.id, moduloId)
       router.push(`/vendedor/treinamentos/${trilhaId}/${moduloId}`)
       router.refresh()
     } catch (err: any) {
@@ -50,30 +36,31 @@ export default function LicaoClient({
     }
   }
 
-  // licao.conteudo pode ser JSON { texto: '...', video_url: '...' }
-  const conteudo = licao.conteudo || {}
+  // Na tabela aulas, o video_url está em url_midia e o texto em conteudo_texto
+  const videoUrl = licao.url_midia
+  const conteudoTexto = licao.conteudo_texto
 
   return (
     <div style={{ padding: '2rem 2.5rem', maxWidth: '800px', margin: '0 auto' }}>
       <SectionTitle>{licao.titulo}</SectionTitle>
       
       <div style={{ marginTop: '2rem', fontSize: '1rem', lineHeight: '1.6', color: 'var(--text)' }}>
-        {conteudo.video_url && (
+        {videoUrl && (
           <div style={{ marginBottom: '2rem' }}>
             {/* Mock video player se houver URL */}
             <div style={{ width: '100%', aspectRatio: '16/9', background: 'var(--surface2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border)' }}>
-              <span style={{ color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>Video Player: {conteudo.video_url}</span>
+              <span style={{ color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>Video Player: {videoUrl}</span>
             </div>
           </div>
         )}
         
-        {conteudo.texto && (
+        {conteudoTexto && (
           <div style={{ whiteSpace: 'pre-wrap' }}>
-            {conteudo.texto}
+            {conteudoTexto}
           </div>
         )}
 
-        {!conteudo.video_url && !conteudo.texto && (
+        {!videoUrl && !conteudoTexto && (
           <p style={{ color: 'var(--muted)' }}>Conteúdo da lição em construção.</p>
         )}
       </div>

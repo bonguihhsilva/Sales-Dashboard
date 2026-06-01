@@ -19,19 +19,19 @@ export default async function LicaoPage({ params }: { params: Promise<{ trilhaId
     .from('modulos').select('titulo').eq('id', moduloId).single()
     
   const { data: licao } = await supabase
-    .from('licoes').select('*').eq('id', licaoId).single()
+    .from('aulas').select('*').eq('id', licaoId).single()
     
   if (!licao) redirect(`/vendedor/treinamentos/${trilhaId}/${moduloId}`)
 
   // Verifica se já concluiu
   const { data: progresso } = await supabase
-    .from('progresso_usuario')
-    .select('concluida')
+    .from('progresso_aulas')
+    .select('id')
     .eq('usuario_id', userId)
-    .eq('licao_id', licaoId)
+    .eq('aula_id', licaoId)
     .maybeSingle()
 
-  const jaConcluida = !!progresso?.concluida
+  const jaConcluida = !!progresso
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>

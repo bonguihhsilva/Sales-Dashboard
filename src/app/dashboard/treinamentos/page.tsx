@@ -1,43 +1,75 @@
-import { createClient } from '@/lib/supabase/server'
+import { getTenantContext } from '@/lib/auth/tenant'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { SectionTitle } from '@/components/ui'
-import TrilhasClient from './TrilhasClient'
+import AdminLmsClient from './AdminLmsClient'
 
 export const dynamic = 'force-dynamic'
 
 export default async function TreinamentosAdminPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, profile } = await getTenantContext()
+  if (!user) redirect('/login')
 
-  if (user) {
-    const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
-    if (jwtRole === 'vendedor') redirect('/vendedor/treinamentos')
+  const effectiveRole = profile.role || 'vendedor'
+  if (effectiveRole === 'vendedor') {
+    redirect('/vendedor/treinamentos')
   }
 
-  // Buscar trilhas
-  const { data: trilhas } = await supabase
+  const tenantId = profile.tenant_id
+  const adminDb = createAdminClient()
+
+  // 1. Fetch trilhas
+  const { data: trilhas } = await adminDb
     .from('trilhas')
     .select('*')
-    .order('ordem', { ascending: true })
+    .eq('tenant_id', tenantId)
+    .order('created_at', { ascending: true })
+
+  // 2. Fetch modulos
+  let modulosQuery = adminDb.from('modulos').select('*').order('ordem')
+  if (tenantId) modulosQuery = modulosQuery.eq('tenant_id', tenantId)
+  const { data: modulos } = await modulosQuery
+
+  // 3. Fetch aulas
+  let aulasQuery = adminDb.from('aulas').select('*').order('ordem')
+  if (tenantId) aulasQuery = aulasQuery.eq('tenant_id', tenantId)
+  const { data: aulas } = await aulasQuery
+
+  // 4. Fetch quizzes
+  let quizzesQuery = adminDb.from('quizzes').select('*').order('id')
+  if (tenantId) quizzesQuery = quizzesQuery.eq('tenant_id', tenantId)
+  const { data: quizzes } = await quizzesQuery
+
+  // 5. Fetch provas
+  let provasQuery = adminDb.from('provas').select('*').order('id')
+  if (tenantId) provasQuery = provasQuery.eq('tenant_id', tenantId)
+  const { data: provas } = await provasQuery
+
+  // 6. Fetch questoes_prova
+  let questoesQuery = adminDb.from('questoes_prova').select('*').order('id')
+  if (tenantId) questoesQuery = questoesQuery.eq('tenant_id', tenantId)
+  const { data: questoesProva } = await questoesQuery
+
+  const tenantTrilhaIds = new Set((trilhas || []).map(t => t.id))
+  
+  const filteredModulos = (modulos || []).filter(m => tenantTrilhaIds.has(m.trilha_id))
+  const tenantModuloIds = new Set(filteredModulos.map(m => m.id))
+
+  const filteredAulas = (aulas || []).filter(a => tenantModuloIds.has(a.modulo_id))
+  const filteredQuizzes = (quizzes || []).filter(q => filteredAulas.some(a => a.id === q.aula_id))
+  
+  const filteredProvas = (provas || []).filter(p => tenantModuloIds.has(p.modulo_id))
+  const filteredQuestoesProva = (questoesProva || []).filter(qp => filteredProvas.some(p => p.id === qp.prova_id))
 
   return (
-    <div className="min-h-full bg-background flex flex-col p-margin-page">
-      {/* Hero Header */}
-      <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="font-display-lg text-display-lg text-on-surface mb-2">
-            Gestão de Treinamentos (LMS)
-          </h1>
-          <p className="text-on-surface-variant max-w-2xl">
-            Gerencie as trilhas, módulos e aulas do Sales Learning Center.
-          </p>
-        </div>
-      </div>
-
-      <div className="flex-1">
-        <TrilhasClient initialTrilhas={trilhas || []} />
-      </div>
+    <div className="min-h-full bg-background flex flex-col p-0">
+      <AdminLmsClient 
+        initialTrilhas={trilhas || []} 
+        initialModulos={filteredModulos} 
+        initialAulas={filteredAulas} 
+        initialQuizzes={filteredQuizzes} 
+        initialProvas={filteredProvas}
+        initialQuestoesProva={filteredQuestoesProva}
+      />
     </div>
   )
 }

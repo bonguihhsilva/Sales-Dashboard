@@ -2,6 +2,8 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 
+import { sanitizeString } from '@/lib/sanitize'
+
 export async function POST(req: NextRequest) {
   const caller = await createServerClient()
   const { data: { user } } = await caller.auth.getUser()
@@ -10,7 +12,14 @@ export async function POST(req: NextRequest) {
   const { data: profile } = await caller.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'adm') return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
-  const { email, password, name, role, vendor_id, store } = await req.json()
+  const body = await req.json()
+  const email = body.email
+  const password = body.password
+  const name = sanitizeString(body.name || '')
+  const role = body.role ? sanitizeString(body.role) : undefined
+  const vendor_id = body.vendor_id ? sanitizeString(body.vendor_id) : undefined
+  const store = body.store ? sanitizeString(body.store) : undefined
+
   if (!email || !password || !name) {
     return NextResponse.json({ error: 'Campos obrigatórios: email, password, name' }, { status: 400 })
   }

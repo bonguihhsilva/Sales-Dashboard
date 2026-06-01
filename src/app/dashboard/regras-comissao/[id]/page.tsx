@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { getTenantContext } from '@/lib/auth/tenant'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { LogoutButton } from '@/components/ui'
@@ -7,26 +7,15 @@ import RegraFormClient from '../RegraFormClient'
 export const dynamic = 'force-dynamic'
 
 export default async function EditarRegraPage({ params }: { params: Promise<{ id: string }> }) {
-  const supabase = await createClient()
-  let { data: { user } } = await supabase.auth.getUser()
+  const { user, profile } = await getTenantContext()
   if (!user) redirect('/login')
-  // if (!user) redirect('/login')
 
-  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
-  const { data: profile } = await supabase
-    .from('profiles').select('role, name, tenant_id').eq('id', user.id).single()
-  
-  const effectiveRole = profile?.role || jwtRole
+  const effectiveRole = profile.role
   if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) {
     redirect('/dashboard')
   }
 
-  let finalTenant = profile?.tenant_id
-  if (!finalTenant) {
-    const adminDb = createAdminClient()
-    await adminDb.from('profiles').update({ tenant_id: user.id }).eq('id', user.id)
-    finalTenant = user.id
-  }
+  let finalTenant = profile.tenant_id
 
   const { id } = await params
   const adminDb = createAdminClient()

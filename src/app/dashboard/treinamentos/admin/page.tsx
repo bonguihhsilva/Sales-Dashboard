@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
+import { getTenantContext } from '@/lib/auth/tenant'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { LogoutButton } from '@/components/ui'
 import AdminLmsClient from './AdminLmsClient'
@@ -6,58 +7,59 @@ import AdminLmsClient from './AdminLmsClient'
 export const dynamic = 'force-dynamic'
 
 export default async function AdminLmsPage() {
-  const supabase = await createClient()
-  let { data: { user } } = await supabase.auth.getUser()
+  const { user, profile } = await getTenantContext()
   if (!user) redirect('/login')
-  // if (!user) redirect('/login')
 
-  const { data: profile } = await supabase.from('profiles').select('role, tenant_id').eq('id', user.id).single()
-  
-  let currentProfile = profile
-  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
-  if (!currentProfile) {
-    currentProfile = { role: jwtRole, tenant_id: user.id }
-  }
-
-  const effectiveRole = currentProfile.role || jwtRole
+  const effectiveRole = profile.role || 'vendedor'
   if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) {
     redirect('/dashboard/treinamentos')
   }
 
-  // 1. Fetch trilhas for this tenant
-  const { data: trilhas } = await supabase
+  const tenantId = profile.tenant_id
+  const adminDb = createAdminClient()
+
+  // 1. Fetch trilhas
+  const { data: trilhas } = await adminDb
     .from('trilhas')
     .select('*')
-    .eq('tenant_id', currentProfile.tenant_id)
-    .order('ordem')
+    .eq('tenant_id', tenantId)
+    .order('created_at', { ascending: true })
 
   // 2. Fetch modulos
-  const { data: modulos } = await supabase
-    .from('modulos')
-    .select('*')
-    .order('ordem')
+  let modulosQuery = adminDb.from('modulos').select('*').order('ordem')
+  if (tenantId) modulosQuery = modulosQuery.eq('tenant_id', tenantId)
+  const { data: modulos } = await modulosQuery
 
-  // 3. Fetch licoes
-  const { data: licoes } = await supabase
-    .from('licoes')
-    .select('*')
-    .order('ordem')
+  // 3. Fetch aulas
+  let aulasQuery = adminDb.from('aulas').select('*').order('ordem')
+  if (tenantId) aulasQuery = aulasQuery.eq('tenant_id', tenantId)
+  const { data: aulas } = await aulasQuery
 
-  // 4. Fetch questoes
-  const { data: questoes } = await supabase
-    .from('quiz_questoes')
-    .select('*')
-    .order('id')
+  // 4. Fetch quizzes
+  let quizzesQuery = adminDb.from('quizzes').select('*').order('id')
+  if (tenantId) quizzesQuery = quizzesQuery.eq('tenant_id', tenantId)
+  const { data: quizzes } = await quizzesQuery
 
-  // We filter modulos, licoes, and questoes on the client or here.
-  // Since we only want them for the tenant's trilhas:
+  // 5. Fetch provas
+  let provasQuery = adminDb.from('provas').select('*').order('id')
+  if (tenantId) provasQuery = provasQuery.eq('tenant_id', tenantId)
+  const { data: provas } = await provasQuery
+
+  // 6. Fetch questoes_prova
+  let questoesQuery = adminDb.from('questoes_prova').select('*').order('id')
+  if (tenantId) questoesQuery = questoesQuery.eq('tenant_id', tenantId)
+  const { data: questoesProva } = await questoesQuery
+
   const tenantTrilhaIds = new Set((trilhas || []).map(t => t.id))
   
   const filteredModulos = (modulos || []).filter(m => tenantTrilhaIds.has(m.trilha_id))
   const tenantModuloIds = new Set(filteredModulos.map(m => m.id))
 
-  const filteredLicoes = (licoes || []).filter(l => tenantModuloIds.has(l.modulo_id))
-  const filteredQuestoes = (questoes || []).filter(q => tenantModuloIds.has(q.modulo_id))
+  const filteredAulas = (aulas || []).filter(a => tenantModuloIds.has(a.modulo_id))
+  const filteredQuizzes = (quizzes || []).filter(q => filteredAulas.some(a => a.id === q.aula_id))
+  
+  const filteredProvas = (provas || []).filter(p => tenantModuloIds.has(p.modulo_id))
+  const filteredQuestoesProva = (questoesProva || []).filter(qp => filteredProvas.some(p => p.id === qp.prova_id))
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
@@ -74,12 +76,12 @@ export default async function AdminLmsPage() {
         <AdminLmsClient 
           initialTrilhas={trilhas || []} 
           initialModulos={filteredModulos} 
-          initialLicoes={filteredLicoes} 
-          initialQuestoes={filteredQuestoes} 
+          initialAulas={filteredAulas} 
+          initialQuizzes={filteredQuizzes} 
+          initialProvas={filteredProvas}
+          initialQuestoesProva={filteredQuestoesProva}
         />
       </div>
     </div>
   )
 }
-
-

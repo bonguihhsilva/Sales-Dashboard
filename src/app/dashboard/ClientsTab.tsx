@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getTenantContext } from '@/lib/auth/tenant'
 import { fmtCurrency, recencyColor, recencyLabel } from '@/lib/utils'
 
 export default async function ClientsTab({
@@ -8,12 +9,14 @@ export default async function ClientsTab({
   periodId: number
   vendorId: string | null
 }) {
-  const supabase = await createClient()
+  const { profile } = await getTenantContext()
+  const admin = createAdminClient()
 
-  let query = supabase
+  let query = admin
     .from('client_portfolio')
     .select('*')
     .eq('period_id', periodId)
+    .eq('tenant_id', profile.tenant_id)
     .order('total_spent', { ascending: false })
     .limit(500)
 

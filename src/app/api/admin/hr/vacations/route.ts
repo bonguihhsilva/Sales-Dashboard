@@ -6,8 +6,10 @@ export async function GET() {
   const caller = await createServerClient()
   const { data: { user } } = await caller.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-  const { data: profile } = await caller.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'adm') return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+  const { data: profile } = await caller.from('profiles').select('role, tenant_id').eq('id', user.id).single()
+  if (!profile || !['adm', 'gerente', 'super_admin'].includes(profile.role)) {
+    return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+  }
 
   const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,14 +17,18 @@ export async function GET() {
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 
+  const { data: employees } = await caller.from('profiles').select('id').eq('tenant_id', profile.tenant_id)
+  const uids = (employees ?? []).map(e => e.id)
+
   const { data, error } = await admin
     .from('hr_vacations')
     .select('*, profiles!user_id(name)')
+    .in('user_id', uids)
     .order('start_date', { ascending: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-  const rows = (data ?? []).map((row: Record<string, unknown> & { profiles?: { name?: string } }) => ({
+  const rows = (data ?? []).map((row: any) => ({
     ...row,
     user_name: row.profiles?.name ?? '',
     profiles: undefined,
@@ -35,8 +41,10 @@ export async function POST(req: NextRequest) {
   const caller = await createServerClient()
   const { data: { user } } = await caller.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-  const { data: profile } = await caller.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'adm') return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+  const { data: profile } = await caller.from('profiles').select('role, tenant_id').eq('id', user.id).single()
+  if (!profile || !['adm', 'gerente', 'super_admin'].includes(profile.role)) {
+    return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+  }
 
   const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -50,6 +58,12 @@ export async function POST(req: NextRequest) {
     end_date: string
     notes?: string
   } = await req.json()
+
+  // Validar se o funcionário pertence ao mesmo tenant
+  const { data: employeeProfile } = await caller.from('profiles').select('tenant_id').eq('id', body.user_id).single()
+  if (!employeeProfile || employeeProfile.tenant_id !== profile.tenant_id) {
+    return NextResponse.json({ error: 'Funcionário não pertence à sua organização' }, { status: 403 })
+  }
 
   const { data: vacation, error } = await admin
     .from('hr_vacations')
@@ -66,3 +80,4 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json(vacation)
 }
+

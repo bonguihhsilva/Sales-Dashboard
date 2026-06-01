@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { TenantSwitcher } from './TenantSwitcher'
 
-export function TopNavBar({ name, role = 'super_admin' }: { name: string, role?: string }) {
+export function TopNavBar({ name, role = 'super_admin', tenants = [], activeTenantId }: { name: string, role?: string, tenants?: any[], activeTenantId?: string | null }) {
   const pathname = usePathname()
 
   return (
@@ -21,6 +22,11 @@ export function TopNavBar({ name, role = 'super_admin' }: { name: string, role?:
       </div>
       <div className="flex items-center gap-stack-md">
         <button className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-all p-2 rounded-full hover:bg-white/5 active:scale-95">notifications</button>
+        {role === 'super_admin' && (
+          <div className="mr-4 border-r border-border pr-4">
+            <TenantSwitcher tenants={tenants} activeTenantId={activeTenantId} />
+          </div>
+        )}
         <Link href="/configuracoes">
           <button className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-all p-2 rounded-full hover:bg-white/5 active:scale-95">settings</button>
         </Link>

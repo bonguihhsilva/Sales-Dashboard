@@ -1,56 +1,37 @@
 'use server'
 import { redirect } from 'next/navigation'
-
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
+import { getTenantContext } from '@/lib/auth/tenant'
+
 async function checkAuth() {
-  const supabase = await createClient()
-  let { data: { user } } = await supabase.auth.getUser()
-  
+  const { user, profile } = await getTenantContext()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase.from('profiles').select('role, tenant_id').eq('id', user.id).single()
-  
-  let currentProfile = profile
-  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
-  if (!currentProfile) {
-    currentProfile = { role: jwtRole, tenant_id: user.id }
-  }
-
-  const effectiveRole = currentProfile.role || jwtRole
+  const effectiveRole = profile.role || 'vendedor'
   if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) {
     throw new Error('Acesso negado')
   }
-  if (!currentProfile.tenant_id) {
-    throw new Error('Tenant não encontrado')
+  if (!profile.tenant_id) {
+    throw new Error('Tenant não encontrado (selecione uma empresa no topo se for Super Admin)')
   }
-  return { user, profile: currentProfile }
+  return { user, profile }
 }
 
 // --- TRILHAS ---
-export async function createTrilhaAction(data: { titulo: string; descricao: string; ativo: boolean }) {
+export async function createTrilhaAction(data: { titulo: string; descricao: string; ativa: boolean }) {
   try {
-    const { profile, user } = await checkAuth()
+    const { profile } = await checkAuth()
     const adminDb = createAdminClient()
-    
-    const tenantId = profile.tenant_id || user.id
-    
-    const { data: maxOrdemData } = await adminDb
-      .from('trilhas')
-      .select('ordem')
-      .eq('tenant_id', tenantId)
-      .order('ordem', { ascending: false })
-      .limit(1)
-    const ordem = maxOrdemData && maxOrdemData.length > 0 ? maxOrdemData[0].ordem + 1 : 1
+    const tenantId = profile.tenant_id
 
     const { error } = await adminDb
       .from('trilhas')
-      .insert({ ...data, ordem, tenant_id: tenantId })
+      .insert({ ...data, tenant_id: tenantId })
       
     if (error) throw new Error(error.message)
-    revalidatePath('/dashboard/treinamentos')
     revalidatePath('/dashboard/treinamentos/admin')
     return { success: true }
   } catch (e: any) {
@@ -59,7 +40,7 @@ export async function createTrilhaAction(data: { titulo: string; descricao: stri
   }
 }
 
-export async function updateTrilhaAction(id: number, data: { titulo: string; descricao: string; ativo: boolean }) {
+export async function updateTrilhaAction(id: string, data: { titulo?: string; descricao?: string; ativa?: boolean }) {
   const { profile } = await checkAuth()
   const adminDb = createAdminClient()
   const { error } = await adminDb
@@ -71,7 +52,7 @@ export async function updateTrilhaAction(id: number, data: { titulo: string; des
   revalidatePath('/dashboard/treinamentos/admin')
 }
 
-export async function deleteTrilhaAction(id: number) {
+export async function deleteTrilhaAction(id: string) {
   const { profile } = await checkAuth()
   const adminDb = createAdminClient()
   const { error } = await adminDb
@@ -84,101 +65,113 @@ export async function deleteTrilhaAction(id: number) {
 }
 
 // --- MÓDULOS ---
-export async function createModuloAction(data: { trilha_id: number; titulo: string; descricao: string; xp_reward: number }) {
-  await checkAuth()
+export async function createModuloAction(data: { trilha_id: string; titulo: string; descricao: string; ordem: number }) {
+  const { profile } = await checkAuth()
   const adminDb = createAdminClient()
   
-  const { data: maxOrdemData } = await adminDb
-    .from('modulos')
-    .select('ordem')
-    .eq('trilha_id', data.trilha_id)
-    .order('ordem', { ascending: false })
-    .limit(1)
-  const ordem = maxOrdemData && maxOrdemData.length > 0 ? maxOrdemData[0].ordem + 1 : 1
-
   const { error } = await adminDb
     .from('modulos')
-    .insert({ ...data, ordem })
+    .insert({ ...data, tenant_id: profile.tenant_id })
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard/treinamentos/admin')
 }
 
-export async function updateModuloAction(id: number, data: { titulo: string; descricao: string; xp_reward: number }) {
-  await checkAuth()
+export async function updateModuloAction(id: string, data: { titulo?: string; descricao?: string; ordem?: number }) {
+  const { profile } = await checkAuth()
   const adminDb = createAdminClient()
-  const { error } = await adminDb.from('modulos').update(data).eq('id', id)
+  const { error } = await adminDb.from('modulos').update(data).eq('id', id).eq('tenant_id', profile.tenant_id)
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard/treinamentos/admin')
 }
 
-export async function deleteModuloAction(id: number) {
-  await checkAuth()
+export async function deleteModuloAction(id: string) {
+  const { profile } = await checkAuth()
   const adminDb = createAdminClient()
-  const { error } = await adminDb.from('modulos').delete().eq('id', id)
+  const { error } = await adminDb.from('modulos').delete().eq('id', id).eq('tenant_id', profile.tenant_id)
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard/treinamentos/admin')
 }
 
-// --- LIÇÕES ---
-export async function createLicaoAction(data: { modulo_id: number; titulo: string; conteudo: string; video_url: string }) {
-  await checkAuth()
+// --- AULAS ---
+export async function createAulaAction(data: { modulo_id: string; titulo: string; tipo_conteudo: string; url_midia: string; conteudo_texto: string; ordem: number }) {
+  const { profile } = await checkAuth()
   const adminDb = createAdminClient()
-  
-  const { data: maxOrdemData } = await adminDb
-    .from('licoes')
-    .select('ordem')
-    .eq('modulo_id', data.modulo_id)
-    .order('ordem', { ascending: false })
-    .limit(1)
-  const ordem = maxOrdemData && maxOrdemData.length > 0 ? maxOrdemData[0].ordem + 1 : 1
 
   const { error } = await adminDb
-    .from('licoes')
-    .insert({ ...data, ordem })
+    .from('aulas')
+    .insert({ ...data, tenant_id: profile.tenant_id })
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard/treinamentos/admin')
 }
 
-export async function updateLicaoAction(id: number, data: { titulo: string; conteudo: string; video_url: string }) {
-  await checkAuth()
+export async function updateAulaAction(id: string, data: { titulo?: string; tipo_conteudo?: string; url_midia?: string; conteudo_texto?: string; ordem?: number }) {
+  const { profile } = await checkAuth()
   const adminDb = createAdminClient()
-  const { error } = await adminDb.from('licoes').update(data).eq('id', id)
+  const { error } = await adminDb.from('aulas').update(data).eq('id', id).eq('tenant_id', profile.tenant_id)
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard/treinamentos/admin')
 }
 
-export async function deleteLicaoAction(id: number) {
-  await checkAuth()
+export async function deleteAulaAction(id: string) {
+  const { profile } = await checkAuth()
   const adminDb = createAdminClient()
-  const { error } = await adminDb.from('licoes').delete().eq('id', id)
+  const { error } = await adminDb.from('aulas').delete().eq('id', id).eq('tenant_id', profile.tenant_id)
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard/treinamentos/admin')
 }
 
-// --- QUESTÕES ---
-export async function createQuestaoAction(data: { modulo_id: number; pergunta: string; opcao_a: string; opcao_b: string; opcao_c: string; opcao_d: string; resposta_correta: string; explicacao: string }) {
-  await checkAuth()
+// --- QUIZZES ---
+export async function createQuizAction(data: { aula_id: string; pergunta: string; opcoes: string[]; indice_correta: number }) {
+  const { profile } = await checkAuth()
   const adminDb = createAdminClient()
   const { error } = await adminDb
-    .from('quiz_questoes')
-    .insert(data)
+    .from('quizzes')
+    .insert({ ...data, tenant_id: profile.tenant_id })
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard/treinamentos/admin')
 }
 
-export async function updateQuestaoAction(id: number, data: { pergunta: string; opcao_a: string; opcao_b: string; opcao_c: string; opcao_d: string; resposta_correta: string; explicacao: string }) {
-  await checkAuth()
+export async function deleteQuizAction(id: string) {
+  const { profile } = await checkAuth()
   const adminDb = createAdminClient()
-  const { error } = await adminDb.from('quiz_questoes').update(data).eq('id', id)
+  const { error } = await adminDb.from('quizzes').delete().eq('id', id).eq('tenant_id', profile.tenant_id)
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard/treinamentos/admin')
 }
 
-export async function deleteQuestaoAction(id: number) {
-  await checkAuth()
+// --- PROVAS E QUESTÕES ---
+export async function createProvaAction(data: { modulo_id: string; titulo: string; nota_minima: number }) {
+  const { profile } = await checkAuth()
   const adminDb = createAdminClient()
-  const { error } = await adminDb.from('quiz_questoes').delete().eq('id', id)
+  const { error } = await adminDb
+    .from('provas')
+    .insert({ ...data, tenant_id: profile.tenant_id })
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard/treinamentos/admin')
 }
 
+export async function deleteProvaAction(id: string) {
+  const { profile } = await checkAuth()
+  const adminDb = createAdminClient()
+  const { error } = await adminDb.from('provas').delete().eq('id', id).eq('tenant_id', profile.tenant_id)
+  if (error) throw new Error(error.message)
+  revalidatePath('/dashboard/treinamentos/admin')
+}
+
+export async function createQuestaoProvaAction(data: { prova_id: string; pergunta: string; opcoes: string[]; indice_correta: number }) {
+  const { profile } = await checkAuth()
+  const adminDb = createAdminClient()
+  const { error } = await adminDb
+    .from('questoes_prova')
+    .insert({ ...data, tenant_id: profile.tenant_id })
+  if (error) throw new Error(error.message)
+  revalidatePath('/dashboard/treinamentos/admin')
+}
+
+export async function deleteQuestaoProvaAction(id: string) {
+  const { profile } = await checkAuth()
+  const adminDb = createAdminClient()
+  const { error } = await adminDb.from('questoes_prova').delete().eq('id', id).eq('tenant_id', profile.tenant_id)
+  if (error) throw new Error(error.message)
+  revalidatePath('/dashboard/treinamentos/admin')
+}

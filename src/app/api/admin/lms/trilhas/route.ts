@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
   const { data: profile } = await supabase.from('profiles').select('role, tenant_id').eq('id', user.id).single()
   const role = profile?.role
-  if (role !== 'adm' && role !== 'gerente') {
+  if (!['adm', 'gerente', 'super_admin'].includes(role || '')) {
     return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
   }
   if (!profile?.tenant_id) {

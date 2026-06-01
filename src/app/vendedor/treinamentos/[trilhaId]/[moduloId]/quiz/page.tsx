@@ -19,40 +19,49 @@ export default async function QuizPage({ params }: { params: Promise<{ trilhaId:
     .from('modulos').select('titulo').eq('id', moduloId).single()
   if (!modulo) redirect(`/vendedor/treinamentos/${trilhaId}`)
 
-  // Verificar se o usuário completou as lições deste módulo
-  const { data: licoes } = await supabase
-    .from('licoes').select('id').eq('modulo_id', moduloId)
+  // Verificar se o usuário completou as aulas deste módulo
+  const { data: aulas } = await supabase
+    .from('aulas').select('id').eq('modulo_id', moduloId)
   
   const { data: progresso } = await supabase
-    .from('progresso_usuario')
-    .select('licao_id')
+    .from('progresso_aulas')
+    .select('aula_id')
     .eq('usuario_id', userId)
-    .eq('concluida', true)
   
-  const licoesIds = new Set(licoes?.map(l => l.id) || [])
-  const concluidas = new Set(progresso?.map(p => p.licao_id) || [])
+  const aulasIds = new Set(aulas?.map(a => a.id) || [])
+  const concluidas = new Set(progresso?.map(p => p.aula_id) || [])
   
-  const allDone = Array.from(licoesIds).every(id => concluidas.has(id))
+  const allDone = Array.from(aulasIds).every(id => concluidas.has(id))
   
   if (!allDone) {
     redirect(`/vendedor/treinamentos/${trilhaId}/${moduloId}`) // Bloqueado, precisa fazer as lições
   }
 
-  // Buscar resultado anterior se houver
+  // Buscar resultado anterior se houver na tabela progresso_modulos
   const { data: quizResult } = await supabase
-    .from('quiz_resultados')
-    .select('pontuacao, aprovado')
+    .from('progresso_modulos')
+    .select('nota_prova, aprovado')
     .eq('usuario_id', userId)
     .eq('modulo_id', moduloId)
-    .order('criado_em', { ascending: false })
-    .limit(1)
     .maybeSingle()
 
-  const { data: questoes } = await supabase
-    .from('quiz_questoes')
-    .select('*')
+  // Buscar prova do módulo
+  const { data: prova } = await supabase
+    .from('provas')
+    .select('id')
     .eq('modulo_id', moduloId)
-    .order('ordem', { ascending: true })
+    .maybeSingle()
+
+  // Buscar questões da prova
+  let questoes: any[] = []
+  if (prova) {
+    const { data } = await supabase
+      .from('questoes_prova')
+      .select('*')
+      .eq('prova_id', prova.id)
+      .order('id', { ascending: true })
+    questoes = data || []
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
@@ -81,7 +90,7 @@ export default async function QuizPage({ params }: { params: Promise<{ trilhaId:
             questoes={questoes} 
             trilhaId={trilhaId} 
             moduloId={moduloId} 
-            quizResult={quizResult?.aprovado ? quizResult : null} // Passa resultado se já aprovado
+            quizResult={quizResult?.aprovado ? { pontuacao: Number(quizResult.nota_prova), aprovado: quizResult.aprovado } : null} 
           />
         )}
       </div>

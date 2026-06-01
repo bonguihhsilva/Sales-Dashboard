@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient as createServerClient } from '@/lib/supabase/server'
+import { getTenantContext } from '@/lib/auth/tenant'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function GET(req: NextRequest) {
   // Auth check
-  const caller = await createServerClient()
-  const { data: { user } } = await caller.auth.getUser()
+  const { user, profile } = await getTenantContext()
   if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-  const { data: profile } = await caller.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'adm') return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+  
+  if (!['adm', 'gerente', 'super_admin'].includes(profile?.role || '')) {
+    return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+  }
 
   const { searchParams } = new URL(req.url)
   const periodId = searchParams.get('period') ?? '1'
@@ -16,41 +17,76 @@ export async function GET(req: NextRequest) {
   const admin = createAdminClient()
 
   // Fetch vendor summary with goals — only registered vendors
-  const { data: summary } = await admin
+  let summaryQuery = admin
     .from('vendor_summary')
     .select('vendor_id, vendor_name, store, total_sold, meta1, meta2, meta3, bonus1, bonus2, bonus3, bonus_earned, commission_pct')
     .eq('period_id', parseInt(periodId))
     .order('total_sold', { ascending: false })
 
+  if (profile.tenant_id) {
+    summaryQuery = summaryQuery.eq('tenant_id', profile.tenant_id)
+  }
+  const { data: summary } = await summaryQuery
+
   const { data: period } = await admin
     .from('periods')
-    .select('label')
+    .select('label, tenant_id')
     .eq('id', parseInt(periodId))
     .single()
 
+  if (!period || (profile.tenant_id && period.tenant_id !== profile.tenant_id)) {
+    return NextResponse.json({ error: 'Período inválido ou não pertencente à sua organização' }, { status: 403 })
+  }
+
   // Filter only registered vendors (have goals)
-  const { data: goalVendors } = await admin
+  let goalQuery = admin
     .from('goals')
     .select('vendor_id')
     .eq('period_id', parseInt(periodId))
+
+  if (profile.tenant_id) {
+    goalQuery = goalQuery.eq('tenant_id', profile.tenant_id)
+  }
+  const { data: goalVendors } = await goalQuery
   const goalIds = new Set((goalVendors ?? []).map(g => g.vendor_id))
   const vendors = (summary ?? []).filter(v => goalIds.has(v.vendor_id))
 
   // Build CSV (we'll convert to Excel on client side)
   // Get comissoes_calculadas to use the source of truth if available
-  const { data: comissoesCalc } = await admin
+  let comissoesQuery = admin
     .from('comissoes_calculadas')
     .select('vendedor_id, comissao_base, bonus_total, total, aprovado')
     .eq('periodo_id', parseInt(periodId))
 
+  if (profile.tenant_id) {
+    comissoesQuery = comissoesQuery.eq('tenant_id', profile.tenant_id)
+  }
+  const { data: comissoesCalc } = await comissoesQuery
+
   const calcMap = new Map(comissoesCalc?.map(c => [c.vendedor_id, c]) || [])
 
   // Fetch profiles to map vendor_id (string) to id (uuid)
-  const { data: profiles } = await admin
+  let profilesQuery = admin
     .from('profiles')
     .select('id, vendor_id')
 
+  if (profile.tenant_id) {
+    profilesQuery = profilesQuery.eq('tenant_id', profile.tenant_id)
+  }
+  const { data: profiles } = await profilesQuery
+
   const profileMap = new Map(profiles?.map(p => [p.vendor_id, p.id]) || [])
+
+  // Função para evitar CSV/Formula Injection
+  const sanitizeCSV = (val: string | null | undefined): string => {
+    if (!val) return ''
+    const cleanVal = val.trim()
+    const specialChars = ['=', '+', '-', '@', '\t', '\r', '\n']
+    if (specialChars.some(char => cleanVal.startsWith(char))) {
+      return `'${cleanVal}`
+    }
+    return cleanVal
+  }
 
   return NextResponse.json({
     period: period?.label ?? `Período ${periodId}`,
@@ -71,8 +107,8 @@ export async function GET(req: NextRequest) {
       const totalEarning = calc ? Number(calc.total) : (commission + bonus)
       
       return {
-        nome:         v.vendor_name,
-        loja:         v.store,
+        nome:         sanitizeCSV(v.vendor_name),
+        loja:         sanitizeCSV(v.store),
         total_vendido: sold,
         comissao_pct: commPct,
         comissao:     commission,

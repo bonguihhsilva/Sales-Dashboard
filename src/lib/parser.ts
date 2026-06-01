@@ -61,7 +61,7 @@ export function toIsoDate(ddmmyy: string): string {
   return `20${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`
 }
 
-const MONTH_NAMES_PT = [
+export const MONTH_NAMES_PT = [
   'Janeiro','Fevereiro','Março','Abril','Maio','Junho',
   'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'
 ]
@@ -74,27 +74,21 @@ export interface DetectedPeriod {
   end_date: string
 }
 
-export function detectPeriodFromHtml(html: string): DetectedPeriod | null {
-  // Try to find dates in the transaction rows
-  const rowRegex = /<tr[^>]*>[\s\S]*?<\/tr>/gi
-  const cellRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi
-
+export function detectPeriodFromTransactions(transactions: SaleTransaction[]): DetectedPeriod | null {
   const months = new Map<string, number>() // "MM/YY" → count
 
-  let rowMatch
-  while ((rowMatch = rowRegex.exec(html)) !== null) {
-    const rowHtml = rowMatch[0]
-    const cells: string[] = []
-    let cellMatch
-    const localCellRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi
-    while ((cellMatch = localCellRegex.exec(rowHtml)) !== null) {
-      cells.push(cellMatch[1].replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim())
-    }
-    if (cells.length >= 19 && /^\d+$/.test(cells[0])) {
-      const dateStr = cells[2] // DD/MM/YY
-      const parts = dateStr.split('/')
-      if (parts.length === 3) {
-        const key = `${parts[1]}/${parts[2]}` // MM/YY
+  for (const t of transactions) {
+    if (!t.sale_date) continue
+    const parts = t.sale_date.split('/')
+    if (parts.length === 3) {
+      const key = `${parts[1]}/${parts[2]}` // MM/YY
+      months.set(key, (months.get(key) ?? 0) + 1)
+    } else {
+      // Maybe it's YYYY-MM-DD
+      const isoParts = t.sale_date.split('-')
+      if (isoParts.length === 3) {
+        const yy = isoParts[0].slice(2)
+        const key = `${isoParts[1]}/${yy}`
         months.set(key, (months.get(key) ?? 0) + 1)
       }
     }

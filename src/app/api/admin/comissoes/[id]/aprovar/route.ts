@@ -10,17 +10,26 @@ export async function PATCH(
   const { data: { user } } = await caller.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
   const { data: profile } = await caller
-    .from('profiles').select('role').eq('id', user.id).single()
+    .from('profiles').select('role, tenant_id').eq('id', user.id).single()
   
-  const effectiveRole = profile?.role || jwtRole
-  if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) {
+  if (!profile || !['adm', 'gerente', 'super_admin'].includes(profile.role)) {
     return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
   }
 
   const { id } = await params
   const { aprovado } = await req.json()
+
+  // Validar se a comissão pertence ao tenant do administrador logado
+  const { data: comissao } = await caller
+    .from('comissoes_calculadas')
+    .select('tenant_id')
+    .eq('id', id)
+    .single()
+
+  if (!comissao || comissao.tenant_id !== profile.tenant_id) {
+    return NextResponse.json({ error: 'Comissão não pertence à sua organização' }, { status: 403 })
+  }
 
   const admin = createAdminClient()
   const { error } = await admin
@@ -34,3 +43,4 @@ export async function PATCH(
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   return NextResponse.json({ success: true })
 }
+

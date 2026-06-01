@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getTenantContext } from '@/lib/auth/tenant'
 import { redirect } from 'next/navigation'
 import { LogoutButton } from '@/components/ui'
 import MapeamentoClient from './MapeamentoClient'
@@ -6,27 +7,18 @@ import MapeamentoClient from './MapeamentoClient'
 export const dynamic = 'force-dynamic'
 
 export default async function MapeamentoPage() {
-  const supabase = await createClient()
-  let { data: { user } } = await supabase.auth.getUser()
+  const { user, profile } = await getTenantContext()
   if (!user) redirect('/login')
-  // if (!user) redirect('/login')
 
-  const { data: profile } = await supabase.from('profiles').select('role, tenant_id').eq('id', user.id).single()
-  
-  let currentProfile = profile
-  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
-  if (!currentProfile) {
-    currentProfile = { role: jwtRole, tenant_id: user.id }
-  }
-
-  const effectiveRole = currentProfile.role || jwtRole
+  const effectiveRole = profile.role
   if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) {
     redirect('/vendedor/meu-resultado')
   }
 
-  const tenant_id = currentProfile.tenant_id || user.id
+  const tenant_id = profile.tenant_id
+  const admin = createAdminClient()
 
-  const { data: storesData } = await supabase
+  const { data: storesData } = await admin
     .from('stores')
     .select('key, label, color')
     .eq('tenant_id', tenant_id)
@@ -35,18 +27,19 @@ export default async function MapeamentoPage() {
   const stores = storesData ?? []
 
   // All user profiles
-  const { data: profiles } = await supabase
-    .from('profiles').select('*').order('name')
+  let profilesQuery = admin.from('profiles').select('*').order('name')
+  if (tenant_id) profilesQuery = profilesQuery.eq('tenant_id', tenant_id)
+  const { data: profiles } = await profilesQuery
 
   // All vendor goals (vendor_ids that have metas defined)
-  const { data: goals } = await supabase
-    .from('goals').select('vendor_id, vendor_name, store').order('vendor_name')
+  let goalsQuery = admin.from('goals').select('vendor_id, vendor_name, store').order('vendor_name')
+  if (tenant_id) goalsQuery = goalsQuery.eq('tenant_id', tenant_id)
+  const { data: goals } = await goalsQuery
 
   // Vendor_ids from sales that are NOT in goals (appeared in HTML but never registered)
-  const { data: orphanSales } = await supabase
-    .from('sales_records')
-    .select('vendor_id, vendor_name, store')
-    .order('vendor_name')
+  let orphanQuery = admin.from('sales_records').select('vendor_id, vendor_name, store').order('vendor_name')
+  if (tenant_id) orphanQuery = orphanQuery.eq('tenant_id', tenant_id)
+  const { data: orphanSales } = await orphanQuery
 
   // Deduplicate goals vendors
   const uniqueVendors = Array.from(

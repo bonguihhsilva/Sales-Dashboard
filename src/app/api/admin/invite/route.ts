@@ -1,18 +1,26 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient as createServerClient } from '@/lib/supabase/server'
-import { canInvite, isValidRole } from '@/lib/auth/roles'
+import { getTenantContext } from '@/lib/auth/tenant'
+import { canInvite, isValidRole, ASSIGNABLE_ROLES } from '@/lib/auth/roles'
+import { createAdminClient } from '@/lib/supabase/admin'
+import type { UserRole } from '@/types'
+import { strictRateLimiter } from '@/lib/ratelimit'
 
 export async function POST(req: NextRequest) {
-  // 1. Verificar caller autenticado
-  const caller = await createServerClient()
-  const { data: { user } } = await caller.auth.getUser()
+  // Rate limiter
+  const ip = req.headers.get('x-forwarded-for') ?? 'anonymous'
+  const { success } = await strictRateLimiter.limit(ip)
+  if (!success) return NextResponse.json({ error: 'Muitas tentativas' }, { status: 429 })
+
+  // 1. Verificar caller autenticado e contexto de tenant
+  const { user, profile } = await getTenantContext()
+  
   if (!user) {
     return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
   }
 
-  // 2. Verificar caller pode criar convites (D-02) — via app_metadata
-  const callerRole = user.app_metadata?.role as string | undefined
+  // 2. Verificar caller pode criar convites (D-02) — via perfil
+  const callerRole = profile.role
   if (!canInvite(callerRole)) {
     return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
   }
@@ -26,31 +34,39 @@ export async function POST(req: NextRequest) {
   if (!isValidRole(role)) {
     return NextResponse.json({ error: 'Role invalido' }, { status: 400 })
   }
+  // Apenas super_admin pode convidar outros super_admins
+  if (role === 'super_admin' && profile.role !== 'super_admin') {
+    return NextResponse.json({ error: 'Acesso negado: Apenas super administradores podem convidar usuários com esta role.' }, { status: 403 })
+  }
+  // Admins/gerentes comuns só podem convidar roles que estão em ASSIGNABLE_ROLES
+  if (profile.role !== 'super_admin' && !ASSIGNABLE_ROLES.includes(role as UserRole)) {
+    return NextResponse.json({ error: 'Acesso negado: Esta role não é atribuível via convites.' }, { status: 403 })
+  }
   if (!loja) {
     return NextResponse.json({ error: 'Loja e obrigatoria' }, { status: 400 })
   }
 
-  // 4. Descobrir tenant_id do caller (convite herda o tenant de quem cria)
-  const admin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  )
+  // 4. Descobrir tenant_id. Se super_admin, ele pode passar o tenant_id destino explícito, senão usa o tenant do contexto (masquerade).
+  const admin = createAdminClient()
 
-  const { data: callerProfile, error: profErr } = await admin
-    .from('profiles')
-    .select('tenant_id')
-    .eq('id', user.id)
-    .single()
-  if (profErr || !callerProfile?.tenant_id) {
-    return NextResponse.json({ error: 'Tenant do criador nao encontrado' }, { status: 400 })
+  let targetTenantId = body.tenant_id?.trim() || null
+
+  if (profile.role === 'super_admin' && targetTenantId) {
+    // Ok, usar o targetTenantId explícito se enviado
+  } else {
+    // Restrito ao tenant_id ativo do contexto
+    targetTenantId = profile.tenant_id
+  }
+
+  if (!targetTenantId) {
+    return NextResponse.json({ error: 'Tenant de destino nao encontrado' }, { status: 400 })
   }
 
   // 5. Inserir convite — token e expira_em vem dos DEFAULTs do Postgres
   const { data: convite, error: insertErr } = await admin
     .from('convites')
     .insert({
-      tenant_id: callerProfile.tenant_id,
+      tenant_id: targetTenantId,
       email,
       role,
       loja,

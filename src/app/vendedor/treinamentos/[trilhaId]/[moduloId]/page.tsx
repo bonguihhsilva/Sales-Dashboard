@@ -19,23 +19,24 @@ export default async function ModuloPage({ params }: { params: Promise<{ trilhaI
   if (!modulo) redirect(`/vendedor/treinamentos/${trilhaId}`)
 
   const { data: licoes } = await supabase
-    .from('licoes').select('*').eq('modulo_id', moduloId).order('ordem', { ascending: true })
+    .from('aulas').select('*').eq('modulo_id', moduloId).order('ordem', { ascending: true })
 
   const { data: progresso } = await supabase
-    .from('progresso_usuario')
-    .select('licao_id')
+    .from('progresso_aulas')
+    .select('aula_id')
     .eq('usuario_id', userId)
-    .eq('concluida', true)
 
-  const licoesConcluidas = new Set(progresso?.map(p => p.licao_id) || [])
+  const licoesConcluidas = new Set(progresso?.map(p => p.aula_id) || [])
 
-  const { data: quizResult } = await supabase
-    .from('quiz_resultados')
-    .select('aprovado, pontuacao')
+  const { data: quizResultDb } = await supabase
+    .from('progresso_modulos')
+    .select('aprovado, nota_prova')
     .eq('usuario_id', userId)
     .eq('modulo_id', moduloId)
     .eq('aprovado', true)
     .maybeSingle()
+
+  const quizResult = quizResultDb ? { aprovado: quizResultDb.aprovado, pontuacao: Number(quizResultDb.nota_prova) } : null
 
   const allLessonsDone = (licoes || []).every(l => licoesConcluidas.has(l.id))
 
@@ -86,7 +87,7 @@ export default async function ModuloPage({ params }: { params: Promise<{ trilhaI
                       display: 'flex', alignItems: 'center', justifyContent: 'center', color: concluida ? '#22c55e' : 'var(--muted)',
                       fontSize: '1.2rem'
                     }}>
-                      {licao.tipo === 'video' ? '▶' : '📄'}
+                      {licao.tipo_conteudo === 'video' ? '▶' : '📄'}
                     </div>
                     <div>
                       <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>

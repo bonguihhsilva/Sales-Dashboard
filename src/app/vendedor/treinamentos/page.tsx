@@ -1,3 +1,4 @@
+import { getTenantContext } from '@/lib/auth/tenant'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { SectionTitle } from '@/components/ui'
@@ -6,28 +7,16 @@ import Link from 'next/link'
 export const dynamic = 'force-dynamic'
 
 export default async function TreinamentosPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  // if (!user) redirect('/login')
-  const userId = user?.id
-  if (!userId) redirect('/login')
+  const { user, profile } = await getTenantContext()
+  if (!user || !profile) redirect('/login')
 
-  const jwtRole = (user?.app_metadata?.role as string | undefined) ?? 'vendedor'
+  const jwtRole = profile.role || 'vendedor'
   if (jwtRole !== 'vendedor' && jwtRole !== 'super_admin') redirect('/dashboard')
 
-  let profile: any = null
-  if (user) {
-    const { data: dbProfile } = await supabase
-      .from('profiles').select('*').eq('id', user.id).single()
-    profile = dbProfile
-  } else {
-    profile = { id: 'mock-user-id', name: 'Vendedor Teste', role: 'vendedor' }
-  }
-
-  if (!profile) redirect('/login')
+  const supabase = await createClient()
 
   const { data: gamificacao } = await supabase
-    .from('gamificacao').select('*').eq('usuario_id', profile.id).maybeSingle()
+    .from('gamificacao').select('*').eq('usuario_id', user.id).maybeSingle()
 
   const { data: trilhas } = await supabase
     .from('trilhas').select('*').eq('ativo', true).order('ordem', { ascending: true })
@@ -57,30 +46,29 @@ export default async function TreinamentosPage() {
         name: p?.name || 'Vendedor',
         nivel: g.nivel,
         xp: g.xp_total,
-        isMe: g.usuario_id === profile.id
+        isMe: g.usuario_id === user.id
       }
     })
   }
 
   // Fetch Historico (Últimas lições)
   const { data: historicoRows } = await supabase
-    .from('progresso_usuario')
-    .select('licao_id, concluida_em')
-    .eq('usuario_id', profile.id)
-    .eq('concluida', true)
+    .from('progresso_aulas')
+    .select('aula_id, concluida_em')
+    .eq('usuario_id', user.id)
     .order('concluida_em', { ascending: false })
     .limit(5)
 
   let historico: any[] = []
   if (historicoRows && historicoRows.length > 0) {
-    const licoesIds = historicoRows.map((h) => h.licao_id)
+    const licoesIds = historicoRows.map((h) => h.aula_id)
     const { data: licoesList } = await supabase
-      .from('licoes')
+      .from('aulas')
       .select('id, titulo')
       .in('id', licoesIds)
 
     historico = historicoRows.map((h) => {
-      const l = licoesList?.find((l) => l.id === h.licao_id)
+      const l = licoesList?.find((l) => l.id === h.aula_id)
       return {
         titulo: l?.titulo || 'Lição',
         data: h.concluida_em,

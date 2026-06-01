@@ -33,7 +33,7 @@ export default function QuizClient({
 
     setLoading(true)
     try {
-      const res = await submitQuiz(moduloId, respostas, questoes)
+      const res = await submitQuiz(moduloId, respostas)
       setResultado(res)
       router.refresh()
     } catch (err: any) {
@@ -84,10 +84,10 @@ export default function QuizClient({
         {questoes.map((q, idx) => (
           <div key={q.id} style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem' }}>
-              {idx + 1}. {q.enunciado}
+              {idx + 1}. {q.pergunta}
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {(q.alternativas || []).map((alt: any, aIdx: number) => (
+              {(q.opcoes || []).map((opcao: string, aIdx: number) => (
                 <label key={aIdx} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '10px', border: '1px solid var(--border)', borderRadius: '8px', background: respostas[q.id] === aIdx ? 'var(--surface2)' : 'transparent' }}>
                   <input 
                     type="radio" 
@@ -96,7 +96,7 @@ export default function QuizClient({
                     onChange={() => handleChange(q.id, aIdx)}
                     style={{ accentColor: 'var(--accent)', width: '16px', height: '16px' }}
                   />
-                  <span style={{ fontSize: '0.95rem' }}>{alt.texto}</span>
+                  <span style={{ fontSize: '0.95rem' }}>{opcao}</span>
                 </label>
               ))}
             </div>

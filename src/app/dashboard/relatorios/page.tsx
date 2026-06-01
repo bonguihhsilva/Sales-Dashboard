@@ -1,5 +1,5 @@
+import { getTenantContext } from '@/lib/auth/tenant'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import type { Period } from '@/types'
 import UploadModal from '../UploadModal'
@@ -13,11 +13,10 @@ export default async function RelatoriosPage({
 }: {
   searchParams: Promise<{ period?: string }>
 }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { user, profile } = await getTenantContext()
 
   if (user) {
-    const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
+    const jwtRole = profile.role
     if (jwtRole === 'vendedor') redirect('/vendedor/meu-resultado')
   }
 
@@ -76,7 +75,7 @@ export default async function RelatoriosPage({
           
           <div className="mt-auto">
             <div className="h-[44px]">
-              <UploadModal periods={(periods || []) as Period[]} />
+              <UploadModal periods={(periods || []) as Period[]} tenantId={profile.tenant_id!} />
             </div>
           </div>
         </div>
