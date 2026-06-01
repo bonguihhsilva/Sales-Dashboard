@@ -121,7 +121,8 @@ BEGIN
       v_meta1, v_meta2, v_meta3, v_bonus1, v_bonus2, v_bonus3,
       v_commission_pct, v_count
     )
-    ON CONFLICT (period_id, vendor_id, tenant_id) DO UPDATE
+    -- ON CONFLICT matches UNIQUE(period_id, vendor_id) — period_id is global PK, already tenant-scoped
+    ON CONFLICT (period_id, vendor_id) DO UPDATE
     SET
       meta1 = EXCLUDED.meta1,
       meta2 = EXCLUDED.meta2,
