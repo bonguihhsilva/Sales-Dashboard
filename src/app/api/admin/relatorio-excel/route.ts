@@ -102,9 +102,9 @@ export async function GET(req: NextRequest) {
       const m3 = Number(v.meta3) || 0
       const level = sold >= m3 ? 3 : sold >= m2 ? 2 : sold >= m1 ? 1 : 0
 
-      const commission   = calc ? Number(calc.comissao_base) : sold * commPct
+      const commission   = calc ? Number(calc.comissao_base) : Math.round(sold * commPct * 100) / 100
       const bonus        = calc ? Number(calc.bonus_total) : (Number(v.bonus_earned) || 0)
-      const totalEarning = calc ? Number(calc.total) : (commission + bonus)
+      const totalEarning = calc ? Number(calc.total) : Math.round((commission + bonus) * 100) / 100
       
       return {
         nome:         sanitizeCSV(v.vendor_name),

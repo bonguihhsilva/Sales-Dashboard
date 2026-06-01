@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { fmtCurrency } from '@/lib/utils'
 import type { Store } from '@/types'
+import * as XLSX from 'xlsx'
 
 type ComissaoRecord = {
   id: string
@@ -36,6 +37,9 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
   const [rows, setRows] = useState(vendorRows)
   const [isPending, startTransition] = useTransition()
   const [calcError, setCalcError] = useState<string | null>(null)
+  
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkLoading, setBulkLoading] = useState(false)
 
   const hasCalculated = rows.some(r => r.comissao !== null)
   const totalPreview  = rows.reduce((s, r) => s + r.total_commission, 0)
@@ -72,6 +76,100 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
 
   const canApprove = ['adm', 'gerente', 'super_admin'].includes(role)
 
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      const ids = rows
+        .filter(r => r.comissao !== null && !r.comissao.aprovado)
+        .map(r => r.comissao!.id)
+      setSelectedIds(new Set(ids))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  const handleSelectOne = (id: string, checked: boolean) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (checked) {
+        next.add(id)
+      } else {
+        next.delete(id)
+      }
+      return next
+    })
+  }
+
+  async function handleAprovarLote() {
+    if (selectedIds.size === 0) return
+    setBulkLoading(true)
+    try {
+      const list = Array.from(selectedIds)
+      await Promise.all(
+        list.map(id =>
+          fetch(`/api/admin/comissoes/${id}/aprovar`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ aprovado: true }),
+          })
+        )
+      )
+      
+      setRows(prev => prev.map(r =>
+        r.comissao && selectedIds.has(r.comissao.id)
+          ? { ...r, comissao: { ...r.comissao, aprovado: true } }
+          : r
+      ))
+      setSelectedIds(new Set())
+    } catch (err) {
+      console.error('Erro na aprovação em lote:', err)
+    } finally {
+      setBulkLoading(false)
+    }
+  }
+
+  function handleExportPagamento() {
+    const targets = rows.filter(r => {
+      if (r.comissao === null) return false
+      if (selectedIds.size > 0) return selectedIds.has(r.comissao.id)
+      return r.comissao.aprovado
+    })
+
+    if (targets.length === 0) {
+      alert("Nenhuma comissão aprovada ou selecionada para exportação de pagamento.")
+      return
+    }
+
+    const data = targets.map(r => ({
+      'Vendedor': r.vendor_name,
+      'Loja': r.store,
+      'Comissão Base': r.comissao!.comissao_base,
+      'Bônus': r.comissao!.bonus_total,
+      'Total a Pagar': r.comissao!.total,
+      'Status': r.comissao!.aprovado ? 'Aprovado' : 'Pendente',
+      'Banco': '',
+      'Agência': '',
+      'Conta Corrente': ''
+    }))
+
+    const ws = XLSX.utils.json_to_sheet(data)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, "Pagamentos")
+
+    ws['!cols'] = [
+      { wch: 25 }, // Vendedor
+      { wch: 15 }, // Loja
+      { wch: 15 }, // Comissão Base
+      { wch: 10 }, // Bônus
+      { wch: 15 }, // Total a Pagar
+      { wch: 12 }, // Status
+      { wch: 12 }, // Banco
+      { wch: 10 }, // Agência
+      { wch: 15 }  // Conta Corrente
+    ]
+
+    XLSX.writeFile(wb, `pagamento-comissoes-periodo-${periodId}.xlsx`)
+  }
+
   return (
     <div>
       {/* KPIs */}
@@ -92,11 +190,28 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
               {calcError}
             </span>
           )}
+          {selectedIds.size > 0 && canApprove && (
+            <button
+              onClick={handleAprovarLote}
+              disabled={bulkLoading}
+              className="bg-success hover:bg-success/90 text-white font-bold px-4 py-2 rounded-xl transition-colors text-sm disabled:opacity-50 cursor-pointer"
+            >
+              {bulkLoading ? 'Aprovando...' : `Aprovar Selecionados (${selectedIds.size})`}
+            </button>
+          )}
+          {hasCalculated && (
+            <button
+              onClick={handleExportPagamento}
+              className="bg-surface-container-highest hover:bg-surface-container-high border border-white/5 text-primary font-bold px-4 py-2 rounded-xl transition-colors text-sm cursor-pointer"
+            >
+              Exportar para Pagamento
+            </button>
+          )}
           {canApprove && (
             <button
               onClick={handleCalcular}
               disabled={isPending}
-              className="bg-primary hover:bg-primary/90 text-on-primary font-bold px-6 py-2.5 rounded-xl transition-colors text-sm disabled:opacity-50"
+              className="bg-primary hover:bg-primary/90 text-on-primary font-bold px-6 py-2.5 rounded-xl transition-colors text-sm disabled:opacity-50 cursor-pointer"
             >
               {isPending ? 'Calculando...' : hasCalculated ? 'Recalcular' : 'Calcular Período'}
             </button>
@@ -110,6 +225,19 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                {canApprove && hasCalculated && (
+                  <th style={{ padding: '10px 14px', width: '40px', textAlign: 'left' }}>
+                    <input
+                      type="checkbox"
+                      className="rounded border-white/20 text-primary bg-background w-4 h-4 cursor-pointer"
+                      onChange={handleSelectAll}
+                      checked={
+                        rows.filter(r => r.comissao !== null && !r.comissao.aprovado).length > 0 &&
+                        selectedIds.size === rows.filter(r => r.comissao !== null && !r.comissao.aprovado).length
+                      }
+                    />
+                  </th>
+                )}
                 {['Vendedor', 'Loja', 'Vendido', 'Com%', 'Base', 'Bônus', 'Total', 'Status', ''].map(h => (
                   <th key={h} style={{
                     padding: '10px 14px', textAlign: 'left', fontFamily: 'DM Mono, monospace',
@@ -122,7 +250,7 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
             <tbody>
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={9} style={{ padding: '32px', textAlign: 'center', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.72rem' }}>
+                  <td colSpan={canApprove && hasCalculated ? 10 : 9} style={{ padding: '32px', textAlign: 'center', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.72rem' }}>
                     Sem dados para o período selecionado
                   </td>
                 </tr>
@@ -142,6 +270,22 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
                     key={row.vendor_id}
                     style={{ borderBottom: i < rows.length - 1 ? '1px solid var(--border)' : 'none' }}
                   >
+                    {canApprove && hasCalculated && (
+                      <td style={{ padding: '12px 14px', width: '40px' }}>
+                        {isCalculated && !row.comissao!.aprovado ? (
+                          <input
+                            type="checkbox"
+                            className="rounded border-white/20 text-primary bg-background w-4 h-4 cursor-pointer"
+                            checked={selectedIds.has(row.comissao!.id)}
+                            onChange={(e) => handleSelectOne(row.comissao!.id, e.target.checked)}
+                          />
+                        ) : (
+                          <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', paddingLeft: '4px' }}>
+                            {isCalculated ? '✓' : '—'}
+                          </span>
+                        )}
+                      </td>
+                    )}
                     <td style={{ padding: '12px 14px', fontWeight: 600, whiteSpace: 'nowrap' }}>
                       {row.vendor_name}
                     </td>
@@ -220,7 +364,7 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
 
 function KpiCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
-    <div className="glass-card rounded-2xl p-6 border border-white/5 flex flex-col justify-center">
+    <div className="glass-card rounded-2xl p-6 border border-white/5 flex flex-col justify-center animate-fade-in bg-surface-container-low/40">
       <div className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-2">
         {label}
       </div>
