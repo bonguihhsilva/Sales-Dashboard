@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>LISTADO DE VENTAS - MOCK</title>
+</head>
+<body>
+  <table>
+    <!-- Cabeçalho (será ignorado pelo parser pois cells[0] não é numérico) -->
+    <tr>
+      <td>Cod.Cliente</td>
+      <td>Nome do Cliente</td>
+      <td>Data</td>
+      <td>Hora</td>
+      <td>Referencia</td>
+      <td>Hora Venda</td>
+      <td>Status</td>
+      <td>Obs</td>
+      <td>Item</td>
+      <td>Qtd</td>
+      <td>Preco Unit</td>
+      <td>Desconto</td>
+      <td>Subtotal</td>
+      <td>Imposto</td>
+      <td>Frete</td>
+      <td>Valor Total</td>
+      <td>Metodo</td>
+      <td>Origem</td>
+      <td>Vendedor ID</td>
+      <td>Observacao</td>
+    </tr>
+    <!-- Transação 1: Vendedor 30 (Leticia) -->
+    <tr>
+      <td>1001</td>
+      <td>Cliente Importado Mock A /</td>
+      <td>12/03/26</td>
+      <td>10:00</td>
+      <td>REF-A123</td>
+      <td>10:15:30</td>
+      <td>OK</td>
+      <td>N/A</td>
+      <td>Produto X</td>
+      <td>2</td>
+      <td>100.00</td>
+      <td>0.00</td>
+      <td>200.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>200.00</td>
+      <td>PIX</td>
+      <td>Web</td>
+      <td>30</td>
+      <td>Compra de teste</td>
+    </tr>
+    <!-- Transação 2: Vendedor 44 (Fabiola Ledesma) -->
+    <tr>
+      <td>1002</td>
+      <td>Cliente Importado Mock B /</td>
+      <td>25/03/26</td>
+      <td>11:00</td>
+      <td>REF-B456</td>
+      <td>11:30:00</td>
+      <td>OK</td>
+      <td>N/A</td>
+      <td>Produto Y</td>
+      <td>1</td>
+      <td>350.50</td>
+      <td>0.00</td>
+      <td>350.50</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>350.50</td>
+      <td>Cartao</td>
+      <td>Web</td>
+      <td>44</td>
+      <td>Compra de teste 2</td>
+    </tr>
+    <!-- Transação 3: Vendedor 44 - Valor Inválido (deve ser ignorada pois valor <= 0) -->
+    <tr>
+      <td>1003</td>
+      <td>Cliente Importado Mock C /</td>
+      <td>26/03/26</td>
+      <td>12:00</td>
+      <td>REF-C789</td>
+      <td>12:05:00</td>
+      <td>OK</td>
+      <td>N/A</td>
+      <td>Produto Z</td>
+      <td>1</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>Dinheiro</td>
+      <td>Loja</td>
+      <td>44</td>
+      <td>Ignorar valor zero</td>
+    </tr>
+  </table>
+</body>
+</html>
