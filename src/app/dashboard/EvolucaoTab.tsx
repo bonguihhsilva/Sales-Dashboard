@@ -832,7 +832,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
                         </td>
                         <td style={{ padding: '8px 10px', fontWeight: 600 }}>
                           <a
-                            href={`/dashboard/vendedor/${row.vendor_id}`}
+                            href={`/dashboard/vendedor/${row.vendor_id}?period=${([...sortedPeriodsAsc].reverse().find(p => (row.byPeriod.get(p.id) ?? 0) > 0) ?? sortedPeriodsAsc[sortedPeriodsAsc.length - 1])?.id}`}
                             style={{ color: 'inherit', textDecoration: 'none' }}
                           >
                             {row.name}

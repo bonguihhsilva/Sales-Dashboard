@@ -50,7 +50,13 @@ export default async function VendorDetailPage({
 
   const { data: evolution } = await supabase.rpc('vendor_evolution', { p_vendor_id: vendor_id })
 
-  if (!summary) notFound()
+  if (!summary) {
+    const { data: fallback } = await adminDb
+      .from('vendor_summary').select('period_id').eq('vendor_id', vendor_id).eq('tenant_id', currentProfile?.tenant_id)
+      .order('period_id', { ascending: false }).limit(1).single()
+    if (!fallback) notFound()
+    redirect(`/dashboard/vendedor/${vendor_id}?period=${fallback.period_id}`)
+  }
 
   const sold  = Number(summary.total_sold)
   const m1 = Number(summary.meta1), m2 = Number(summary.meta2), m3 = Number(summary.meta3)
