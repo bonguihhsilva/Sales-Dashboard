@@ -1,42 +1,38 @@
-import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
+import { createAdminClient } from '@/lib/supabase/admin'
 
-const hasRedisConfig = !!(
-  process.env.UPSTASH_REDIS_REST_URL && 
-  process.env.UPSTASH_REDIS_REST_TOKEN &&
-  !process.env.UPSTASH_REDIS_REST_URL.includes('placeholder')
-)
+// Rate limiter Postgres-backed (Supabase). Funciona em serverless: estado vive no DB.
+// check_rate_limit(p_key, p_max, p_window_seconds) retorna true=permitido / false=limitado.
+//
+// Fail-open: se a RPC falhar (DB indisponível), permite a requisição e loga.
+// Disponibilidade > bloqueio total em caso de incidente de infra.
 
-let rateLimiter: { limit: (key: string) => Promise<{ success: boolean }> }
-let strictRateLimiter: { limit: (key: string) => Promise<{ success: boolean }> }
+type Limiter = { limit: (key: string) => Promise<{ success: boolean }> }
 
-if (hasRedisConfig) {
-  try {
-    const redis = Redis.fromEnv()
-    
-    rateLimiter = new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(20, '1 m'), // 20 req/min por IP
-    })
-
-    strictRateLimiter = new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(5, '1 m'),  // 5 req/min
-    })
-  } catch (err) {
-    console.error('[Rate Limiting] Falha ao inicializar Upstash Redis client. Aplicando bypass.', err)
-    const bypass = async () => ({ success: true })
-    rateLimiter = { limit: bypass }
-    strictRateLimiter = { limit: bypass }
+function makeLimiter(max: number, windowSeconds: number): Limiter {
+  return {
+    async limit(key: string) {
+      try {
+        const admin = createAdminClient()
+        const { data, error } = await admin.rpc('check_rate_limit', {
+          p_key: `${max}:${windowSeconds}:${key}`,
+          p_max: max,
+          p_window_seconds: windowSeconds,
+        })
+        if (error) {
+          console.error('[Rate Limiting] RPC error, fail-open:', error.message)
+          return { success: true }
+        }
+        return { success: data === true }
+      } catch (err) {
+        console.error('[Rate Limiting] Exception, fail-open:', err)
+        return { success: true }
+      }
+    },
   }
-} else {
-  // Fallback silencioso para desenvolvimento local sem redis configurado
-  if (process.env.NODE_ENV !== 'production') {
-    console.warn('[Rate Limiting] Upstash Redis ausente ou com placeholders. Ignorando limitação de requisições localmente.')
-  }
-  const bypass = async () => ({ success: true })
-  rateLimiter = { limit: bypass }
-  strictRateLimiter = { limit: bypass }
 }
 
-export { rateLimiter, strictRateLimiter }
+// 20 req/min — rotas gerais autenticadas
+export const rateLimiter: Limiter = makeLimiter(20, 60)
+
+// 5 req/min — rotas sensíveis (invite, accept-invite, parse-upload)
+export const strictRateLimiter: Limiter = makeLimiter(5, 60)
