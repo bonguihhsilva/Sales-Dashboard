@@ -49,6 +49,21 @@ export default async function MuralPage({
 
   const stores = (dbStores || []).map(s => ({ key: s.name, label: s.name }))
 
+  // Top 3 alunos (LMS) por XP — dado real, escopado ao tenant
+  const { data: tenantPeople } = await adminDb
+    .from('profiles').select('id, name').eq('tenant_id', profile?.tenant_id)
+  const peopleIds = (tenantPeople ?? []).map(p => p.id)
+  const nameById = new Map((tenantPeople ?? []).map(p => [p.id, p.name as string]))
+  let topStudents: { nome: string; xp: number; nivel: number }[] = []
+  if (peopleIds.length) {
+    const { data: gam } = await adminDb
+      .from('gamificacao').select('usuario_id, xp_total, nivel')
+      .in('usuario_id', peopleIds).order('xp_total', { ascending: false }).limit(3)
+    topStudents = (gam ?? [])
+      .filter(g => Number(g.xp_total) > 0)
+      .map(g => ({ nome: nameById.get(g.usuario_id) ?? '—', xp: Number(g.xp_total), nivel: Number(g.nivel) }))
+  }
+
   // Helper function to navigate back depending on role
   const backLink = showValues ? '/dashboard' : '/vendedor/meu-resultado'
 
@@ -73,10 +88,11 @@ export default async function MuralPage({
         </header>
 
         {/* Client Component */}
-        <MuralClient 
-          summaries={summaries || []} 
-          stores={stores} 
-          showValues={showValues} 
+        <MuralClient
+          summaries={summaries || []}
+          stores={stores}
+          showValues={showValues}
+          topStudents={topStudents}
         />
       </div>
     </div>

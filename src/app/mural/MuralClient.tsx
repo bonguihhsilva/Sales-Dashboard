@@ -3,14 +3,16 @@
 import { fmtCurrency } from '@/lib/utils'
 import type { VendorSummary } from '@/types'
 
-export default function MuralClient({ 
-  summaries, 
+export default function MuralClient({
+  summaries,
   stores,
   showValues,
-}: { 
-  summaries: VendorSummary[], 
+  topStudents = [],
+}: {
+  summaries: VendorSummary[],
   stores: { key: string, label: string }[],
   showValues: boolean,
+  topStudents?: { nome: string; xp: number; nivel: number }[],
 }) {
   const topSellers = [...summaries].sort((a, b) => Number(b.total_sold) - Number(a.total_sold)).slice(0, 3)
 
@@ -122,21 +124,8 @@ export default function MuralClient({
             <span style={{ fontSize: '1.2rem' }}>🎂</span>
             Aniversariantes
           </h2>
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--surface2)', borderRadius: '10px', padding: '12px' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#ec489922', color: '#ec4899', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 800 }}>12</div>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>Maria Oliveira</div>
-                <div style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Paje 1</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--surface2)', borderRadius: '10px', padding: '12px' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#ec489922', color: '#ec4899', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 800 }}>28</div>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>João Silva</div>
-                <div style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Jebai</div>
-              </div>
-            </div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--muted)', padding: '8px 0' }}>
+            Em breve — cadastro de datas de aniversário ainda não disponível.
           </div>
         </div>
 
@@ -147,29 +136,31 @@ export default function MuralClient({
             Top 3 Alunos (LMS)
           </h2>
           <div className="flex flex-col gap-4">
-            {[
-              { nome: 'Carlos Mendes', media: '9.8', aulas: 42 },
-              { nome: 'Ana Beatriz', media: '9.5', aulas: 38 },
-              { nome: 'Roberto Alves', media: '9.2', aulas: 31 }
-            ].map((aluno, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div style={{
-                  width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 800,
-                  border: '1px solid',
-                  background: i === 0 ? '#2563eb11' : i === 1 ? '#94a3b811' : '#d9770611',
-                  borderColor: i === 0 ? '#2563eb44' : i === 1 ? '#94a3b844' : '#d9770644',
-                  color: i === 0 ? '#2563eb' : i === 1 ? '#94a3b8' : '#d97706'
-                }}>
-                  {i + 1}
-                </div>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{aluno.nome}</div>
-                  <div style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '2px' }}>
-                    Média <span style={{ color: '#2563eb', fontWeight: 700 }}>{aluno.media}</span> · {aluno.aulas} aulas
+            {topStudents.length === 0 ? (
+              <div style={{ fontSize: '0.8rem', color: 'var(--muted)', padding: '8px 0' }}>
+                Sem progresso de treinamento registrado ainda.
+              </div>
+            ) : (
+              topStudents.map((aluno, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div style={{
+                    width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 800,
+                    border: '1px solid',
+                    background: i === 0 ? '#2563eb11' : i === 1 ? '#94a3b811' : '#d9770611',
+                    borderColor: i === 0 ? '#2563eb44' : i === 1 ? '#94a3b844' : '#d9770644',
+                    color: i === 0 ? '#2563eb' : i === 1 ? '#94a3b8' : '#d97706'
+                  }}>
+                    {i + 1}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{aluno.nome}</div>
+                    <div style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '2px' }}>
+                      Nível <span style={{ color: '#2563eb', fontWeight: 700 }}>{aluno.nivel}</span> · {aluno.xp} XP
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 

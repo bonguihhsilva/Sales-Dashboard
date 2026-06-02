@@ -139,7 +139,7 @@ export default async function VendorDetailPage({
               <KpiCard
                 label="Comissão Total"
                 value={fmtCurrency(commission)}
-                sub={`0,3% × vendas + bônus $${b}`}
+                sub={`${(Number(summary.commission_pct) * 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}% × vendas + bônus $${b}`}
                 valueClassName={['text-muted-foreground','text-meta1','text-meta2','text-meta3'][lvl]}
               />
             </div>
