@@ -52,8 +52,11 @@ export default async function MeuResultadoPage({
   const activePeriod = sp.period ? parseInt(sp.period) : (periods?.[0]?.id ?? 1)
   const activeTab    = sp.tab ?? 'performance'
 
-  const { data: summary } = await supabase
-    .from('vendor_summary').select('*').eq('period_id', activePeriod).eq('vendor_id', profile.vendor_id).single()
+  // vendor_summary/client_portfolio têm SELECT revogado de authenticated (hardening) —
+  // self-view lê via service_role, escopado ao próprio vendor_id + tenant.
+  const adminDb = createAdminClient()
+  const { data: summary } = await adminDb
+    .from('vendor_summary').select('*').eq('period_id', activePeriod).eq('vendor_id', profile.vendor_id).eq('tenant_id', profile.tenant_id).single()
 
   const { data: dbEvolution } = await supabase.rpc('vendor_evolution', { p_vendor_id: profile.vendor_id })
   const evolution = dbEvolution?.length ? dbEvolution : [
@@ -64,11 +67,12 @@ export default async function MeuResultadoPage({
   ]
 
   // Fetch clients for carteira tab
-  const { data: clientsData } = await supabase
+  const { data: clientsData } = await adminDb
     .from('client_portfolio')
     .select('*')
     .eq('period_id', activePeriod)
     .eq('vendor_id', profile.vendor_id)
+    .eq('tenant_id', profile.tenant_id)
     .order('total_spent', { ascending: false })
     .limit(1000)
 
@@ -79,7 +83,6 @@ export default async function MeuResultadoPage({
     .maybeSingle()
 
   // Commission: vendedor_id = profiles.id = user.id (FK is uuid, not vendor_id text)
-  const adminDb = createAdminClient()
   const { data: comissaoCalc } = await adminDb
     .from('comissoes_calculadas')
     .select('comissao_base, bonus_total, total, aprovado')

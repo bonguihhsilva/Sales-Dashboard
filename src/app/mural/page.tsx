@@ -35,8 +35,9 @@ export default async function MuralPage({
   const periods = dbPeriods || [{ id: 1, label: 'Período Atual' }]
   const activePeriod = sp.period ? parseInt(sp.period) : (periods?.[0]?.id ?? 1)
 
-  // Only load summaries for the active period to calculate ranking
-  const { data: summaries } = await supabase
+  // vendor_summary tem SELECT revogado de authenticated (hardening) — ranking via service_role, escopado ao tenant.
+  const adminDb = createAdminClient()
+  const { data: summaries } = await adminDb
     .from('vendor_summary')
     .select('*')
     .eq('period_id', activePeriod)

@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect, notFound } from 'next/navigation'
 import { fmtCurrency, fmtK, metaLevel, bonusAmount } from '@/lib/utils'
 import { KpiCard, StorePill, ProgressBar, SectionTitle, LogoutButton } from '@/components/ui'
@@ -42,7 +43,9 @@ export default async function VendorDetailPage({
   const activePeriod = sp.period ? parseInt(sp.period) : (periods?.[0]?.id ?? 1)
   const activeTab    = sp.tab ?? 'performance'
 
-  const { data: summary } = await supabase
+  // vendor_summary tem SELECT revogado de authenticated (hardening) — leitura via service_role, escopada ao tenant.
+  const adminDb = createAdminClient()
+  const { data: summary } = await adminDb
     .from('vendor_summary').select('*').eq('period_id', activePeriod).eq('vendor_id', vendor_id).eq('tenant_id', currentProfile?.tenant_id).single()
 
   const { data: evolution } = await supabase.rpc('vendor_evolution', { p_vendor_id: vendor_id })
@@ -68,7 +71,7 @@ export default async function VendorDetailPage({
   const activePeriodLabel = (periods as Period[])?.find(p => p.id === activePeriod)?.label ?? ''
 
   // Ranking position
-  const { data: allSummaries } = await supabase
+  const { data: allSummaries } = await adminDb
     .from('vendor_summary').select('vendor_id, total_sold, store').eq('period_id', activePeriod).eq('tenant_id', currentProfile?.tenant_id).order('total_sold', { ascending: false })
   const rankAll   = (allSummaries ?? []).findIndex(s => s.vendor_id === vendor_id) + 1
   const rankStore = (allSummaries ?? []).filter(s => s.store === summary.store).findIndex(s => s.vendor_id === vendor_id) + 1
