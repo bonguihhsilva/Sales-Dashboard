@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { PageHeader } from '@/components/ui'
 
 type Tenant = {
   id: string
@@ -63,12 +64,11 @@ export default function ConfigIndexClient({ tenant, storesCount, gerentesCount }
     <div style={{ display: 'flex', flexDirection: 'column', gap: 32, maxWidth: 900, margin: '0 auto', padding: '32px 16px' }}>
 
       {/* Header */}
-      <div>
-        <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: 28, fontWeight: 700, color: 'var(--text)', margin: 0 }}>
-          Configurações
-        </h1>
-        <p style={{ color: 'var(--muted)', marginTop: 4 }}>{tenant?.nome} · Plano {tenant?.plano}</p>
-      </div>
+      <PageHeader
+        title="Configurações"
+        subtitle={`${tenant?.nome ?? ''} · Plano ${tenant?.plano ?? ''}`}
+        breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Configurações' }]}
+      />
 
       {/* Nav cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>

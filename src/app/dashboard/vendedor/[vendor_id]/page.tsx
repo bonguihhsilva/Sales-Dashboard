@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect, notFound } from 'next/navigation'
 import { fmtCurrency, fmtK, metaLevel, bonusAmount } from '@/lib/utils'
-import { KpiCard, StorePill, ProgressBar, SectionTitle, LogoutButton } from '@/components/ui'
+import { KpiCard, StorePill, ProgressBar, SectionTitle, LogoutButton, PageHeader } from '@/components/ui'
 import ClientsTab from '../../ClientsTab'
 import EvolutionChart from './EvolutionChart'
 import type { Period } from '@/types'
@@ -94,22 +94,24 @@ export default async function VendorDetailPage({
   return (
     <div className="min-h-full bg-background flex flex-col p-margin-page">
       {/* Header */}
-      <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <a href={`/dashboard?period=${activePeriod}`} className="text-xs font-mono text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 mb-2">
-            <span className="material-symbols-outlined text-sm">arrow_back</span>
-            Voltar ao dashboard
-          </a>
-          <h1 className="font-display-lg text-display-lg text-on-surface">{summary.vendor_name}</h1>
-        </div>
-        <div className="flex gap-stack-sm flex-wrap items-center">
-          <StorePill store={summary.store} label={storeObj?.label} colorClass={storeObj?.color} />
-          <div className="px-4 py-2 bg-surface-container-high rounded-xl border border-white/5 flex items-center gap-2">
-            <span className="material-symbols-outlined text-muted-foreground text-sm">calendar_month</span>
-            <span className="text-xs font-mono font-bold text-on-surface-variant">{activePeriodLabel}</span>
-          </div>
-          <LogoutButton />
-        </div>
+      <div className="mb-10">
+        <PageHeader
+          title={summary.vendor_name}
+          breadcrumbs={[
+            { label: 'Dashboard', href: `/dashboard?period=${activePeriod}` },
+            { label: summary.vendor_name },
+          ]}
+          actions={
+            <>
+              <StorePill store={summary.store} label={storeObj?.label} colorClass={storeObj?.color} />
+              <div className="px-4 py-2 bg-surface-container-high rounded-xl border border-white/5 flex items-center gap-2">
+                <span className="material-symbols-outlined text-muted-foreground text-sm">calendar_month</span>
+                <span className="text-xs font-mono font-bold text-on-surface-variant">{activePeriodLabel}</span>
+              </div>
+              <LogoutButton />
+            </>
+          }
+        />
       </div>
 
       <div className="flex-1 flex flex-col">

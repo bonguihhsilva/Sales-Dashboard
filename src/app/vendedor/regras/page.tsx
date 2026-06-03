@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { SectionTitle } from '@/components/ui'
+import { SectionTitle, PageHeader } from '@/components/ui'
 
 export const dynamic = 'force-dynamic'
 
@@ -59,13 +59,14 @@ export default async function VendedorRegrasPage() {
 
         {/* Header */}
         <div style={{ marginBottom: '2rem' }}>
-          <div style={{ display: 'inline-block', background: '#2563eb', borderRadius: '6px', padding: '3px 10px', marginBottom: '6px' }}>
-            <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.75rem' }}>GDS - REGRAS</span>
-          </div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>Regras de Comissão</h1>
-          <p style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '6px' }}>
-            Entenda como suas comissões e bônus são calculados neste mês.
-          </p>
+          <PageHeader
+            title="Regras de Comissão"
+            subtitle="Entenda como suas comissões e bônus são calculados neste mês."
+            breadcrumbs={[
+              { label: 'Meu Resultado', href: '/vendedor/meu-resultado' },
+              { label: 'Regras' },
+            ]}
+          />
         </div>
 
         {/* Cards */}

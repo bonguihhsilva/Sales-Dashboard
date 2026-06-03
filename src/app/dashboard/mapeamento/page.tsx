@@ -1,7 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getTenantContext } from '@/lib/auth/tenant'
 import { redirect } from 'next/navigation'
-import { LogoutButton } from '@/components/ui'
+import { LogoutButton, PageHeader } from '@/components/ui'
 import MapeamentoClient from './MapeamentoClient'
 
 export const dynamic = 'force-dynamic'
@@ -58,16 +58,13 @@ export default async function MapeamentoPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <div className="px-10 py-6 border-b border-white/5 flex items-center justify-between bg-surface-container-high/30">
-        <div>
-          <a href="/dashboard" className="text-[11px] font-mono text-muted-foreground hover:text-white transition-colors no-underline">
-            ← Voltar ao dashboard
-          </a>
-          <h1 className="text-2xl font-bold mt-1 font-display-lg tracking-tight">
-            Mapeamento <span className="text-accent font-normal">// Vendedor → Usuário</span>
-          </h1>
-        </div>
-        <LogoutButton />
+      <div className="px-10 pt-6">
+        <PageHeader
+          title="Mapeamento"
+          subtitle="Vendedor → Usuário"
+          breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Mapeamento' }]}
+          actions={<LogoutButton />}
+        />
       </div>
       <div className="p-10">
         <MapeamentoClient

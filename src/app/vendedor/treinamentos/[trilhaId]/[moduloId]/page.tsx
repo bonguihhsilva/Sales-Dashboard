@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { LogoutButton, SectionTitle } from '@/components/ui'
+import { LogoutButton, SectionTitle, PageHeader } from '@/components/ui'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -43,21 +43,17 @@ export default async function ModuloPage({ params }: { params: Promise<{ trilhaI
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       {/* Header */}
-      <div style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <Link href={`/vendedor/treinamentos/${trilhaId}`} style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textDecoration: 'none' }}>
-            ← Voltar para Módulos
-          </Link>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '4px' }}>
-            {modulo.titulo}
-          </h1>
-          <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginTop: '4px' }}>
-            {modulo.descricao}
-          </p>
-        </div>
-        <div>
-          <LogoutButton />
-        </div>
+      <div style={{ padding: '1.5rem 2.5rem' }}>
+        <PageHeader
+          title={modulo.titulo}
+          subtitle={modulo.descricao}
+          breadcrumbs={[
+            { label: 'Treinamentos', href: '/vendedor/treinamentos' },
+            { label: 'Módulos', href: `/vendedor/treinamentos/${trilhaId}` },
+            { label: modulo.titulo },
+          ]}
+          actions={<LogoutButton />}
+        />
       </div>
 
       <div style={{ padding: '2rem 2.5rem', maxWidth: '900px', margin: '0 auto' }}>

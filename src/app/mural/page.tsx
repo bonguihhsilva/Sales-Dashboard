@@ -5,7 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import MuralClient from './MuralClient'
 import type { Period } from '@/types'
-import Link from 'next/link'
+import { PageHeader } from '@/components/ui'
 
 export default async function MuralPage({
   searchParams,
@@ -72,20 +72,16 @@ export default async function MuralPage({
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
         
         {/* Header */}
-        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
-          <div>
-            <div style={{ display: 'inline-block', background: '#2563eb', borderRadius: '6px', padding: '3px 10px', marginBottom: '6px' }}>
-              <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.75rem' }}>GDS - MURAL</span>
-            </div>
-            <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '2rem', fontWeight: 800, margin: 0, lineHeight: 1.2 }}>Mural da Empresa</h1>
-            <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>Informações e recados gerais</p>
-          </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <Link href={backLink}>
-              <button className="nav-button">Voltar</button>
-            </Link>
-          </div>
-        </header>
+        <div style={{ marginBottom: '2rem' }}>
+          <PageHeader
+            title="Mural da Empresa"
+            subtitle="Informações e recados gerais"
+            breadcrumbs={[
+              { label: showValues ? 'Dashboard' : 'Meu Resultado', href: backLink },
+              { label: 'Mural' },
+            ]}
+          />
+        </div>
 
         {/* Client Component */}
         <MuralClient

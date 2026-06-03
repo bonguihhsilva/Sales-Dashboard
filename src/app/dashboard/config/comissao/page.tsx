@@ -2,6 +2,7 @@ import { getTenantContext } from '@/lib/auth/tenant'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import ConfigComissaoClient from './ConfigComissaoClient'
+import { PageHeader } from '@/components/ui'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,12 +33,15 @@ export default async function ConfigComissaoPage() {
   return (
     <div className="min-h-full bg-background flex flex-col p-6">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-on-surface mb-2">
-          Configuração de Comissões por Loja
-        </h1>
-        <p className="text-sm text-muted-foreground max-w-2xl">
-          Defina as porcentagens de comissão, bônus e metas aplicáveis a cada uma de suas lojas.
-        </p>
+        <PageHeader
+          title="Configuração de Comissões por Loja"
+          subtitle="Defina as porcentagens de comissão, bônus e metas aplicáveis a cada uma de suas lojas."
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/dashboard' },
+            { label: 'Configurações', href: '/dashboard/config' },
+            { label: 'Comissão' },
+          ]}
+        />
       </div>
 
       <div className="flex-1 glass-card rounded-2xl p-6 border border-white/5 bg-surface-container-low/40">

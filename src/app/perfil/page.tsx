@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
+import { PageHeader } from '@/components/ui'
 
 export default async function PerfilPage() {
   const supabase = await createClient()
@@ -39,18 +39,16 @@ export default async function PerfilPage() {
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         
         {/* Header */}
-        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
-          <div>
-            <div style={{ display: 'inline-block', background: '#2563eb', borderRadius: '6px', padding: '3px 10px', marginBottom: '6px' }}>
-              <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.75rem' }}>GDS - PERFIL</span>
-            </div>
-            <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '2rem', fontWeight: 800, margin: 0, lineHeight: 1.2 }}>Meu Perfil</h1>
-            <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>Visualize suas informações de conta</p>
-          </div>
-          <Link href={backLink}>
-            <button className="nav-button">Voltar</button>
-          </Link>
-        </header>
+        <div style={{ marginBottom: '2rem' }}>
+          <PageHeader
+            title="Meu Perfil"
+            subtitle="Visualize suas informações de conta"
+            breadcrumbs={[
+              { label: role === 'vendedor' ? 'Meu Resultado' : 'Dashboard', href: backLink },
+              { label: 'Meu Perfil' },
+            ]}
+          />
+        </div>
 
         {/* Profile Card */}
         <div className="glass-card rounded-2xl p-card-padding border border-white/5" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem' }}>

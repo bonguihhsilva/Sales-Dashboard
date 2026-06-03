@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { PageHeader } from '@/components/ui'
 
 type Store = { id: string; name: string; color: string; ativo: boolean }
 
@@ -52,13 +53,15 @@ export default function LojasClient({ stores: initial }: { stores: Store[] }) {
   return (
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 16px', display: 'flex', flexDirection: 'column', gap: 28 }}>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <h1 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 24, color: 'var(--text)', margin: 0 }}>Lojas</h1>
-          <p style={{ color: 'var(--muted)', fontSize: 14, marginTop: 4 }}>Canais de venda do seu tenant</p>
-        </div>
-        <a href="/dashboard/config" style={{ color: 'var(--muted)', fontSize: 13, textDecoration: 'none' }}>← Config</a>
-      </div>
+      <PageHeader
+        title="Lojas"
+        subtitle="Canais de venda do seu tenant"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Configurações', href: '/dashboard/config' },
+          { label: 'Lojas' },
+        ]}
+      />
 
       {/* Existing stores */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

@@ -5,6 +5,7 @@ import type { Period } from '@/types'
 import PeriodSelector from '../PeriodSelector'
 import ComissaoClient, { type VendorRow } from './ComissaoClient'
 import ExportButton from '../ExportButton'
+import { PageHeader } from '@/components/ui'
 
 export const dynamic = 'force-dynamic'
 
@@ -118,20 +119,18 @@ export default async function ComissaoPage({
   return (
     <div className="min-h-full bg-background flex flex-col p-margin-page">
       {/* Hero Header */}
-      <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <div className="flex items-center gap-4 mb-2">
-            <h1 className="font-display-lg text-display-lg text-on-surface m-0">Comissões</h1>
-            <div className="px-3 py-1 bg-surface-container-high rounded-full text-xs font-bold text-muted-foreground border border-white/5">
-              {activePeriodLabel}
-            </div>
-          </div>
-          <p className="text-on-surface-variant max-w-2xl">Acompanhe e aprove o cálculo mensal de comissões e bônus dos vendedores.</p>
-        </div>
-        <div className="flex gap-stack-sm flex-wrap items-center">
-          <PeriodSelector periods={(periods || []) as Period[]} activePeriod={activePeriod} />
-          <ExportButton activePeriod={activePeriod} />
-        </div>
+      <div className="mb-10">
+        <PageHeader
+          title="Comissões"
+          subtitle="Acompanhe e aprove o cálculo mensal de comissões e bônus dos vendedores."
+          breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Comissões' }]}
+          actions={
+            <>
+              <PeriodSelector periods={(periods || []) as Period[]} activePeriod={activePeriod} />
+              <ExportButton activePeriod={activePeriod} />
+            </>
+          }
+        />
       </div>
 
       <div className="flex-1 glass-card rounded-2xl p-6 border border-white/5">

@@ -1,7 +1,7 @@
 import { getTenantContext } from '@/lib/auth/tenant'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { SectionTitle } from '@/components/ui'
+import { SectionTitle, PageHeader } from '@/components/ui'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -80,32 +80,28 @@ export default async function TreinamentosPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       {/* Header */}
-      <div style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <div style={{ display: 'inline-block', background: '#2563eb', borderRadius: '6px', padding: '3px 10px', marginBottom: '6px' }}>
-            <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.75rem' }}>GDS - TREINAMENTOS</span>
-          </div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>
-            Trilhas de Aprendizado
-          </h1>
-          <p style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '2px' }}>
-            Aumente seu conhecimento e ganhe XP
-          </p>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <div style={{ display: 'flex', gap: '10px', background: 'var(--surface)', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>Seu Nível</div>
-              <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--accent)' }}>Nível {nivel}</div>
+      <div style={{ padding: '1.5rem 2.5rem' }}>
+        <PageHeader
+          title="Trilhas de Aprendizado"
+          subtitle="Aumente seu conhecimento e ganhe XP"
+          breadcrumbs={[
+            { label: 'Meu Resultado', href: '/vendedor/meu-resultado' },
+            { label: 'Treinamentos' },
+          ]}
+          actions={
+            <div style={{ display: 'flex', gap: '10px', background: 'var(--surface)', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>Seu Nível</div>
+                <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--accent)' }}>Nível {nivel}</div>
+              </div>
+              <div style={{ width: '1px', background: 'var(--border)' }}></div>
+              <div>
+                <div style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>XP Total</div>
+                <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--meta3, #f5a742)' }}>{xp} XP</div>
+              </div>
             </div>
-            <div style={{ width: '1px', background: 'var(--border)' }}></div>
-            <div>
-              <div style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>XP Total</div>
-              <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--meta3, #f5a742)' }}>{xp} XP</div>
-            </div>
-          </div>
-          <a href="/vendedor/meu-resultado" style={{ fontSize: '0.8rem', textDecoration: 'none', color: 'var(--text)', border: '1px solid var(--border)', padding: '6px 12px', borderRadius: '6px' }}>Meu Resultado</a>
-        </div>
+          }
+        />
       </div>
 
       <div style={{ padding: '2rem 2.5rem' }}>

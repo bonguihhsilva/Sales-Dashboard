@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { PageHeader } from '@/components/ui'
 
 type Gerente = {
   id: string
@@ -51,9 +52,15 @@ export default function PermissoesClient({ gerentes: initial }: { gerentes: Gere
   if (gerentes.length === 0) {
     return (
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-          <h1 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 24, color: 'var(--text)', margin: 0 }}>Permissões de Gerentes</h1>
-          <a href="/dashboard/config" style={{ color: 'var(--muted)', fontSize: 13, textDecoration: 'none' }}>← Config</a>
+        <div style={{ marginBottom: 24 }}>
+          <PageHeader
+            title="Permissões de Gerentes"
+            breadcrumbs={[
+              { label: 'Dashboard', href: '/dashboard' },
+              { label: 'Configurações', href: '/dashboard/config' },
+              { label: 'Permissões' },
+            ]}
+          />
         </div>
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 32, textAlign: 'center' }}>
           <p style={{ color: 'var(--muted)', fontSize: 15 }}>Nenhum gerente cadastrado ainda.</p>
@@ -68,13 +75,15 @@ export default function PermissoesClient({ gerentes: initial }: { gerentes: Gere
   return (
     <div style={{ maxWidth: 800, margin: '0 auto', padding: '32px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <h1 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 24, color: 'var(--text)', margin: 0 }}>Permissões</h1>
-          <p style={{ color: 'var(--muted)', fontSize: 14, marginTop: 4 }}>Controle o que cada gerente pode acessar</p>
-        </div>
-        <a href="/dashboard/config" style={{ color: 'var(--muted)', fontSize: 13, textDecoration: 'none' }}>← Config</a>
-      </div>
+      <PageHeader
+        title="Permissões"
+        subtitle="Controle o que cada gerente pode acessar"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Configurações', href: '/dashboard/config' },
+          { label: 'Permissões' },
+        ]}
+      />
 
       <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16, alignItems: 'start' }}>
 

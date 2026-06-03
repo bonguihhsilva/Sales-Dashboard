@@ -5,7 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getTenantContext } from '@/lib/auth/tenant'
 import { redirect } from 'next/navigation'
 import { fmtCurrency, fmtK, metaLevel, bonusAmount } from '@/lib/utils'
-import { KpiCard, StorePill, ProgressBar, BonusBadge, SectionTitle, LogoutButton } from '@/components/ui'
+import { KpiCard, StorePill, ProgressBar, BonusBadge, SectionTitle, LogoutButton, PageHeader } from '@/components/ui'
 import type { VendorSummary, Period } from '@/types'
 import UploadModal from './UploadModal'
 import PeriodSelector from './PeriodSelector'
@@ -92,25 +92,24 @@ export default async function DashboardPage({
   return (
     <div className="min-h-full bg-background flex flex-col p-margin-page">
       {/* Hero Header */}
-      <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <div style={{ display: 'inline-block', background: '#2563eb', borderRadius: '6px', padding: '3px 10px', marginBottom: '6px' }}>
-            <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.75rem' }}>GDS - DASHBOARD</span>
-          </div>
-          <h1 className="font-display-lg text-display-lg text-on-surface mb-2">Visão Geral de Vendas</h1>
-          <p className="text-on-surface-variant max-w-2xl">Acompanhe a performance do seu time de vendas e evolução de metas do período.</p>
-        </div>
-        <div className="flex gap-stack-sm flex-wrap items-center">
-          <div className="bg-surface-container-high px-4 py-2 rounded-xl border border-white/5 flex items-center gap-3">
-            <span className="material-symbols-outlined text-secondary" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
-            <div>
-              <div className="text-on-surface-variant text-[10px] uppercase tracking-wider font-bold">Período Ativo</div>
-              <div className="font-title-md text-title-md text-secondary">{activePeriodLabel}</div>
-            </div>
-          </div>
-          <StoreSelector stores={stores} activeStore={activeStore} />
-          <PeriodSelector periods={(periods || []) as Period[]} activePeriod={activePeriod} />
-        </div>
+      <div className="mb-10">
+        <PageHeader
+          title="Visão Geral de Vendas"
+          subtitle="Acompanhe a performance do seu time de vendas e evolução de metas do período."
+          actions={
+            <>
+              <div className="bg-surface-container-high px-4 py-2 rounded-xl border border-white/5 flex items-center gap-3">
+                <span className="material-symbols-outlined text-secondary" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
+                <div>
+                  <div className="text-on-surface-variant text-[10px] uppercase tracking-wider font-bold">Período Ativo</div>
+                  <div className="font-title-md text-title-md text-secondary">{activePeriodLabel}</div>
+                </div>
+              </div>
+              <StoreSelector stores={stores} activeStore={activeStore} />
+              <PeriodSelector periods={(periods || []) as Period[]} activePeriod={activePeriod} />
+            </>
+          }
+        />
       </div>
 
       {/* Visões do Dashboard */}

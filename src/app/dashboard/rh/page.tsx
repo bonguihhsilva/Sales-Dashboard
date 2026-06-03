@@ -4,6 +4,7 @@ import { getTenantContext } from '@/lib/auth/tenant'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import RHClient from './RHClient'
+import { PageHeader } from '@/components/ui'
 
 export default async function RHPage() {
   const { user, profile } = await getTenantContext()
@@ -51,13 +52,12 @@ export default async function RHPage() {
   return (
     <div className="min-h-full bg-background flex flex-col p-margin-page">
       {/* Hero Header */}
-      <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="font-display-lg text-display-lg text-on-surface mb-2">
-            Recursos Humanos
-          </h1>
-          <p className="text-on-surface-variant max-w-2xl">Gerencie férias, folgas, ausências e permissões da equipe de vendas.</p>
-        </div>
+      <div className="mb-10">
+        <PageHeader
+          title="Recursos Humanos"
+          subtitle="Gerencie férias, folgas, ausências e permissões da equipe de vendas."
+          breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'RH' }]}
+        />
       </div>
 
       <div className="flex-1 glass-card rounded-2xl p-6 border border-white/5">

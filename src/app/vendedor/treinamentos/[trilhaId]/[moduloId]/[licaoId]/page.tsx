@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { LogoutButton } from '@/components/ui'
-import Link from 'next/link'
+import { LogoutButton, PageHeader } from '@/components/ui'
 import LicaoClient from './LicaoClient'
 
 export const dynamic = 'force-dynamic'
@@ -36,18 +35,16 @@ export default async function LicaoPage({ params }: { params: Promise<{ trilhaId
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       {/* Header */}
-      <div style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <Link href={`/vendedor/treinamentos/${trilhaId}/${moduloId}`} style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textDecoration: 'none' }}>
-            ← Voltar para {modulo?.titulo || 'Módulo'}
-          </Link>
-          <p style={{ fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '4px' }}>
-            Lição {licao.ordem}
-          </p>
-        </div>
-        <div>
-          <LogoutButton />
-        </div>
+      <div style={{ padding: '1.5rem 2.5rem' }}>
+        <PageHeader
+          title={`Lição ${licao.ordem}`}
+          breadcrumbs={[
+            { label: 'Treinamentos', href: '/vendedor/treinamentos' },
+            { label: modulo?.titulo || 'Módulo', href: `/vendedor/treinamentos/${trilhaId}/${moduloId}` },
+            { label: `Lição ${licao.ordem}` },
+          ]}
+          actions={<LogoutButton />}
+        />
       </div>
 
       <LicaoClient 

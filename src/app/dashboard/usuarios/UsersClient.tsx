@@ -11,8 +11,9 @@ import {
   Check,
 } from 'lucide-react'
 import { DataTable, type Column } from '@/components/ui/data-table'
-import { LojaBadge, type LojaName } from '@/components/ui/loja-badge'
+import { LojaBadge } from '@/components/ui/loja-badge'
 import { EmptyState } from '@/components/ui/empty-state'
+import { PageHeader } from '@/components/ui'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -330,7 +331,7 @@ export default function UsersClient({
         const row = r as unknown as UserRow
         const storeObj = stores.find(s => s.key === row.store)
         if (!storeObj) return <span className="text-muted-foreground">{row.store || '—'}</span>
-        return <LojaBadge loja={storeObj.label as any} />
+        return <LojaBadge loja={storeObj.label} color={storeObj.color} />
       },
     },
     {
@@ -398,17 +399,18 @@ export default function UsersClient({
   return (
     <div className="min-h-full bg-background flex flex-col p-margin-page">
       {/* Hero Header */}
-      <div className="mb-10 flex flex-col md:flex-row md:items-start justify-between gap-6">
-        <div>
-          <h1 className="font-display-lg text-display-lg text-on-surface mb-2">Gestão de Usuários</h1>
-          <p className="text-on-surface-variant max-w-2xl">Gerencie acessos, convites e vínculos de lojas da equipe.</p>
-        </div>
-        <div className="flex items-center">
-          <Button onClick={() => setInviteOpen(true)} className="bg-primary hover:bg-primary/90 text-on-primary font-bold px-6 h-11 rounded-xl">
-            <UserPlus className="h-4 w-4 mr-2" />
-            Convidar Usuário
-          </Button>
-        </div>
+      <div className="mb-10">
+        <PageHeader
+          title="Gestão de Usuários"
+          subtitle="Gerencie acessos, convites e vínculos de lojas da equipe."
+          breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Usuários' }]}
+          actions={
+            <Button onClick={() => setInviteOpen(true)} className="bg-primary hover:bg-primary/90 text-on-primary font-bold px-6 h-11 rounded-xl">
+              <UserPlus className="h-4 w-4 mr-2" />
+              Convidar Usuário
+            </Button>
+          }
+        />
       </div>
 
       <div className="flex-1 glass-card rounded-2xl p-6 border border-white/5 flex flex-col gap-6">

@@ -117,7 +117,7 @@ export function SectionTitle({ children }: { children: React.ReactNode }) {
 export { StatCard } from './stat-card'
 export { DataTable, type Column } from './data-table'
 export { PeriodSelector, type Period as PeriodOption } from './period-selector'
-export { LojaBadge, type LojaName } from './loja-badge'
+export { LojaBadge } from './loja-badge'
 export { ProgressRing } from './progress-ring'
 export { EmptyState } from './empty-state'
 export { PageHeader } from './page-header'

@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { LogoutButton, SectionTitle } from '@/components/ui'
-import Link from 'next/link'
+import { LogoutButton, SectionTitle, PageHeader } from '@/components/ui'
 import QuizClient from './QuizClient'
 
 export const dynamic = 'force-dynamic'
@@ -66,18 +65,16 @@ export default async function QuizPage({ params }: { params: Promise<{ trilhaId:
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       {/* Header */}
-      <div style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <Link href={`/vendedor/treinamentos/${trilhaId}/${moduloId}`} style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textDecoration: 'none' }}>
-            ← Voltar para Módulo
-          </Link>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '4px' }}>
-            Quiz: {modulo.titulo}
-          </h1>
-        </div>
-        <div>
-          <LogoutButton />
-        </div>
+      <div style={{ padding: '1.5rem 2.5rem' }}>
+        <PageHeader
+          title={`Quiz: ${modulo.titulo}`}
+          breadcrumbs={[
+            { label: 'Treinamentos', href: '/vendedor/treinamentos' },
+            { label: modulo.titulo, href: `/vendedor/treinamentos/${trilhaId}/${moduloId}` },
+            { label: 'Quiz' },
+          ]}
+          actions={<LogoutButton />}
+        />
       </div>
 
       <div style={{ padding: '2rem 2.5rem', maxWidth: '800px', margin: '0 auto' }}>

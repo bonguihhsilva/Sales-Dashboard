@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
+import { PageHeader } from '@/components/ui'
 import ChangePassword from '@/components/ui/ChangePassword'
 
 export default async function ConfiguracoesPage() {
@@ -21,18 +21,16 @@ export default async function ConfiguracoesPage() {
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         
         {/* Header */}
-        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
-          <div>
-            <div style={{ display: 'inline-block', background: '#2563eb', borderRadius: '6px', padding: '3px 10px', marginBottom: '6px' }}>
-              <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.75rem' }}>GDS - CONFIGURAÇÕES</span>
-            </div>
-            <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '2rem', fontWeight: 800, margin: 0, lineHeight: 1.2 }}>Configurações</h1>
-            <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>Gerencie as preferências da sua conta</p>
-          </div>
-          <Link href={backLink}>
-            <button className="nav-button">Voltar</button>
-          </Link>
-        </header>
+        <div style={{ marginBottom: '2rem' }}>
+          <PageHeader
+            title="Configurações"
+            subtitle="Gerencie as preferências da sua conta"
+            breadcrumbs={[
+              { label: role === 'vendedor' ? 'Meu Resultado' : 'Dashboard', href: backLink },
+              { label: 'Configurações' },
+            ]}
+          />
+        </div>
 
         {/* Settings List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>

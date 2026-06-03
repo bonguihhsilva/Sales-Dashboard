@@ -1,23 +1,23 @@
 import { cn } from '@/lib/utils'
 
-export type LojaName = 'Jebai' | 'Pajé 1' | 'Pajé 2'
-
-interface LojaBadgeProps { loja: LojaName; className?: string }
-
-const STYLES: Record<LojaName, { bg: string; dot: string; text: string }> = {
-  'Jebai':  { bg: 'bg-jebai/15', dot: 'bg-jebai', text: 'text-jebai' },
-  'Pajé 1': { bg: 'bg-paje1/15', dot: 'bg-paje1', text: 'text-paje1' },
-  'Pajé 2': { bg: 'bg-paje2/15', dot: 'bg-paje2', text: 'text-paje2' },
+interface LojaBadgeProps {
+  loja: string
+  color?: string | null
+  className?: string
 }
 
-export function LojaBadge({ loja, className }: LojaBadgeProps) {
-  const s = STYLES[loja]
+export function LojaBadge({ loja, color, className }: LojaBadgeProps) {
+  // Cor vem do DB (stores.color) — nunca hardcodar por nome de loja (multi-tenant)
+  const c = color || 'var(--muted)'
   return (
-    <span className={cn(
-      'inline-flex items-center gap-1.5 rounded-md px-2 py-1 font-mono text-[12px] uppercase',
-      s.bg, s.text, className,
-    )}>
-      <span className={cn('h-1.5 w-1.5 rounded-full', s.dot)} />
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded-md px-2 py-1 font-mono text-[12px] uppercase',
+        className,
+      )}
+      style={{ background: `color-mix(in srgb, ${c} 15%, transparent)`, color: c }}
+    >
+      <span className="h-1.5 w-1.5 rounded-full" style={{ background: c }} />
       {loja}
     </span>
   )

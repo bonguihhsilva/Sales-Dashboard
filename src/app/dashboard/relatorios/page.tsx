@@ -5,6 +5,7 @@ import type { Period } from '@/types'
 import UploadModal from '../UploadModal'
 import PeriodSelector from '../PeriodSelector'
 import ExportButton from '../ExportButton'
+import { PageHeader } from '@/components/ui'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,11 +34,12 @@ export default async function RelatoriosPage({
   return (
     <div className="min-h-full bg-background flex flex-col p-margin-page">
       {/* Hero Header */}
-      <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="font-display-lg text-display-lg text-on-surface mb-2">Relatórios e Importação</h1>
-          <p className="text-on-surface-variant max-w-2xl">Exporte relatórios de comissões ou importe novos dados de vendas da Hubspot.</p>
-        </div>
+      <div className="mb-10">
+        <PageHeader
+          title="Relatórios e Importação"
+          subtitle="Exporte relatórios de comissões ou importe novos dados de vendas da Hubspot."
+          breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Relatórios' }]}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">

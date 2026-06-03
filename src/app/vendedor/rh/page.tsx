@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { PageHeader } from '@/components/ui'
 import MeuRHTab from '../meu-resultado/MeuRHTab'
 import type { HRFreeDay, HRAbsence, HRVacation, HRPermission } from '@/types'
 
@@ -39,13 +40,14 @@ export default async function VendedorRHPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '2rem 2.5rem' }}>
       <div style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'inline-block', background: '#2563eb', borderRadius: '6px', padding: '3px 10px', marginBottom: '6px' }}>
-          <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.75rem' }}>GDS - RH</span>
-        </div>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Recursos Humanos</h1>
-        <p style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '4px' }}>
-          Acompanhe suas solicitações, atestados e férias.
-        </p>
+        <PageHeader
+          title="Recursos Humanos"
+          subtitle="Acompanhe suas solicitações, atestados e férias."
+          breadcrumbs={[
+            { label: 'Meu Resultado', href: '/vendedor/meu-resultado' },
+            { label: 'RH' },
+          ]}
+        />
       </div>
 
       <MeuRHTab
