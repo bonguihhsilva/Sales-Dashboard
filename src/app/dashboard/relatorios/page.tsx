@@ -22,7 +22,8 @@ export default async function RelatoriosPage({
 
   const adminDb = createAdminClient()
   const { data: periods } = await adminDb
-    .from('periods').select('*').order('year', { ascending: false }).order('month', { ascending: false })
+    .from('periods').select('*').eq('tenant_id', profile.tenant_id)
+    .order('year', { ascending: false }).order('month', { ascending: false })
 
   const params = await searchParams
   const activePeriod = params.period
