@@ -49,5 +49,17 @@
 ## Ferramentas por track
 A: Bash/build · B: Supabase advisors + semgrep + /security-review · C: Supabase execute_sql + apply_migration · D: Playwright MCP + get_logs · E: Playwright screenshots + /gsd-ui-review · F: /gsd-code-review + coderabbit · Feature: edição direta + migration
 
+## Achados UAT no deploy (2026-06-03, demo adm via Playwright)
+- **RBAC gerente = adm (P0 confirmado em código):** `middleware.ts` libera gerente em todo `/dashboard` e `/api/admin`. `gerente_permissions` (gerenciar_usuarios/aprovar_comissoes=false etc.) NÃO enforçado. Gerente de cliente teria poder de adm. → engine deve enforçar os flags
+- **Navegação dupla + idioma misto (P1):** `TopNavBar.tsx` (top, EN: "Learning"/"HR Panel") coexiste com sidebar (PT: "Treinamentos"/"Recursos Humanos"). Redundante e inconsistente
+- **Console erro (P2):** `Invalid Refresh Token: Refresh Token Not Found` + 400 em `/auth/v1/token` no load → possível logout aleatório/instabilidade de sessão
+- **favicon.ico 404 (P3)**
+- **Isolamento de tenant OK (✓):** demo adm vê só lojas demo (Loja Centro/Online/Shopping), não Jebai/Pajé da Star
+- Token foundation (Wave 1) já corrige muted/destructive/accent app-wide quando deployado
+
+## Wave 1 — FEITO (branch fix/verificacao-2026-06-03)
+- commit `3ded881` tokens shadcn completos · `f644b80` metas edit + PageHeader · `73e5a22` doc
+
 ## Log de execução
 - 2026-06-03: diagnóstico completo; board criado; metas e cross-tenant confirmados resolvidos.
+- 2026-06-03: Wave 1 commitada (tokens + metas). UAT adm no deploy → achados acima. RBAC gerente confirmado como P0.
