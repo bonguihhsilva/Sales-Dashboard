@@ -13,7 +13,15 @@ module.exports = {
         foreground: '#dae2fd',
         card:       '#0b1326',
         'card-foreground': '#dae2fd',
-        
+        popover:    '#0b1326',
+        'popover-foreground': '#dae2fd',
+        muted:      '#171f33',
+        'muted-foreground': '#958da1',
+        accent:     '#2d3449',
+        'accent-foreground': '#dae2fd',
+        destructive: '#e5484d',
+        'destructive-foreground': '#ffffff',
+
         // EliteExec Colors
         "on-secondary-fixed-variant": "#574500",
         "primary-container": "#7c3aed",
