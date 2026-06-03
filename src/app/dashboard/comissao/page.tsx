@@ -46,6 +46,7 @@ export default async function ComissaoPage({
   const adminDb = createAdminClient()
   const { data: periods } = await adminDb
     .from('periods').select('*')
+    .eq('tenant_id', profile?.tenant_id)
     .order('year', { ascending: false })
     .order('month', { ascending: false })
 
@@ -57,6 +58,7 @@ export default async function ComissaoPage({
     .from('vendor_summary')
     .select('*')
     .eq('period_id', activePeriod)
+    .eq('tenant_id', profile?.tenant_id)
     .order('total_sold', { ascending: false })
 
   // Resolve vendor text IDs → profile UUIDs for FK into comissoes_calculadas

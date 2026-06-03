@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { LogoutButton } from '@/components/ui'
+import { PageHeader } from '@/components/ui'
 import MetasClient from './MetasClient'
 
 export const dynamic = 'force-dynamic'
@@ -9,7 +9,6 @@ export default async function MetasPage() {
   const supabase = await createClient()
   let { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-  // if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   
@@ -28,17 +27,16 @@ export default async function MetasPage() {
   const { data: goals }   = await supabase.from('goals').select('*').order('vendor_name')
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-      <div style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <a href="/dashboard" style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textDecoration: 'none' }}>← Voltar ao dashboard</a>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '4px' }}>
-            Metas <span style={{ color: 'var(--accent)' }}>// Gestão de Períodos</span>
-          </h1>
-        </div>
-        <LogoutButton />
-      </div>
-      <div style={{ padding: '1.5rem 2.5rem' }}>
+    <div className="min-h-full bg-background flex flex-col p-margin-page gap-6">
+      <PageHeader
+        title="Gestão de Períodos e Metas"
+        subtitle="Configure os objetivos de venda de cada vendedor por período"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Metas' }
+        ]}
+      />
+      <div>
         <MetasClient periods={periods ?? []} goals={goals ?? []} />
       </div>
     </div>

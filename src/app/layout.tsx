@@ -22,7 +22,7 @@ const jetbrains = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'EliteExec · Dashboard',
+  title: 'GDS · Dashboard',
   description: 'Painel de vendas, comissões e treinamento de alta performance',
 }
 
