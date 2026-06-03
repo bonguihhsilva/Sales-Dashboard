@@ -1,5 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
+import type { PermissionKey } from '@/lib/permissions'
 
 // Ordem importa: prefixos mais especificos primeiro.
 // /dashboard/config deve ser avaliado antes de /dashboard.
@@ -13,6 +15,51 @@ const ROLE_RULES: Array<{ prefix: string; allowed: string[] }> = [
   { prefix: '/configuracoes', allowed: ['vendedor', 'adm', 'gerente', 'super_admin'] },
   { prefix: '/api/admin', allowed: ['adm', 'gerente', 'super_admin'] },
   { prefix: '/api/vendor', allowed: ['vendedor', 'adm', 'gerente', 'super_admin'] },
+]
+
+// Permissoes finas do gerente: cada flag de gerente_permissions gateia rotas especificas.
+// adm/super_admin ignoram estas regras (acesso total). Avaliado so quando role === 'gerente'.
+// Ordem importa: regra mais especifica (aprovar) antes da geral (ver_comissoes).
+const GERENTE_PERM_RULES: Array<{ test: (p: string) => boolean; perm: PermissionKey }> = [
+  {
+    test: p =>
+      p.startsWith('/dashboard/usuarios') ||
+      p.startsWith('/api/admin/create-user') ||
+      p.startsWith('/api/admin/update-user') ||
+      p.startsWith('/api/admin/disable-user') ||
+      p.startsWith('/api/admin/invite') ||
+      p.startsWith('/api/admin/gerente-permissions'),
+    perm: 'gerenciar_usuarios',
+  },
+  {
+    test: p =>
+      (p.includes('/comissoes') && p.includes('/aprovar')) ||
+      p.startsWith('/api/admin/calcular-comissao'),
+    perm: 'aprovar_comissoes',
+  },
+  {
+    test: p =>
+      p.startsWith('/dashboard/comissao') ||
+      p.startsWith('/dashboard/regras-comissao') ||
+      p.startsWith('/api/admin/comissoes'),
+    perm: 'ver_comissoes',
+  },
+  {
+    test: p => p.startsWith('/dashboard/rh') || p.startsWith('/api/admin/hr'),
+    perm: 'ver_rh',
+  },
+  {
+    test: p =>
+      p.startsWith('/dashboard/relatorios') || p.startsWith('/api/admin/relatorio-excel'),
+    perm: 'ver_relatorios',
+  },
+  {
+    test: p =>
+      p.startsWith('/api/admin/parse-upload') ||
+      p.startsWith('/api/admin/create-period') ||
+      p.startsWith('/api/admin/ensure-period'),
+    perm: 'importar_dados',
+  },
 ]
 
 // Rotas publicas - sem auth check. /convite permite acesso sem sessao.
@@ -62,6 +109,34 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = role === 'vendedor' ? '/vendedor/meu-resultado' : '/dashboard'
     return NextResponse.redirect(url)
+  }
+
+  // Enforcement fino do gerente: gateia rotas pelos flags de gerente_permissions.
+  // Leitura via service-role apenas quando gerente acessa uma rota gateada (sempre fresco,
+  // sem depender de sincronizar permissoes no JWT).
+  if (role === 'gerente') {
+    const permRule = GERENTE_PERM_RULES.find(r => r.test(pathname))
+    if (permRule) {
+      const admin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        { auth: { persistSession: false, autoRefreshToken: false } }
+      )
+      const { data: gp } = await admin
+        .from('gerente_permissions')
+        .select('permissions')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      const perms = (gp?.permissions ?? {}) as Record<string, boolean>
+      if (!perms[permRule.perm]) {
+        if (pathname.startsWith('/api/')) {
+          return NextResponse.json({ error: 'Permissão negada' }, { status: 403 })
+        }
+        const url = request.nextUrl.clone()
+        url.pathname = '/dashboard'
+        return NextResponse.redirect(url)
+      }
+    }
   }
 
   // Se o vendedor tentar ir para a raiz ou acessar caminhos genéricos
