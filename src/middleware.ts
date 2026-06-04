@@ -85,6 +85,14 @@ export async function middleware(request: NextRequest) {
     }
   )
 
+  // Propaga cookies de auth (incl. token rotacionado pelo getUser) em qualquer resposta
+  // que nao seja supabaseResponse. Sem isso, o refresh token rotacionado se perde no
+  // redirect/json e o proximo request falha com "Invalid Refresh Token" (logout aleatorio).
+  const withAuthCookies = (res: NextResponse) => {
+    supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c))
+    return res
+  }
+
   const { pathname } = request.nextUrl
 
   // Rotas publicas: deixa passar (apos refresh de cookie acima)
@@ -98,7 +106,7 @@ export async function middleware(request: NextRequest) {
   if (!user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    return NextResponse.redirect(url)
+    return withAuthCookies(NextResponse.redirect(url))
   }
 
   // Role vem do JWT app_metadata - sem query ao banco (D-04)
@@ -108,7 +116,7 @@ export async function middleware(request: NextRequest) {
   if (rule && !rule.allowed.includes(role)) {
     const url = request.nextUrl.clone()
     url.pathname = role === 'vendedor' ? '/vendedor/meu-resultado' : '/dashboard'
-    return NextResponse.redirect(url)
+    return withAuthCookies(NextResponse.redirect(url))
   }
 
   // Enforcement fino do gerente: gateia rotas pelos flags de gerente_permissions.
@@ -130,11 +138,11 @@ export async function middleware(request: NextRequest) {
       const perms = (gp?.permissions ?? {}) as Record<string, boolean>
       if (!perms[permRule.perm]) {
         if (pathname.startsWith('/api/')) {
-          return NextResponse.json({ error: 'Permissão negada' }, { status: 403 })
+          return withAuthCookies(NextResponse.json({ error: 'Permissão negada' }, { status: 403 }))
         }
         const url = request.nextUrl.clone()
         url.pathname = '/dashboard'
-        return NextResponse.redirect(url)
+        return withAuthCookies(NextResponse.redirect(url))
       }
     }
   }
@@ -144,7 +152,7 @@ export async function middleware(request: NextRequest) {
     if (role === 'vendedor') {
       const url = request.nextUrl.clone()
       url.pathname = '/vendedor/meu-resultado'
-      return NextResponse.redirect(url)
+      return withAuthCookies(NextResponse.redirect(url))
     }
   }
 
