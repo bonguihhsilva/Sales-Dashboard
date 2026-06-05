@@ -25,6 +25,8 @@ export default async function MetasPage() {
 
   const { data: periods } = await supabase.from('periods').select('*').order('id', { ascending: false })
   const { data: goals }   = await supabase.from('goals').select('*').order('vendor_name')
+  // RLS stores_tenant_read escopa por tenant automaticamente (tenant_id = get_user_tenant_id())
+  const { data: stores }  = await supabase.from('stores').select('name, color').eq('ativo', true).order('name')
 
   return (
     <div className="min-h-full bg-background flex flex-col p-margin-page gap-6">
@@ -37,7 +39,7 @@ export default async function MetasPage() {
         ]}
       />
       <div>
-        <MetasClient periods={periods ?? []} goals={goals ?? []} />
+        <MetasClient periods={periods ?? []} goals={goals ?? []} stores={stores ?? []} />
       </div>
     </div>
   )

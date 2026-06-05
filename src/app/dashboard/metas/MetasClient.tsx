@@ -27,7 +27,11 @@ interface Goal {
   history_months: number | null
 }
 
-const STORES = ['Jebai', 'Paje-MKT', 'Paje-Caixa']
+interface Store {
+  name: string
+  color: string
+}
+
 const MONTHS = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
@@ -36,12 +40,14 @@ const MONTHS = [
 const inputCls =
   'w-full bg-background border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl text-sm text-foreground px-3 py-2 outline-none font-mono transition-all'
 
-export default function MetasClient({ periods, goals }: { periods: Period[]; goals: Goal[] }) {
+export default function MetasClient({ periods, goals, stores }: { periods: Period[]; goals: Goal[]; stores: Store[] }) {
   const [activePeriod, setActivePeriod] = useState<number>(periods[0]?.id ?? 0)
   const [showNewPeriod, setShowNewPeriod] = useState(false)
   const [showNewVendor, setShowNewVendor] = useState(false)
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
   const [msg, setMsg] = useState('')
+
+  const storeColors = Object.fromEntries(stores.map(s => [s.name, s.color]))
 
   // Form: novo período
   const [npYear, setNpYear] = useState(new Date().getFullYear())
@@ -50,7 +56,7 @@ export default function MetasClient({ periods, goals }: { periods: Period[]; goa
   // Form: novo vendedor (inclui metas e bônus — obrigatórios pela API)
   const [nvId, setNvId] = useState('')
   const [nvName, setNvName] = useState('')
-  const [nvStore, setNvStore] = useState('Jebai')
+  const [nvStore, setNvStore] = useState(stores[0]?.name ?? '')
   const [nvMeta1, setNvMeta1] = useState('')
   const [nvMeta2, setNvMeta2] = useState('')
   const [nvMeta3, setNvMeta3] = useState('')
@@ -282,17 +288,21 @@ export default function MetasClient({ periods, goals }: { periods: Period[]; goa
                           </div>
                         </td>
                         <td className="py-4 px-4 text-muted-foreground font-medium text-xs whitespace-nowrap">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono tracking-wider ${
-                              g.store === 'Jebai'
-                                ? 'bg-purple-500/10 text-purple-300 border border-purple-500/20'
-                                : g.store.includes('MKT')
-                                ? 'bg-blue-500/10 text-blue-300 border border-blue-500/20'
-                                : 'bg-orange-500/10 text-orange-300 border border-orange-500/20'
-                            }`}
-                          >
-                            {g.store}
-                          </span>
+                          {(() => {
+                            const color = storeColors[g.store]
+                            return color ? (
+                              <span
+                                className="px-2 py-0.5 rounded text-[10px] font-bold font-mono tracking-wider border"
+                                style={{ color, borderColor: `${color}33`, backgroundColor: `${color}1a` }}
+                              >
+                                {g.store}
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono tracking-wider border border-border bg-surface-container text-muted-foreground">
+                                {g.store}
+                              </span>
+                            )
+                          })()}
                         </td>
                         <td className="py-4 px-4 font-mono text-xs text-muted-foreground">{g.vendor_id}</td>
                         {(['meta1', 'meta2', 'meta3', 'bonus1', 'bonus2', 'bonus3'] as const).map(field => {
@@ -415,11 +425,15 @@ export default function MetasClient({ periods, goals }: { periods: Period[]; goa
                     onChange={e => setNvStore(e.target.value)}
                     className={inputCls + ' cursor-pointer font-semibold'}
                   >
-                    {STORES.map(s => (
-                      <option key={s} value={s} className="bg-surface-container">
-                        {s}
-                      </option>
-                    ))}
+                    {stores.length === 0 ? (
+                      <option value="" className="bg-surface-container">Nenhuma loja cadastrada</option>
+                    ) : (
+                      stores.map(s => (
+                        <option key={s.name} value={s.name} className="bg-surface-container">
+                          {s.name}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
               </div>

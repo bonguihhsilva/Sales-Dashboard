@@ -10,7 +10,15 @@ export function TopNavBar({ name, role = 'super_admin', tenants = [], activeTena
         <Link href="/dashboard" className="font-headline-lg text-headline-lg font-bold text-primary">GDS</Link>
       </div>
       <div className="flex items-center gap-stack-md">
-        <button className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-all p-2 rounded-full hover:bg-white/5 active:scale-95">notifications</button>
+        <button
+          type="button"
+          disabled
+          title="Notificações — em breve"
+          aria-label="Notificações (em breve)"
+          className="material-symbols-outlined text-on-surface-variant/40 p-2 rounded-full cursor-not-allowed"
+        >
+          notifications
+        </button>
         {role === 'super_admin' && (
           <div className="mr-4 border-r border-border pr-4">
             <TenantSwitcher tenants={tenants} activeTenantId={activeTenantId} />
