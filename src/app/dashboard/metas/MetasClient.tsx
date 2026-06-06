@@ -267,7 +267,10 @@ export default function MetasClient({ periods, goals, stores }: { periods: Perio
                   </tr>
                 ) : (
                   periodGoals.map(g => {
-                    const awaitingHistory = g.history_months !== null && g.history_months < 3
+                    // Metas definidas (manual ou auto-calc) sempre exibem, mesmo com <3 meses de histórico.
+                    // "Aguardando histórico" só quando ainda NÃO há metas (auto-calc pendente).
+                    const hasMetas = g.meta1 > 0 || g.meta2 > 0 || g.meta3 > 0
+                    const awaitingHistory = g.history_months !== null && g.history_months < 3 && !hasMetas
                     const hasZeroGoals = !awaitingHistory && (g.meta1 === 0 || g.meta2 === 0 || g.meta3 === 0)
                     return (
                       <tr key={g.id} className="hover:bg-surface-container/30 transition-colors group">
