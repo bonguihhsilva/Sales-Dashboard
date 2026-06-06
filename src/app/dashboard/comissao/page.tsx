@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getTenantContext } from '@/lib/auth/tenant'
 import { redirect } from 'next/navigation'
 import type { Period } from '@/types'
 import PeriodSelector from '../PeriodSelector'
@@ -14,17 +14,9 @@ export default async function ComissaoPage({
 }: {
   searchParams: Promise<{ period?: string }>
 }) {
-  const supabase = await createClient()
-  let { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-  // if (!user) redirect('/login')
-
-  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
-  
-  const { data: profile } = await supabase
-    .from('profiles').select('role, name, tenant_id').eq('id', user.id).single()
-  
-  const effectiveRole = profile?.role || jwtRole
+  // getTenantContext resolve o tenant respeitando masquerade do super_admin (cookie active_tenant_id)
+  const { profile } = await getTenantContext()
+  const effectiveRole = profile.role
 
   if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) {
     return (
@@ -36,18 +28,12 @@ export default async function ComissaoPage({
     )
   }
 
-  if (!profile?.tenant_id) {
-    const adminDb = createAdminClient()
-    await adminDb.from('profiles').update({ tenant_id: user.id }).eq('id', user.id)
-    if (profile) {
-      profile.tenant_id = user.id
-    }
-  }
+  const tenantId = profile.tenant_id
 
   const adminDb = createAdminClient()
   const { data: periods } = await adminDb
     .from('periods').select('*')
-    .eq('tenant_id', profile?.tenant_id)
+    .eq('tenant_id', tenantId)
     .order('year', { ascending: false })
     .order('month', { ascending: false })
 

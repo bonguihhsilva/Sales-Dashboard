@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getTenantContext } from '@/lib/auth/tenant'
 import { redirect, notFound } from 'next/navigation'
 import { fmtCurrency, fmtK, metaLevel, bonusAmount } from '@/lib/utils'
 import { KpiCard, StorePill, ProgressBar, SectionTitle, LogoutButton, PageHeader } from '@/components/ui'
@@ -16,43 +17,35 @@ export default async function VendorDetailPage({
   params: Promise<{ vendor_id: string }>
   searchParams: Promise<{ period?: string; tab?: string }>
 }) {
-  const supabase = await createClient()
-  let { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-  // if (!user) redirect('/login')
-
-  const { data: profile } = await supabase.from('profiles').select('role, tenant_id').eq('id', user.id).single()
-  
-  let currentProfile = profile
-  const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
-  if (!currentProfile) {
-    currentProfile = { role: jwtRole, tenant_id: user.id }
-  }
-
-  const effectiveRole = currentProfile.role || jwtRole
+  // getTenantContext resolve o tenant respeitando masquerade do super_admin (cookie active_tenant_id)
+  const { profile } = await getTenantContext()
+  const effectiveRole = profile.role
   if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) {
     redirect('/vendedor/meu-resultado')
   }
+  const tenantId = profile.tenant_id
 
+  const supabase = await createClient()
   const { vendor_id } = await params
   const sp = await searchParams
 
-  const { data: periods } = await supabase
-    .from('periods').select('*').order('year', { ascending: false }).order('month', { ascending: false })
+  // vendor_summary/periods via service_role escopado ao tenant (masquerade-aware via getTenantContext)
+  const adminDb = createAdminClient()
+  const { data: periods } = await adminDb
+    .from('periods').select('*').eq('tenant_id', tenantId)
+    .order('year', { ascending: false }).order('month', { ascending: false })
 
   const activePeriod = sp.period ? parseInt(sp.period) : (periods?.[0]?.id ?? 1)
   const activeTab    = sp.tab ?? 'performance'
 
-  // vendor_summary tem SELECT revogado de authenticated (hardening) — leitura via service_role, escopada ao tenant.
-  const adminDb = createAdminClient()
   const { data: summary } = await adminDb
-    .from('vendor_summary').select('*').eq('period_id', activePeriod).eq('vendor_id', vendor_id).eq('tenant_id', currentProfile?.tenant_id).single()
+    .from('vendor_summary').select('*').eq('period_id', activePeriod).eq('vendor_id', vendor_id).eq('tenant_id', tenantId).single()
 
   const { data: evolution } = await supabase.rpc('vendor_evolution', { p_vendor_id: vendor_id })
 
   if (!summary) {
     const { data: fallback } = await adminDb
-      .from('vendor_summary').select('period_id').eq('vendor_id', vendor_id).eq('tenant_id', currentProfile?.tenant_id)
+      .from('vendor_summary').select('period_id').eq('vendor_id', vendor_id).eq('tenant_id', tenantId)
       .order('period_id', { ascending: false }).limit(1).single()
     if (!fallback) notFound()
     redirect(`/dashboard/vendedor/${vendor_id}?period=${fallback.period_id}`)
@@ -78,7 +71,7 @@ export default async function VendorDetailPage({
 
   // Ranking position
   const { data: allSummaries } = await adminDb
-    .from('vendor_summary').select('vendor_id, total_sold, store').eq('period_id', activePeriod).eq('tenant_id', currentProfile?.tenant_id).order('total_sold', { ascending: false })
+    .from('vendor_summary').select('vendor_id, total_sold, store').eq('period_id', activePeriod).eq('tenant_id', tenantId).order('total_sold', { ascending: false })
   const rankAll   = (allSummaries ?? []).findIndex(s => s.vendor_id === vendor_id) + 1
   const rankStore = (allSummaries ?? []).filter(s => s.store === summary.store).findIndex(s => s.vendor_id === vendor_id) + 1
 
