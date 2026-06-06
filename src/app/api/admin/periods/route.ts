@@ -1,13 +1,10 @@
 import { NextResponse } from 'next/server'
-import { createClient as createServerClient } from '@/lib/supabase/server'
+import { getTenantContext } from '@/lib/auth/tenant'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function GET() {
-  const caller = await createServerClient()
-  const { data: { user } } = await caller.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-
-  const { data: profile } = await caller.from('profiles').select('tenant_id').eq('id', user.id).single()
+  // getTenantContext resolve o tenant respeitando masquerade do super_admin (cookie active_tenant_id)
+  const { profile } = await getTenantContext()
   if (!profile?.tenant_id) {
     return NextResponse.json({ error: 'Organização não associada ao usuário' }, { status: 403 })
   }

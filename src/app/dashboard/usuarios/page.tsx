@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
-import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { getTenantContext } from '@/lib/auth/tenant'
 import { redirect } from 'next/navigation'
 import type { Profile } from '@/types'
 import UsersClient from './UsersClient'
@@ -13,24 +13,12 @@ export default async function UsersPage({
 }: {
   searchParams: Promise<{ role?: string; loja?: string }>
 }) {
-  const supabase = await createClient()
-  let { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-  // if (!user) redirect('/login')
-
-  // Guard: somente adm/gerente/super_admin (D-01). Via app_metadata.
-  const callerRole = user.app_metadata?.role as string | undefined
-  if (!callerRole || !['adm', 'gerente', 'super_admin'].includes(callerRole)) {
+  // getTenantContext resolve o tenant respeitando masquerade do super_admin (cookie active_tenant_id)
+  const { profile } = await getTenantContext()
+  if (!['adm', 'gerente', 'super_admin'].includes(profile.role)) {
     redirect('/vendedor/meu-resultado')
   }
-
-  // tenant_id do caller — para isolar a listagem (Pitfall 4)
-  const { data: callerProfile } = await supabase
-    .from('profiles')
-    .select('tenant_id')
-    .eq('id', user.id)
-    .single()
-  const tenantId = callerProfile?.tenant_id
+  const tenantId = profile.tenant_id
 
   // Profiles do tenant + last_sign_in_at via admin API
   const admin = createAdminClient(
@@ -48,7 +36,7 @@ export default async function UsersPage({
     }
   }
 
-  const { data: profiles } = await supabase.from('profiles').select('*').eq('tenant_id', tenantId).order('name')
+  const { data: profiles } = await admin.from('profiles').select('*').eq('tenant_id', tenantId).order('name')
   
   const authUsers = listResult?.data?.users ?? []
 
@@ -66,7 +54,7 @@ export default async function UsersPage({
   })
 
   // Fetch stores for the tenant
-  const { data: dbStores } = await supabase.from('stores').select('*').eq('tenant_id', tenantId).order('name')
+  const { data: dbStores } = await admin.from('stores').select('*').eq('tenant_id', tenantId).order('name')
   const stores = (dbStores || []).map(s => ({ key: s.name, label: s.name, color: s.color }))
 
   return (
