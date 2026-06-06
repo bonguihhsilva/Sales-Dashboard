@@ -1,12 +1,14 @@
 'use client'
 
 import { useEffect } from 'react'
+import * as Sentry from '@sentry/nextjs'
 
 // Captura erros lançados no layout raiz (fora do alcance de app/error.tsx).
 // Precisa renderizar suas próprias tags <html>/<body>.
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
-    // TODO(Sentry): reportar `error` quando o DSN estiver configurado
+    // No-op se NEXT_PUBLIC_SENTRY_DSN não estiver setado.
+    Sentry.captureException(error)
     console.error(error)
   }, [error])
 

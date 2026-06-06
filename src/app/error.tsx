@@ -1,10 +1,12 @@
 'use client'
 
 import { useEffect } from 'react'
+import * as Sentry from '@sentry/nextjs'
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
-    // TODO(Sentry): reportar `error` quando o DSN estiver configurado
+    // No-op se NEXT_PUBLIC_SENTRY_DSN não estiver setado (Sentry.init com dsn undefined).
+    Sentry.captureException(error)
     console.error(error)
   }, [error])
 
