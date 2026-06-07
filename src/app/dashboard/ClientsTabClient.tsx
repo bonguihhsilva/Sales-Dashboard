@@ -3,6 +3,8 @@
 import { useState, useMemo } from 'react'
 import { fmtCurrency, recencyColor, recencyLabel } from '@/lib/utils'
 import { fetchClientHistory } from './clientsActions'
+import { EmptyState } from '@/components/ui/empty-state'
+import { Inbox } from 'lucide-react'
 
 interface Client {
   client_id: string
@@ -188,54 +190,81 @@ export default function ClientsTabClient({ clients }: { clients: Client[] }) {
 
       {/* MODAL DE DETALHES DO CLIENTE */}
       {selectedClient && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setSelectedClient(null)}>
-          <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', width: '900px', maxWidth: '95vw', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
-            <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h2 style={{ fontSize: '1.4rem', margin: '0 0 5px 0' }}>{selectedClient.client_name}</h2>
-                <div style={{ fontSize: '0.8rem', color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>
-                  Total: <span style={{ color: 'var(--accent)' }}>{fmtCurrency(Number(selectedClient.total_spent))}</span> &nbsp;|&nbsp; 
-                  Visitas: {selectedClient.visit_days} &nbsp;|&nbsp; 
-                  Última compra: {selectedClient.last_purchase}
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={() => setSelectedClient(null)}
+        >
+          <div
+            className="glass-card bg-surface border border-white/10 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between gap-4 p-6 border-b border-white/10">
+              <div className="min-w-0">
+                <h2 className="text-xl font-bold text-on-surface truncate">{selectedClient.client_name}</h2>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs font-mono text-muted-foreground">
+                  <span>Total <span className="text-primary font-semibold">{fmtCurrency(Number(selectedClient.total_spent))}</span></span>
+                  <span className="text-white/10">|</span>
+                  <span>Visitas <span className="text-on-surface">{selectedClient.visit_days}</span></span>
+                  <span className="text-white/10">|</span>
+                  <span>Última compra <span className="text-on-surface">{selectedClient.last_purchase}</span></span>
                 </div>
               </div>
-              <button onClick={() => setSelectedClient(null)} style={{ background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
+              <button
+                onClick={() => setSelectedClient(null)}
+                aria-label="Fechar"
+                className="shrink-0 material-symbols-outlined text-on-surface-variant hover:text-on-surface hover:bg-white/5 rounded-full p-1.5 transition-colors active:scale-95"
+              >
+                close
+              </button>
             </div>
-            
-            <div style={{ padding: '1.5rem', overflowY: 'auto', flex: 1 }}>
-              <h3 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--muted)' }}>Últimas compras (Até 100)</h3>
+
+            {/* Body */}
+            <div className="p-6 overflow-y-auto flex-1">
+              <h3 className="text-[0.65rem] font-mono uppercase tracking-widest text-muted-foreground mb-4">
+                Últimas compras <span className="text-on-surface-variant/60">(até 100)</span>
+              </h3>
+
               {loadingHistory ? (
-                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>Carregando histórico...</div>
+                <div className="flex items-center justify-center gap-2 py-12 text-sm font-mono text-muted-foreground">
+                  <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>
+                  Carregando histórico...
+                </div>
+              ) : clientHistory.length === 0 ? (
+                <EmptyState
+                  icon={<Inbox className="h-10 w-10" />}
+                  title="Nenhum registro encontrado"
+                  description="Este cliente não possui compras detalhadas no período selecionado."
+                />
               ) : (
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                      <th style={{ textAlign: 'left', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>DATA / HORA</th>
-                      <th style={{ textAlign: 'left', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>PRODUTO</th>
-                      <th style={{ textAlign: 'left', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>VENDEDOR</th>
-                      <th style={{ textAlign: 'left', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>CANAL DE VENDA</th>
-                      <th style={{ textAlign: 'right', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>QTD</th>
-                      <th style={{ textAlign: 'right', padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem' }}>VALOR</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {clientHistory.map(r => (
-                      <tr key={r.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                        <td style={{ padding: '8px', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem' }}>
-                          {String(r.sale_date)} <span style={{ color: 'var(--muted)' }}>{r.sale_time ? String(r.sale_time).slice(0,5) : ''}</span>
-                        </td>
-                        <td style={{ padding: '8px' }}>{r.product_code || '---'}</td>
-                        <td style={{ padding: '8px' }}>{r.vendor_name}</td>
-                        <td style={{ padding: '8px' }}>{r.store}</td>
-                        <td style={{ padding: '8px', textAlign: 'right', fontFamily: 'DM Mono, monospace' }}>{r.quantity}</td>
-                        <td style={{ padding: '8px', textAlign: 'right', fontFamily: 'DM Mono, monospace', color: 'var(--accent)' }}>{fmtCurrency(Number(r.valor))}</td>
+                <div className="overflow-x-auto rounded-xl border border-white/5">
+                  <table className="w-full text-sm border-collapse">
+                    <thead>
+                      <tr className="bg-surface-container border-b border-white/5">
+                        <th className="text-left font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground px-3 py-2.5">Data / Hora</th>
+                        <th className="text-left font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground px-3 py-2.5">Produto</th>
+                        <th className="text-left font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground px-3 py-2.5">Vendedor</th>
+                        <th className="text-left font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground px-3 py-2.5">Canal de venda</th>
+                        <th className="text-right font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground px-3 py-2.5">Qtd</th>
+                        <th className="text-right font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground px-3 py-2.5">Valor</th>
                       </tr>
-                    ))}
-                    {clientHistory.length === 0 && (
-                      <tr><td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>Nenhum registro encontrado</td></tr>
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {clientHistory.map(r => (
+                        <tr key={r.id} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors">
+                          <td className="px-3 py-2 font-mono text-xs whitespace-nowrap">
+                            {String(r.sale_date)} <span className="text-muted-foreground">{r.sale_time ? String(r.sale_time).slice(0, 5) : ''}</span>
+                          </td>
+                          <td className="px-3 py-2 text-on-surface-variant">{r.product_code || '—'}</td>
+                          <td className="px-3 py-2 text-on-surface-variant">{r.vendor_name}</td>
+                          <td className="px-3 py-2 text-on-surface-variant">{r.store}</td>
+                          <td className="px-3 py-2 text-right font-mono text-xs">{r.quantity}</td>
+                          <td className="px-3 py-2 text-right font-mono text-xs font-semibold text-primary">{fmtCurrency(Number(r.valor))}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           </div>
