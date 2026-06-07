@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { toIsoDate } from '@/lib/parser'
 import type { Period } from '@/types'
@@ -27,6 +29,7 @@ export default function UploadModal({ periods, tenantId }: { periods: Period[], 
   const [stats, setStats]         = useState<{ inserted: number; skipped: number; period: string } | null>(null)
   const [parsedData, setParsedData] = useState<SaleTransaction[]>([])
   const fileRef = useRef<HTMLInputElement>(null)
+  const router = useRouter()
   const supabase = createClient()
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -184,11 +187,18 @@ export default function UploadModal({ periods, tenantId }: { periods: Period[], 
         : `✓ ${inserted} transações importadas em "${detected.label}".`
       )
       setStatus('done')
+      toast.success(`Importação concluída — ${detected.label}`, {
+        description: mode === 'incremental'
+          ? `${inserted} adicionadas${skipped > 0 ? `, ${skipped} ignoradas` : ''}`
+          : `${inserted} transações importadas`,
+      })
       setFile(null)
       if (fileRef.current) fileRef.current.value = ''
     } catch (err: unknown) {
       setStatus('error')
-      setMessage(`Erro: ${err instanceof Error ? err.message : 'Falha ao importar'}`)
+      const msg = err instanceof Error ? err.message : 'Falha ao importar'
+      setMessage(`Erro: ${msg}`)
+      toast.error('Erro na importação', { description: msg })
     }
   }
 
@@ -331,7 +341,7 @@ export default function UploadModal({ periods, tenantId }: { periods: Period[], 
                 </button>
               )}
               {status === 'done' && (
-                <button onClick={() => window.location.reload()} className="flex-[2] bg-primary hover:bg-primary/90 text-on-primary font-bold text-sm rounded-xl py-2.5 transition-colors">
+                <button onClick={() => { router.refresh(); handleClose() }} className="flex-[2] bg-primary hover:bg-primary/90 text-on-primary font-bold text-sm rounded-xl py-2.5 transition-colors">
                   Atualizar Dashboard
                 </button>
               )}
