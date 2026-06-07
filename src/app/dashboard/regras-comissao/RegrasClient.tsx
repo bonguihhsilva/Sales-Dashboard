@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { SectionTitle } from '@/components/ui'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 type Regra = {
   id: string
@@ -33,7 +34,7 @@ export default function RegrasClient({ regras: initialRegras }: { regras: Regra[
       setRegras(regras.map(r => r.id === id ? { ...r, ativo: !atual } : r))
       router.refresh()
     } catch (err: any) {
-      alert(err.message)
+      toast.error('Erro', { description: err.message })
     } finally {
       setLoading(false)
     }
@@ -52,7 +53,7 @@ export default function RegrasClient({ regras: initialRegras }: { regras: Regra[
       setRegras(regras.filter(r => r.id !== id))
       router.refresh()
     } catch (err: any) {
-      alert(err.message)
+      toast.error('Erro', { description: err.message })
     } finally {
       setLoading(false)
     }

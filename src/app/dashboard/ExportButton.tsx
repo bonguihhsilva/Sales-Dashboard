@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { toast } from 'sonner'
 
 export default function ExportButton({ activePeriod }: { activePeriod?: number }) {
   const [loading, setLoading]   = useState(false)
@@ -11,7 +12,7 @@ export default function ExportButton({ activePeriod }: { activePeriod?: number }
     try {
       const res = await fetch(`/api/admin/relatorio-excel?period=${activePeriod}`)
       const data = await res.json()
-      if (data.error) { alert(data.error); return }
+      if (data.error) { toast.error('Falha ao gerar relatório', { description: data.error }); return }
 
       const { period: periodLabel, vendors } = data as {
         period: string

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { SectionTitle } from '@/components/ui'
+import { toast } from 'sonner'
 
 type Regra = {
   id?: string
@@ -76,7 +77,7 @@ export default function RegraFormClient({ regraInicial, tenantId }: { regraInici
       router.push('/dashboard/regras-comissao')
       router.refresh()
     } catch (err: any) {
-      alert(err.message)
+      toast.error('Erro ao salvar regra', { description: err.message })
     } finally {
       setLoading(false)
     }

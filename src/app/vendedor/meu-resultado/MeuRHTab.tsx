@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import type { HRFreeDay, HRAbsence, HRVacation, HRPermission } from '@/types'
 
 interface Props {
@@ -138,7 +139,7 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions, d
       setForm({ type: 'medical_certificate', requested_date: '', notes: '' })
       window.location.reload()
     } catch {
-      alert('Erro ao enviar solicitação. Tente novamente.')
+      toast.error('Erro ao enviar solicitação. Tente novamente.')
     } finally {
       setSubmitting(false)
     }
@@ -160,7 +161,7 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions, d
       setDelayJustification('')
       window.location.reload()
     } catch {
-      alert('Erro ao enviar justificativa. Tente novamente.')
+      toast.error('Erro ao enviar justificativa. Tente novamente.')
     } finally {
       setSubmitting(false)
     }

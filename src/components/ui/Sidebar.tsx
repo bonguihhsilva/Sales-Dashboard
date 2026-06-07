@@ -10,7 +10,7 @@ export function Sidebar({ role, name }: { role: string, name: string }) {
   const [isOpen, setIsOpen] = useState(false)
 
   const adminLinks = [
-    { href: '/dashboard', label: 'Overview', icon: 'dashboard' },
+    { href: '/dashboard', label: 'Visão Geral', icon: 'dashboard' },
     { href: '/dashboard/metas', label: 'Metas', icon: 'flag' },
     { href: '/dashboard/comissao', label: 'Comissões', icon: 'payments' },
     { href: '/dashboard/regras-comissao', label: 'Regras', icon: 'rule' },

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Plus, Trash2, Edit2, ChevronRight, BookOpen, Video, FileText, PlayCircle, Settings, Layers, AlignLeft } from 'lucide-react'
+import { toast } from 'sonner'
 import {
   createTrilhaAction, updateTrilhaAction, deleteTrilhaAction,
   createModuloAction, updateModuloAction, deleteModuloAction,
@@ -41,7 +42,7 @@ export default function AdminLmsClient({
       if (res && res.error) throw new Error(res.error)
       if (successCallback) successCallback()
     } catch (e: any) {
-      alert(e.message || 'Ocorreu um erro')
+      toast.error('Erro', { description: e.message || 'Ocorreu um erro' })
     }
     setLoading(false)
     setModal({ isOpen: false, type: '' })

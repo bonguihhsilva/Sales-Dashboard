@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { SectionTitle } from '@/components/ui'
 import { submitQuiz } from './actions'
+import { toast } from 'sonner'
 
 export default function QuizClient({ 
   questoes, 
@@ -27,7 +28,7 @@ export default function QuizClient({
 
   const handleSubmeter = async () => {
     if (Object.keys(respostas).length < questoes.length) {
-      alert('Por favor, responda todas as questões.')
+      toast.warning('Por favor, responda todas as questões.')
       return
     }
 
@@ -37,7 +38,7 @@ export default function QuizClient({
       setResultado(res)
       router.refresh()
     } catch (err: any) {
-      alert(err.message)
+      toast.error('Erro', { description: err.message })
     } finally {
       setLoading(false)
     }

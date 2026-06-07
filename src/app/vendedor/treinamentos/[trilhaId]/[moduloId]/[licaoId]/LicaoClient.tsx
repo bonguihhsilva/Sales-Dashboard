@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { SectionTitle } from '@/components/ui'
 import { markLicaoComplete } from './actions'
+import { toast } from 'sonner'
 
 export default function LicaoClient({
   licao,
@@ -31,7 +32,7 @@ export default function LicaoClient({
       router.push(`/vendedor/treinamentos/${trilhaId}/${moduloId}`)
       router.refresh()
     } catch (err: any) {
-      alert(err.message)
+      toast.error('Erro', { description: err.message })
       setLoading(false)
     }
   }

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { fmtCurrency } from '@/lib/utils'
 import type { Store } from '@/types'
 import * as XLSX from 'xlsx'
+import { toast } from 'sonner'
 
 type ComissaoRecord = {
   id: string
@@ -135,7 +136,7 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
     })
 
     if (targets.length === 0) {
-      alert("Nenhuma comissão aprovada ou selecionada para exportação de pagamento.")
+      toast.warning("Nenhuma comissão aprovada ou selecionada para exportação de pagamento.")
       return
     }
 
