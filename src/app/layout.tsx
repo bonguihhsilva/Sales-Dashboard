@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Hanken_Grotesk, Manrope, JetBrains_Mono } from 'next/font/google'
 import { ThemeProvider } from '@/components/shared/theme-provider'
+import { AuthStateHandler } from '@/components/shared/auth-handler'
 import './globals.css'
 
 const hanken = Hanken_Grotesk({
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" enableSystem={false}>
+          <AuthStateHandler />
           {children}
         </ThemeProvider>
       </body>

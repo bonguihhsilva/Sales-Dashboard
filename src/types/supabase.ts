@@ -1687,16 +1687,6 @@ export type Database = {
       }
     }
     Views: {
-      all_vendors: {
-        Row: {
-          has_goals: boolean | null
-          linked_user: string | null
-          store: string | null
-          vendor_id: string | null
-          vendor_name: string | null
-        }
-        Relationships: []
-      }
       client_portfolio: {
         Row: {
           avg_items_per_order: number | null
