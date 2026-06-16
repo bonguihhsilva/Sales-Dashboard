@@ -191,16 +191,11 @@ export default async function DashboardPage({
         ) : (
           <>
             {/* KPIs */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <KpiCard label="Total Vendido" value={fmtCurrency(grandTotal)} sub={totalM1 > 0 ? `${((grandTotal / totalM1) * 100).toFixed(1)}% da 1ª meta` : 'metas não configuradas'} valueClassName="text-accent" />
               <KpiCard label="Vendedores" value={String(filtered.length)} sub={`${hitMeta} na meta`} />
               <KpiCard label="Na Meta" value={`${hitMeta} / ${filtered.length}`} sub={`${filtered.filter(v => metaLevel(Number(v.total_sold), Number(v.meta1), Number(v.meta2), Number(v.meta3)) >= 2).length} na 2ª+`} valueClassName="text-meta1" />
               <KpiCard label="Bônus Total" value={`$${totalBonus.toLocaleString()}`} valueClassName="text-mkt" />
-              {activeStore === 'all' && stores.map(s => {
-                const sv = (summaries ?? []).filter(v => v.store === s.key)
-                const st = sv.reduce((a, v) => a + Number(v.total_sold), 0)
-                return <KpiCard key={s.key} label={s.label} value={fmtCurrency(st)} sub={grandTotal > 0 ? `${(st / grandTotal * 100).toFixed(1)}% do total` : '—'} />
-              })}
             </div>
 
             {/* Store summary cards */}

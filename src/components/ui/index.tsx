@@ -65,24 +65,17 @@ export function ProgressBar({ sold, meta1, meta2, meta3, metaLevel }: ProgressBa
       <div className="relative h-2 bg-secondary rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${mcBg} transition-all duration-500`} style={{ width: `${barW}%` }} />
       </div>
-      {/* Marker lines */}
-      <div className="relative h-6 mt-1.5">
+      {/* Marker ticks */}
+      <div className="relative h-2 mt-1">
         {[
-          { pct: m1pct, label: `1ª ${fmtK(meta1)}`, colorClass: metaLevel >= 1 ? 'bg-meta1 text-meta1' : 'bg-border text-muted-foreground' },
-          { pct: m2pct, label: `2ª ${fmtK(meta2)}`, colorClass: metaLevel >= 2 ? 'bg-meta2 text-meta2' : 'bg-border text-muted-foreground' },
-          { pct: m3pct, label: `3ª ${fmtK(meta3)}`, colorClass: metaLevel >= 3 ? 'bg-meta3 text-meta3' : 'bg-border text-muted-foreground' },
-        ].map(({ pct, label, colorClass }, idx) => {
-          const isBg = colorClass.split(' ')[0]
-          const isText = colorClass.split(' ')[1]
-          return (
-            <div key={`${pct}-${idx}`} className="absolute text-center" style={{ left: `${pct}%`, transform: 'translateX(-50%)' }}>
-              <div className={`w-px h-1.5 mx-auto ${isBg}`} />
-              <div className={`text-[0.6875rem] font-mono whitespace-nowrap mt-[1px] ${isText}`}>
-                {label}
-              </div>
-            </div>
-          )
-        })}
+          { pct: m1pct, colorClass: metaLevel >= 1 ? 'bg-meta1' : 'bg-border' },
+          { pct: m2pct, colorClass: metaLevel >= 2 ? 'bg-meta2' : 'bg-border' },
+          { pct: m3pct, colorClass: metaLevel >= 3 ? 'bg-meta3' : 'bg-border' },
+        ].map(({ pct, colorClass }, idx) => (
+          <div key={idx} className="absolute" style={{ left: `${pct}%`, transform: 'translateX(-50%)' }}>
+            <div className={`w-px h-2 ${colorClass}`} />
+          </div>
+        ))}
       </div>
     </div>
   )
