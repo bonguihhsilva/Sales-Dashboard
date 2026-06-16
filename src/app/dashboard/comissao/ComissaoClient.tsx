@@ -43,6 +43,7 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
   const [bulkLoading, setBulkLoading] = useState(false)
 
   const hasCalculated = rows.some(r => r.comissao !== null)
+  const unlinkedCount = rows.filter(r => r.profile_id === null).length
   const totalPreview  = rows.reduce((s, r) => s + r.total_commission, 0)
   const totalAprovado = rows.filter(r => r.comissao?.aprovado).reduce((s, r) => s + r.comissao!.total, 0)
   const pendentes     = rows.filter(r => r.comissao && !r.comissao.aprovado).length
@@ -180,6 +181,16 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
         <KpiCard label="Aguardando" value={String(pendentes)} sub={hasCalculated ? 'pendentes de aprovação' : 'período não calculado'} color="text-muted-foreground" />
       </div>
 
+      {/* Aviso: vendedores sem conta vinculada */}
+      {unlinkedCount > 0 && (
+        <div style={{ background: '#f5a74215', border: '1px solid #f5a74244', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span className="material-symbols-outlined" style={{ color: '#f5a742', fontSize: '18px' }}>warning</span>
+          <span style={{ fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: '#f5a742' }}>
+            {unlinkedCount} vendedor{unlinkedCount > 1 ? 'es' : ''} sem conta vinculada — comissões não serão calculadas para eles. Configure o código CEC em <a href="/dashboard/usuarios" style={{ textDecoration: 'underline' }}>Usuários</a>.
+          </span>
+        </div>
+      )}
+
       {/* Action bar */}
       <div className="flex items-center justify-between mb-6 bg-surface-container-high/30 p-4 rounded-xl border border-white/5">
         <span className="text-sm font-mono text-muted-foreground flex items-center gap-2">
@@ -316,7 +327,13 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
                     </td>
                     <td style={{ padding: '12px 14px' }}>
                       {!isCalculated ? (
-                        <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>—</span>
+                        row.profile_id === null ? (
+                          <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', padding: '3px 8px', borderRadius: '4px', background: '#f5a74222', color: '#f5a742' }}>
+                            sem conta
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>—</span>
+                        )
                       ) : row.comissao!.aprovado ? (
                         <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', padding: '3px 8px', borderRadius: '4px', background: '#22c55e22', color: '#22c55e' }}>
                           aprovado

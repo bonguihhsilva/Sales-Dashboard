@@ -24,6 +24,9 @@ export async function POST(req: NextRequest) {
   const role = body.role ? sanitizeString(body.role) : undefined
   const store = body.store ? sanitizeString(body.store) : undefined
   const ativo = body.ativo
+  const vendor_id = body.vendor_id !== undefined
+    ? (body.vendor_id ? sanitizeString(body.vendor_id) : null)
+    : undefined
 
   if (!userId) {
     return NextResponse.json({ error: 'userId obrigatorio' }, { status: 400 })
@@ -67,6 +70,7 @@ export async function POST(req: NextRequest) {
   if (name !== undefined) patch.name = name
   if (store !== undefined) patch.store = store
   if (ativo !== undefined) patch.ativo = ativo
+  if (vendor_id !== undefined) patch.vendor_id = vendor_id
   if (Object.keys(patch).length > 0) {
     const { error: profError } = await admin
       .from('profiles')

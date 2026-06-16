@@ -115,6 +115,7 @@ export default function UsersClient({
   const [editRole, setEditRole] = useState(ASSIGNABLE_ROLES[0])
   const [editStore, setEditStore] = useState(STORE_OPTIONS[0].value)
   const [editAtivo, setEditAtivo] = useState(true)
+  const [editVendorId, setEditVendorId] = useState('')
 
   // Sincronizar campos do Sheet de edicao quando editingUser mudar
   useEffect(() => {
@@ -127,6 +128,7 @@ export default function UsersClient({
       )
       setEditStore(editingUser.store ?? STORE_OPTIONS[0].value)
       setEditAtivo(editingUser.ativo)
+      setEditVendorId(editingUser.vendor_id ?? '')
       setError(null)
     }
   }, [editingUser])
@@ -226,6 +228,7 @@ export default function UsersClient({
           name: editName,
           role: editRole,
           store: editStore,
+          vendor_id: editVendorId.trim() || null,
         }),
       })
       const data = await res.json()
@@ -615,6 +618,21 @@ export default function UsersClient({
                 </SelectContent>
               </Select>
             </div>
+
+            {editRole === 'vendedor' && (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="edit-vendor-id">Código CEC (vendor_id)</Label>
+                <Input
+                  id="edit-vendor-id"
+                  placeholder="Ex: 001, V12, ..."
+                  value={editVendorId}
+                  onChange={(e) => setEditVendorId(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Código do vendedor no sistema CEC. Necessário para calcular comissões.
+                </p>
+              </div>
+            )}
 
             <div className="flex items-center justify-between gap-3">
               <Label htmlFor="edit-ativo">Ativo</Label>
