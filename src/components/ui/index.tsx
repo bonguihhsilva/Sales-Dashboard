@@ -22,7 +22,7 @@ export function KpiCard({ label, value, sub, className, valueClassName, valueCol
         {value}
       </div>
       {sub && (
-        <div className="text-[0.68rem] text-on-surface-variant mt-2 font-mono">
+        <div className="text-xs text-on-surface-variant mt-2 font-mono">
           {sub}
         </div>
       )}
@@ -35,7 +35,7 @@ export function StorePill({ store, label, colorClass }: { store: string; label?:
   const col = colorClass || 'text-muted-foreground bg-muted'
   const displayLabel = label || store
   return (
-    <span className={`text-[0.65rem] font-mono px-2 py-0.5 rounded font-medium whitespace-nowrap ${col}`}>
+    <span className={`text-[0.6875rem] font-mono px-2 py-0.5 rounded font-medium whitespace-nowrap ${col}`}>
       {displayLabel}
     </span>
   )
@@ -77,7 +77,7 @@ export function ProgressBar({ sold, meta1, meta2, meta3, metaLevel }: ProgressBa
           return (
             <div key={`${pct}-${idx}`} className="absolute text-center" style={{ left: `${pct}%`, transform: 'translateX(-50%)' }}>
               <div className={`w-px h-1.5 mx-auto ${isBg}`} />
-              <div className={`text-[0.56rem] font-mono whitespace-nowrap mt-[1px] ${isText}`}>
+              <div className={`text-[0.6875rem] font-mono whitespace-nowrap mt-[1px] ${isText}`}>
                 {label}
               </div>
             </div>
@@ -98,7 +98,7 @@ export function BonusBadge({ level, amount }: { level: number; amount: number })
   ]
   const cls = configs[level] || configs[0]
   return (
-    <span className={`font-mono text-[0.65rem] px-2 py-1 rounded whitespace-nowrap font-medium ${cls}`}>
+    <span className={`font-mono text-[0.6875rem] px-2 py-1 rounded whitespace-nowrap font-medium ${cls}`}>
       {level > 0 ? `+$${amount}` : '—'}
     </span>
   )

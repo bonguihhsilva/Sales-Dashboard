@@ -20,9 +20,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="bg-background min-h-screen text-body-base font-body-base">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-1/2 focus:-translate-x-1/2 focus:z-[9999] focus:bg-surface focus:border focus:border-primary focus:text-on-surface focus:text-sm focus:font-bold focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg"
+      >
+        Pular para o conteúdo
+      </a>
       <TopNavBar name={userName} role={role} tenants={tenants} activeTenantId={profile.tenant_id} />
       <Sidebar role={role} name={userName} />
-      <main className="lg:ml-[280px] pt-16 min-h-screen bg-background">
+      <main id="main-content" className="lg:ml-[280px] pt-16 min-h-screen bg-background">
         {children}
       </main>
     </div>

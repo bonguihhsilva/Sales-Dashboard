@@ -64,7 +64,7 @@ export function Sidebar({ role, name }: { role: string, name: string }) {
 
         <nav className="flex-grow space-y-1">
           {links.map(link => {
-            const isActive = pathname === link.href || pathname.startsWith(link.href + '/')
+            const isActive = pathname === link.href || (link.href !== '/dashboard' && pathname.startsWith(link.href + '/'))
             return (
               <div key={link.href} className="px-2">
                 <Link 

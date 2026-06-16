@@ -112,65 +112,69 @@ export default async function DashboardPage({
         />
       </div>
 
-      {/* Visões do Dashboard */}
-      <div className="flex items-center gap-4 mb-4 border-b border-white/5 pb-4 overflow-x-auto no-scrollbar">
-        <div className="text-[0.65rem] font-mono text-muted-foreground uppercase tracking-widest shrink-0">
-          Visão:
+      {/* Canal filter */}
+      <div className="flex items-center gap-3 mb-2 overflow-x-auto no-scrollbar">
+        <div className="text-[0.6875rem] font-mono text-on-surface-variant uppercase tracking-widest shrink-0">Canal</div>
+        <div className="flex gap-2 shrink-0">
+          {[{ key: 'all', label: 'Todos' }, ...stores].map(tab => (
+            <Link key={tab.key}
+              href={`/dashboard?period=${activePeriod}&store=${tab.key}&tab=${activeTab}`}
+              className={`px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${
+                activeStore === tab.key
+                  ? 'bg-primary-container text-on-primary-container'
+                  : 'bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-white/5'
+              }`}
+            >
+              {tab.label}
+            </Link>
+          ))}
         </div>
-        <div className="flex gap-stack-sm shrink-0">
-        {[{ key: 'all', label: 'Todos' }, ...stores].map(tab => (
-          <Link key={tab.key}
-            href={`/dashboard?period=${activePeriod}&store=${tab.key}&tab=${activeTab}`}
-            className={`px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${
-              activeStore === tab.key 
-                ? 'bg-primary-container text-on-primary-container' 
+      </div>
+
+      {/* Visão tabs */}
+      <div className="flex items-center gap-3 mb-4 border-b border-white/5 pb-4 overflow-x-auto no-scrollbar">
+        <div className="text-[0.6875rem] font-mono text-on-surface-variant uppercase tracking-widest shrink-0">Visão</div>
+        <div className="flex gap-2 shrink-0">
+          <Link
+            href="/mural"
+            className="px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors flex items-center gap-2 bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-white/5"
+          >
+            <span className="material-symbols-outlined text-sm">campaign</span>
+            Mural Geral
+          </Link>
+          <Link
+            href={`/dashboard?period=${activePeriod}&store=${activeStore}&tab=ranking`}
+            className={`px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors flex items-center gap-2 ${
+              activeTab === 'ranking'
+                ? 'bg-tertiary-container text-on-tertiary-container'
                 : 'bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-white/5'
             }`}
           >
-            {tab.label}
+            <span className="material-symbols-outlined text-sm">leaderboard</span>
+            Ranking
           </Link>
-        ))}
-        <div className="w-px bg-white/10 mx-2 h-6 self-center" />
-        <Link
-          href="/mural"
-          className="px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors flex items-center gap-2 bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-white/5"
-        >
-          <span className="material-symbols-outlined text-sm">campaign</span>
-          Mural Geral
-        </Link>
-        <Link
-          href={`/dashboard?period=${activePeriod}&store=${activeStore}&tab=ranking`}
-          className={`px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors flex items-center gap-2 ${
-            activeTab === 'ranking' 
-              ? 'bg-tertiary-container text-on-tertiary-container' 
-              : 'bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-white/5'
-          }`}
-        >
-          <span className="material-symbols-outlined text-sm">leaderboard</span>
-          Ranking
-        </Link>
-        <Link
-          href={`/dashboard?period=${activePeriod}&store=${activeStore}&tab=evolucao`}
-          className={`px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors flex items-center gap-2 ${
-            activeTab === 'evolucao' 
-              ? 'bg-tertiary-container text-on-tertiary-container' 
-              : 'bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-white/5'
-          }`}
-        >
-          <span className="material-symbols-outlined text-sm">trending_up</span>
-          Evolução
-        </Link>
-        <Link
-          href={`/dashboard?period=${activePeriod}&store=${activeStore}&tab=clientes`}
-          className={`px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors flex items-center gap-2 ${
-            activeTab === 'clientes' 
-              ? 'bg-tertiary-container text-on-tertiary-container' 
-              : 'bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-white/5'
-          }`}
-        >
-          <span className="material-symbols-outlined text-sm">groups</span>
-          Clientes
-        </Link>
+          <Link
+            href={`/dashboard?period=${activePeriod}&store=${activeStore}&tab=evolucao`}
+            className={`px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors flex items-center gap-2 ${
+              activeTab === 'evolucao'
+                ? 'bg-tertiary-container text-on-tertiary-container'
+                : 'bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-white/5'
+            }`}
+          >
+            <span className="material-symbols-outlined text-sm">trending_up</span>
+            Evolução
+          </Link>
+          <Link
+            href={`/dashboard?period=${activePeriod}&store=${activeStore}&tab=clientes`}
+            className={`px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors flex items-center gap-2 ${
+              activeTab === 'clientes'
+                ? 'bg-tertiary-container text-on-tertiary-container'
+                : 'bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-white/5'
+            }`}
+          >
+            <span className="material-symbols-outlined text-sm">groups</span>
+            Clientes
+          </Link>
         </div>
       </div>
 
@@ -210,7 +214,7 @@ export default async function DashboardPage({
                     <div key={s.key} className="glass-card rounded-xl p-card-padding flex flex-col group hover:border-primary/40 transition-colors">
                       <div className="font-label-sm text-label-sm text-muted-foreground uppercase tracking-widest mb-1.5">{s.label}</div>
                       <div className="font-headline-lg text-2xl font-bold text-on-surface">{fmtCurrency(st)}</div>
-                      <div className="text-[0.68rem] text-on-surface-variant font-mono mt-1.5 mb-4">
+                      <div className="text-xs text-on-surface-variant font-mono mt-1.5 mb-4">
                         {sv.length} vendedores · {hit} na meta · {grandTotal > 0 ? (st / grandTotal * 100).toFixed(1) : '0'}% do total
                       </div>
                       <div className="h-1.5 rounded-full mt-auto bg-surface-container-highest overflow-hidden">
@@ -240,13 +244,13 @@ export default async function DashboardPage({
             <SectionTitle>Ranking de Vendedores</SectionTitle>
 
             <div className="glass-card rounded-xl overflow-x-auto">
-              <table className="w-full text-sm text-left border-collapse">
+              <table className="w-full text-sm text-left border-collapse" aria-label="Ranking de vendedores">
                 <thead className="bg-surface-container-high/50 border-b border-white/5">
                   <tr>
                     {([
-                      { h:'#',         align:'left'  },
+                      { h:'#',         align:'left',  sticky: true },
                       { h:'Vendedor',  align:'left'  },
-                      { h:'Canal',     align:'left' },
+                      { h:'Canal',     align:'left'  },
                       { h:'Clientes',  align:'right' },
                       { h:'Total',     align:'right' },
                       { h:'1ª Meta',   align:'right', color:'text-meta1' },
@@ -254,8 +258,8 @@ export default async function DashboardPage({
                       { h:'3ª Meta',   align:'right', color:'text-meta3' },
                       { h:'Progresso', align:'left'  },
                       { h:'Bônus',     align:'right' },
-                    ] as {h:string;align:string;color?:string}[]).map(col => (
-                      <th key={col.h} className={`font-mono text-[0.65rem] uppercase tracking-wider py-3 px-4 text-muted-foreground font-semibold whitespace-nowrap ${col.color || ''}`} style={{ textAlign: col.align as 'left'|'right' }}>
+                    ] as {h:string;align:string;color?:string;sticky?:boolean}[]).map(col => (
+                      <th key={col.h} scope="col" className={`font-mono text-[0.6875rem] uppercase tracking-wider py-3 px-4 text-muted-foreground font-semibold whitespace-nowrap ${col.color || ''} ${col.sticky ? 'sticky left-0 z-20 bg-surface-container-high' : ''}`} style={{ textAlign: col.align as 'left'|'right' }}>
                         {col.h}
                       </th>
                     ))}
@@ -268,10 +272,10 @@ export default async function DashboardPage({
                     const lvl = metaLevel(sold, m1, m2, m3)
                     const b   = bonusAmount(lvl, Number(v.bonus1), Number(v.bonus2), Number(v.bonus3))
                     const rankColors = ['text-yellow-500', 'text-slate-400', 'text-amber-600']
-                    
+
                     return (
                       <tr key={v.vendor_id} className="hover:bg-secondary/20 transition-colors">
-                        <td className={`py-3 px-4 font-mono text-xs ${i < 3 ? rankColors[i] : 'text-muted-foreground'}`}>{i + 1}</td>
+                        <td className={`sticky left-0 z-10 bg-surface-container py-3 px-4 font-mono text-xs ${i < 3 ? rankColors[i] : 'text-muted-foreground'}`}>{i + 1}</td>
                         <td className="py-3 px-4 font-semibold whitespace-nowrap">
                           <Link href={`/dashboard/vendedor/${v.vendor_id}?period=${activePeriod}`} className="hover:text-primary transition-colors">
                             {v.vendor_name}

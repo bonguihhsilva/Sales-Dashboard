@@ -24,11 +24,13 @@ export function TopNavBar({ name, role = 'super_admin', tenants = [], activeTena
             <TenantSwitcher tenants={tenants} activeTenantId={activeTenantId} />
           </div>
         )}
-        <Link href="/configuracoes">
-          <button className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-all p-2 rounded-full hover:bg-white/5 active:scale-95">settings</button>
-        </Link>
-        <Link href="/perfil">
-          <div className="w-10 h-10 rounded-full border border-primary/20 overflow-hidden ml-2 active:scale-95 transition-transform cursor-pointer bg-surface-variant flex items-center justify-center font-bold text-on-surface">
+        <Link
+          href="/dashboard/config"
+          aria-label="Configurações"
+          className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-all p-2 rounded-full hover:bg-white/5 active:scale-95"
+        >settings</Link>
+        <Link href="/perfil" aria-label={`Perfil de ${name}`} className="ml-2">
+          <div className="w-10 h-10 rounded-full border border-primary/20 overflow-hidden active:scale-95 transition-transform cursor-pointer bg-surface-variant flex items-center justify-center font-bold text-on-surface">
             {name.charAt(0)}
           </div>
         </Link>

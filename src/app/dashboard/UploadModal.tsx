@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
@@ -28,9 +28,42 @@ export default function UploadModal({ periods, tenantId }: { periods: Period[], 
   const [message, setMessage]     = useState('')
   const [stats, setStats]         = useState<{ inserted: number; skipped: number; period: string } | null>(null)
   const [parsedData, setParsedData] = useState<SaleTransaction[]>([])
-  const fileRef = useRef<HTMLInputElement>(null)
-  const router = useRouter()
-  const supabase = createClient()
+  const fileRef   = useRef<HTMLInputElement>(null)
+  const modalRef  = useRef<HTMLDivElement>(null)
+  const router    = useRouter()
+  const supabase  = createClient()
+
+  useEffect(() => {
+    if (!open) return
+    const modal = modalRef.current
+    if (!modal) return
+
+    const focusable = modal.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([type="radio"]), input[type="radio"]:checked, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+    const first = focusable[0]
+    const last  = focusable[focusable.length - 1]
+    first?.focus()
+
+    function trapTab(e: KeyboardEvent) {
+      if (e.key !== 'Tab') return
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last?.focus() }
+      } else {
+        if (document.activeElement === last)  { e.preventDefault(); first?.focus() }
+      }
+    }
+    function closeOnEsc(e: KeyboardEvent) {
+      if (e.key === 'Escape') handleClose()
+    }
+
+    document.addEventListener('keydown', trapTab)
+    document.addEventListener('keydown', closeOnEsc)
+    return () => {
+      document.removeEventListener('keydown', trapTab)
+      document.removeEventListener('keydown', closeOnEsc)
+    }
+  }, [open])
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0] ?? null
@@ -220,8 +253,14 @@ export default function UploadModal({ periods, tenantId }: { periods: Period[], 
 
       {open && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[1000] p-4 backdrop-blur-sm">
-          <div className="bg-surface border border-white/10 rounded-2xl p-8 w-full max-w-lg shadow-2xl glass-card">
-            <h2 className="text-xl font-bold mb-2 text-on-surface">Importar Vendas</h2>
+          <div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="upload-modal-title"
+            className="bg-surface border border-white/10 rounded-2xl p-8 w-full max-w-lg max-h-[90svh] overflow-y-auto shadow-2xl glass-card"
+          >
+            <h2 id="upload-modal-title" className="text-xl font-bold mb-2 text-on-surface">Importar Vendas</h2>
             <p className="text-xs font-mono text-muted-foreground mb-6">
               Faça upload de planilhas (XLSX, CSV), Word (DOCX), PDF ou relatórios HTML.
             </p>
@@ -276,51 +315,67 @@ export default function UploadModal({ periods, tenantId }: { periods: Period[], 
             {/* Import mode */}
             {detected && (
               <>
-                <label className="block text-[0.65rem] font-mono text-muted-foreground uppercase tracking-wider mb-2">Modo de importação</label>
-                <div className="flex gap-2 mb-4">
-                  {[
-                    { v: 'incremental', label: '⚡ Incremental', desc: 'Adiciona apenas novas transações' },
-                    { v: 'replace',     label: '🔄 Substituir',  desc: 'Apaga tudo e reimporta' },
-                  ].map(opt => (
-                    <div
-                      key={opt.v}
-                      onClick={() => setMode(opt.v as typeof mode)}
-                      className={`flex-1 p-3 rounded-xl cursor-pointer border transition-colors ${
-                        mode === opt.v 
-                          ? 'border-primary bg-primary/10' 
-                          : 'border-white/5 bg-surface-container-high hover:border-white/20'
-                      }`}
-                    >
-                      <div className={`text-xs font-bold mb-1 ${mode === opt.v ? 'text-primary' : 'text-on-surface'}`}>{opt.label}</div>
-                      <div className="text-[0.65rem] font-mono text-muted-foreground leading-snug">{opt.desc}</div>
-                    </div>
-                  ))}
-                </div>
+                <fieldset className="mb-4">
+                  <legend className="block text-[0.65rem] font-mono text-muted-foreground uppercase tracking-wider mb-2">Modo de importação</legend>
+                  <div className="flex gap-2">
+                    {[
+                      { v: 'incremental', icon: 'bolt',  label: 'Incremental', desc: 'Adiciona apenas novas transações' },
+                      { v: 'replace',     icon: 'sync',  label: 'Substituir',  desc: 'Apaga tudo e reimporta' },
+                    ].map(opt => (
+                      <label
+                        key={opt.v}
+                        className={`flex-1 p-3 rounded-xl cursor-pointer border transition-colors ${
+                          mode === opt.v
+                            ? 'border-primary bg-primary/10'
+                            : 'border-white/5 bg-surface-container-high hover:border-white/20'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="import-mode"
+                          value={opt.v}
+                          checked={mode === opt.v}
+                          onChange={() => setMode(opt.v as typeof mode)}
+                          className="sr-only"
+                        />
+                        <div className={`text-xs font-bold mb-1 flex items-center gap-1.5 ${mode === opt.v ? 'text-primary' : 'text-on-surface'}`}>
+                          <span className="material-symbols-outlined text-sm">{opt.icon}</span>
+                          {opt.label}
+                        </div>
+                        <div className="text-[0.65rem] font-mono text-muted-foreground leading-snug">{opt.desc}</div>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
               </>
             )}
 
             {/* Status message */}
-            {message && (
-              <div className={`p-3 rounded-xl mb-4 text-xs font-mono border ${
+            <div
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              className={message ? `p-3 rounded-xl mb-4 text-xs font-mono border ${
                 status === 'error' ? 'bg-red-500/10 text-red-400 border-red-500/30' :
-                status === 'done' ? 'bg-primary/10 text-primary border-primary/30' :
+                status === 'done'  ? 'bg-primary/10 text-primary border-primary/30' :
                 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-              }`}>
-                {message}
-              </div>
-            )}
+              }` : 'sr-only'}
+              aria-hidden={!message}
+            >
+              {message}
+            </div>
 
             {/* Done stats */}
             {stats && status === 'done' && (
               <div className="flex gap-2 mb-4">
                 <div className="flex-1 bg-primary/10 border border-primary/20 rounded-xl p-3 text-center">
                   <div className="text-xl font-bold text-primary">{stats.inserted.toLocaleString()}</div>
-                  <div className="text-[0.6rem] font-mono text-muted-foreground uppercase tracking-widest mt-1">inseridas</div>
+                  <div className="text-[0.6875rem] font-mono text-muted-foreground uppercase tracking-widest mt-1">inseridas</div>
                 </div>
                 {stats.skipped > 0 && (
                   <div className="flex-1 bg-surface-container border border-white/5 rounded-xl p-3 text-center">
                     <div className="text-xl font-bold text-muted-foreground">{stats.skipped.toLocaleString()}</div>
-                    <div className="text-[0.6rem] font-mono text-muted-foreground uppercase tracking-widest mt-1">já existiam</div>
+                    <div className="text-[0.6875rem] font-mono text-muted-foreground uppercase tracking-widest mt-1">já existiam</div>
                   </div>
                 )}
               </div>
@@ -337,7 +392,12 @@ export default function UploadModal({ periods, tenantId }: { periods: Period[], 
                   disabled={!file || !detected || status === 'uploading' || status === 'parsing' || detecting}
                   className="flex-[2] bg-primary hover:bg-primary/90 text-on-primary font-bold text-sm rounded-xl py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {status === 'parsing' || status === 'uploading' ? 'Processando...' : detected ? `Importar ${detected.label}` : 'Selecione um arquivo'}
+                  {status === 'parsing' || status === 'uploading' ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="material-symbols-outlined text-sm animate-spin">sync</span>
+                      Processando...
+                    </span>
+                  ) : detected ? `Importar ${detected.label}` : 'Selecione um arquivo'}
                 </button>
               )}
               {status === 'done' && (
