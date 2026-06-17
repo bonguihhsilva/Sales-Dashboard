@@ -1,3 +1,19 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: Ferramenta Escalável
+status: planning
+stopped_at: Phase 6 context gathered
+last_updated: "2026-06-17T13:56:31.424Z"
+last_activity: 2026-05-26 — Auditoria real executada via Supabase MCP. Bloqueadores revisados.
+progress:
+  total_phases: 6
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
+---
+
 # Project State
 
 ## Project Reference
@@ -19,6 +35,7 @@ Progress: [░░░░░░░░░░] 0%
 ## Performance Metrics
 
 **Velocity:**
+
 - Total plans completed: 0
 - Average duration: -
 - Total execution time: -
@@ -58,6 +75,10 @@ Progress: [░░░░░░░░░░] 0%
 - **Pendente**: `suporte@gds-frame.com` (super_admin) não existe no Supabase Auth — criar via painel
 - Banco compartilhado com PetHub (`zsczxblhtdhpdqvkpuwz`) — migrar PetHub antes de escalar multi-tenant
 
+### Roadmap Evolution
+
+- Phase 6 added: Formatos de upload/download e conectores de sistemas de vendas (CEC, Pegasus, ISRP)
+
 ### Pending Todos
 
 - [ ] Setar thresholds reais em `/dashboard/metas` para Maio 2026 (meta1/meta2/meta3) — **você faz**
@@ -67,6 +88,6 @@ Progress: [░░░░░░░░░░] 0%
 
 ## Session Continuity
 
-Last session: 2026-05-26
-Stopped at: Auditoria MCP confirmou: 47/47 roles OK, send-invite-email ACTIVE. Ainda abertos: goals $0 (manual), service role key Vercel (manual), Site URL Auth (manual), suporte@ não criado. Pronto para planejar Phase 01 assim que manuais forem resolvidos.
-Resume file: None
+Last session: 2026-06-17T13:56:31.416Z
+Stopped at: Phase 6 context gathered
+Resume file: .planning/phases/06-formatos-de-upload-download-e-conectores-de-sistemas-de-vend/06-CONTEXT.md
