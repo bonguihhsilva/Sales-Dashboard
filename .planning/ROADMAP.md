@@ -99,6 +99,18 @@ Plans:
 Plans:
 - [x] 05-01: Mini-CMS LMS completo integrado com as rotas.
 
+### Phase 06: Formatos de upload/download e conectores de sistemas de vendas (CEC, Pegasus, ISRP)
+
+**Goal:** Adicionar detecção automática de formato por fingerprint no upload, exports em XLSX formatado e PDF, e arquitetura de conectores REST para Pegasus e ISRP com stubs prontos para implementação quando as credenciais chegarem.
+**Requirements**: D-01 a D-13 (ver 06-CONTEXT.md)
+**Depends on:** Phase 05
+**Plans:** 3 planos
+
+Plans:
+- [ ] 06-01-PLAN.md — Infraestrutura de testes (Wave 0) + fingerprint de formato + UploadModal com badge/dropdown
+- [ ] 06-02-PLAN.md — Export XLSX formatado (xlsx-js-style) e PDF (pdfkit) + seletor de formato no ExportButton
+- [ ] 06-03-PLAN.md — Arquitetura de conectores (base, registry, stubs Pegasus/ISRP) + rota sync + card Conectores na UI
+
 ---
 
 ## Progress
@@ -110,3 +122,4 @@ Plans:
 | 03. LMS / Treinamento | 3/3 | Complete | - |
 | 04. Relatórios & Export | 2/2 | Complete | - |
 | 05. Portal LMS (CMS) | 1/1 | Complete | - |
+| 06. Conectores & Formatos | 0/3 | In Progress | - |
