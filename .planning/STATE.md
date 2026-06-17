@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Ferramenta Escalável
-status: executing
-stopped_at: Completed 06-02-PLAN.md
-last_updated: "2026-06-17T20:15:11.357Z"
+status: verifying
+stopped_at: Completed 06-03-PLAN.md
+last_updated: "2026-06-17T20:21:04.487Z"
 last_activity: 2026-06-17
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
-  percent: 67
+  completed_plans: 3
+  percent: 100
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 
 Phase: 06 (formatos-de-upload-download-e-conectores-de-sistemas-de-vend) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-17
 
 Progress: [░░░░░░░░░░] 0%
@@ -50,6 +50,7 @@ Progress: [░░░░░░░░░░] 0%
 
 | Phase 06 P01 | 8 | 2 tasks | 8 files |
 | Phase 06 P02 | 12 | 2 tasks | 8 files |
+| Phase 06 P03 | 4 | 2 tasks | 10 files |
 
 ### Decisions
 
@@ -69,6 +70,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 06]: looksLikeCecHtml requer 3+ linhas de dado para evitar falsos positivos
 - [Phase 06]: Buffer → Uint8Array para Web Response: TypeScript strict rejeita Buffer como BodyInit — cast explícito para Uint8Array resolve sem perda de dados
 - [Phase 06]: Roundtrip bold via Styles.Fonts: xlsx-js-style persiste font.bold no XML mas popula wb.Styles.Fonts, não cell.s.font — teste verifica via array de fontes do workbook
+- [Phase 06]: applySystemPrefix é idempotente — não duplica prefixo se ID já contém o prefixo correto
+- [Phase 06]: sync-connector retorna 200 para status stub/not_configured — comportamento esperado, não erro de infra
 
 ### Blockers/Concerns
 
@@ -95,6 +98,6 @@ Progress: [░░░░░░░░░░] 0%
 
 ## Session Continuity
 
-Last session: 2026-06-17T20:15:06.037Z
-Stopped at: Completed 06-02-PLAN.md
+Last session: 2026-06-17T20:21:04.485Z
+Stopped at: Completed 06-03-PLAN.md
 Resume file: None
