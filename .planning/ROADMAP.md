@@ -107,7 +107,7 @@ Plans:
 **Plans:** 3 planos
 
 Plans:
-- [ ] 06-01-PLAN.md — Infraestrutura de testes (Wave 0) + fingerprint de formato + UploadModal com badge/dropdown
+- [x] 06-01-PLAN.md — Infraestrutura de testes (Wave 0) + fingerprint de formato + UploadModal com badge/dropdown
 - [ ] 06-02-PLAN.md — Export XLSX formatado (xlsx-js-style) e PDF (pdfkit) + seletor de formato no ExportButton
 - [ ] 06-03-PLAN.md — Arquitetura de conectores (base, registry, stubs Pegasus/ISRP) + rota sync + card Conectores na UI
 
