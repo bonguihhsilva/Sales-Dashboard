@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getTenantContext } from '@/lib/auth/tenant'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { generateCommissionXlsx } from '@/lib/export-xlsx'
+import { generateCommissionPdf } from '@/lib/export-pdf'
+import type { VendorReport } from '@/lib/export-xlsx'
 
 export async function GET(req: NextRequest) {
   // Auth check
@@ -13,6 +16,7 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url)
   const periodId = searchParams.get('period') ?? '1'
+  const format = (searchParams.get('format') ?? 'csv') as 'csv' | 'xlsx' | 'pdf'
 
   const admin = createAdminClient()
 
@@ -88,35 +92,63 @@ export async function GET(req: NextRequest) {
     return cleanVal
   }
 
+  const vendorRows = vendors.map(v => {
+    const profileId = profileMap.get(v.vendor_id)
+    const calc = profileId ? calcMap.get(profileId) : null
+
+    const sold    = Number(v.total_sold) || 0
+    const commPct = Number(v.commission_pct) || 0.003
+
+    const m1 = Number(v.meta1) || 0
+    const m2 = Number(v.meta2) || 0
+    const m3 = Number(v.meta3) || 0
+    const level = sold >= m3 ? 3 : sold >= m2 ? 2 : sold >= m1 ? 1 : 0
+
+    const commission   = calc ? Number(calc.comissao_base) : Math.round(sold * commPct * 100) / 100
+    const bonus        = calc ? Number(calc.bonus_total) : (Number(v.bonus_earned) || 0)
+    const totalEarning = calc ? Number(calc.total) : Math.round((commission + bonus) * 100) / 100
+
+    return {
+      nome:             sanitizeCSV(v.vendor_name),
+      loja:             sanitizeCSV(v.store),
+      total_vendido:    sold,
+      comissao_pct:     commPct,
+      comissao:         commission,
+      meta_atingida:    level === 0 ? 'Abaixo da 1ª meta' : `${level}ª meta`,
+      bonus:            bonus,
+      total_ganhos:     totalEarning,
+      status_aprovacao: calc?.aprovado ? 'Aprovada' : (calc ? 'Pendente' : 'Prévia'),
+    }
+  })
+
+  const periodLabel    = period?.label ?? `Período ${periodId}`
+  const periodLabelSafe = periodLabel.toLowerCase().replace(/\s+/g, '-')
+
+  const vendorReports: VendorReport[] = vendorRows
+
+  if (format === 'xlsx') {
+    const buffer = generateCommissionXlsx(vendorReports, periodLabel)
+    return new Response(new Uint8Array(buffer), {
+      headers: {
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': `attachment; filename="comissoes-${periodLabelSafe}.xlsx"`,
+      },
+    })
+  }
+
+  if (format === 'pdf') {
+    const buffer = await generateCommissionPdf(vendorReports, periodLabel)
+    return new Response(new Uint8Array(buffer), {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="comissoes-${periodLabelSafe}.pdf"`,
+      },
+    })
+  }
+
+  // format === 'csv' — comportamento original (JSON para o ExportButton montar o CSV client-side)
   return NextResponse.json({
-    period: period?.label ?? `Período ${periodId}`,
-    vendors: vendors.map(v => {
-      const profileId = profileMap.get(v.vendor_id)
-      const calc = profileId ? calcMap.get(profileId) : null
-
-      const sold         = Number(v.total_sold) || 0
-      const commPct      = Number(v.commission_pct) || 0.003
-      
-      const m1 = Number(v.meta1) || 0
-      const m2 = Number(v.meta2) || 0
-      const m3 = Number(v.meta3) || 0
-      const level = sold >= m3 ? 3 : sold >= m2 ? 2 : sold >= m1 ? 1 : 0
-
-      const commission   = calc ? Number(calc.comissao_base) : Math.round(sold * commPct * 100) / 100
-      const bonus        = calc ? Number(calc.bonus_total) : (Number(v.bonus_earned) || 0)
-      const totalEarning = calc ? Number(calc.total) : Math.round((commission + bonus) * 100) / 100
-      
-      return {
-        nome:         sanitizeCSV(v.vendor_name),
-        loja:         sanitizeCSV(v.store),
-        total_vendido: sold,
-        comissao_pct: commPct,
-        comissao:     commission,
-        meta_atingida: level === 0 ? 'Abaixo da 1ª meta' : `${level}ª meta`,
-        bonus:        bonus,
-        total_ganhos: totalEarning,
-        status_aprovacao: calc?.aprovado ? 'Aprovada' : (calc ? 'Pendente' : 'Prévia')
-      }
-    }),
+    period: periodLabel,
+    vendors: vendorRows,
   })
 }

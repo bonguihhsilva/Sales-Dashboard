@@ -42,15 +42,15 @@ export default async function RelatoriosPage({
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl">
         {/* Export Card */}
         <div className="glass-card rounded-2xl p-8 flex flex-col border border-white/5">
           <div className="w-12 h-12 bg-primary-container text-on-primary-container rounded-xl flex items-center justify-center mb-6">
             <span className="material-symbols-outlined text-2xl">download</span>
           </div>
-          <h2 className="text-xl font-bold text-on-surface mb-2">Exportar Relatório CSV</h2>
+          <h2 className="text-xl font-bold text-on-surface mb-2">Exportar Relatório</h2>
           <p className="text-sm text-muted-foreground mb-8">
-            Selecione o período abaixo para gerar um relatório consolidado de todas as comissões, vendas e bônus da equipe.
+            Selecione o período e o formato para baixar o relatório consolidado de comissões e vendas.
           </p>
           
           <div className="mt-auto flex flex-col gap-4">
@@ -60,9 +60,7 @@ export default async function RelatoriosPage({
                 <PeriodSelector periods={(periods || []) as Period[]} activePeriod={activePeriod} />
               </div>
             </div>
-            <div className="h-[44px]">
-              <ExportButton activePeriod={activePeriod} />
-            </div>
+            <ExportButton activePeriod={activePeriod} />
           </div>
         </div>
 
