@@ -19,15 +19,17 @@ interface DetectedInfo {
 }
 
 export default function UploadModal({ periods, tenantId }: { periods: Period[], tenantId: string }) {
-  const [open, setOpen]           = useState(false)
-  const [file, setFile]           = useState<File | null>(null)
-  const [mode, setMode]           = useState<'incremental' | 'replace'>('incremental')
-  const [detected, setDetected]   = useState<DetectedInfo | null>(null)
-  const [detecting, setDetecting] = useState(false)
-  const [status, setStatus]       = useState<'idle' | 'parsing' | 'uploading' | 'done' | 'error'>('idle')
-  const [message, setMessage]     = useState('')
-  const [stats, setStats]         = useState<{ inserted: number; skipped: number; period: string } | null>(null)
-  const [parsedData, setParsedData] = useState<SaleTransaction[]>([])
+  const [open, setOpen]               = useState(false)
+  const [file, setFile]               = useState<File | null>(null)
+  const [mode, setMode]               = useState<'incremental' | 'replace'>('incremental')
+  const [detected, setDetected]       = useState<DetectedInfo | null>(null)
+  const [detecting, setDetecting]     = useState(false)
+  const [status, setStatus]           = useState<'idle' | 'parsing' | 'uploading' | 'done' | 'error'>('idle')
+  const [message, setMessage]         = useState('')
+  const [stats, setStats]             = useState<{ inserted: number; skipped: number; period: string } | null>(null)
+  const [parsedData, setParsedData]   = useState<SaleTransaction[]>([])
+  const [detectedSystem, setDetectedSystem] = useState<string | null>(null)
+  const [selectedSystem, setSelectedSystem] = useState<string>('generic')
   const fileRef   = useRef<HTMLInputElement>(null)
   const modalRef  = useRef<HTMLDivElement>(null)
   const router    = useRouter()
@@ -72,6 +74,8 @@ export default function UploadModal({ periods, tenantId }: { periods: Period[], 
     setMessage('')
     setDetected(null)
     setStats(null)
+    setDetectedSystem(null)
+    setSelectedSystem('generic')
 
     if (!f) return
     setDetecting(true)
@@ -89,6 +93,8 @@ export default function UploadModal({ periods, tenantId }: { periods: Period[], 
       if (data.error) throw new Error(data.error)
 
       setParsedData(data.transactions)
+      setDetectedSystem(data.detected_system ?? null)
+      setSelectedSystem(data.detected_system ?? 'generic')
 
       if (!data.detected) {
         setMessage('⚠ Não foi possível detectar o período automaticamente.')
@@ -111,6 +117,10 @@ export default function UploadModal({ periods, tenantId }: { periods: Period[], 
 
   async function handleUpload() {
     if (!file || !detected) return
+    if (detectedSystem === null && !selectedSystem) {
+      setMessage('⚠ Selecione o formato do arquivo para continuar')
+      return
+    }
     setStatus('parsing')
     setStats(null)
     setMessage('Lendo arquivo...')
@@ -238,6 +248,7 @@ export default function UploadModal({ periods, tenantId }: { periods: Period[], 
   function handleClose() {
     setOpen(false); setStatus('idle'); setMessage('')
     setFile(null); setDetected(null); setStats(null)
+    setDetectedSystem(null); setSelectedSystem('generic')
     if (fileRef.current) fileRef.current.value = ''
   }
 
@@ -273,6 +284,33 @@ export default function UploadModal({ periods, tenantId }: { periods: Period[], 
               onChange={handleFileChange}
               className="bg-surface-container border border-white/5 rounded-xl text-on-surface font-mono text-sm px-4 py-3 outline-none w-full mb-4 cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-on-primary hover:file:bg-primary/90 transition-all"
             />
+
+            {/* Sistema detectado (D-05/D-06) */}
+            {file && !detecting && (
+              <div className="mt-2 mb-4">
+                {detectedSystem !== null ? (
+                  <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
+                    Formato detectado: {detectedSystem === 'cec' ? 'CEC (Relatório HTML)' : detectedSystem.toUpperCase()}
+                  </span>
+                ) : (
+                  <div>
+                    <label className="block text-[0.65rem] font-mono text-muted-foreground uppercase tracking-wider mb-2">
+                      Sistema não identificado — selecione manualmente:
+                    </label>
+                    <select
+                      value={selectedSystem}
+                      onChange={e => setSelectedSystem(e.target.value)}
+                      className="bg-surface-container border border-white/5 rounded-xl text-sm text-on-surface px-3 py-2 w-full"
+                    >
+                      <option value="cec">CEC (Relatório HTML)</option>
+                      <option value="pegasus">Pegasus</option>
+                      <option value="isrp">ISRP</option>
+                      <option value="generic">Genérico</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Detected period info */}
             {detecting && (

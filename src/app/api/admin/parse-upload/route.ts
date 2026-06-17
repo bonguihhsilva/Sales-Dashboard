@@ -3,6 +3,7 @@ import { getTenantContext } from '@/lib/auth/tenant'
 import { parseUploadBuffer } from '@/lib/server-parser'
 import { detectPeriodFromTransactions } from '@/lib/parser'
 import { strictRateLimiter } from '@/lib/ratelimit'
+import { detectFileSystem } from '@/lib/fingerprint'
 
 export async function POST(req: NextRequest) {
   // Rate limiter
@@ -37,10 +38,14 @@ export async function POST(req: NextRequest) {
     
     // Detect period
     const detected = detectPeriodFromTransactions(transactions)
-    
+
+    // Detect source system by fingerprint (null → UploadModal mostra dropdown D-06)
+    const detectedSystem = detectFileSystem(buffer, file.name)
+
     return NextResponse.json({
       transactions,
-      detected
+      detected,
+      detected_system: detectedSystem,
     })
   } catch (error: any) {
     console.error('Parse upload error:', error)
