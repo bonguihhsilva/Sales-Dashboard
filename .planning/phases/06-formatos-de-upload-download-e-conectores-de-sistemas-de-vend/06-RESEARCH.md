@@ -664,22 +664,16 @@ npm install --save-dev vitest
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **pg_cron disponível no plano Supabase atual?**
-   - O que sabemos: Supabase Cron está disponível em todos os projetos cloud. [CITED: supabase.com/docs/guides/cron]
-   - Incerto: Se `pg_cron` e `pg_net` já estão habilitados no projeto `zsczxblhtdhpdqvkpuwz` ou precisam ser ativados.
-   - Recomendação: Planner deve incluir tarefa de verificação: "Confirmar extensões pg_cron + pg_net ativas via Supabase Dashboard → Extensions". Fallback: cron-job.org não requer nenhuma extensão.
+   - RESOLVIDO: pg_cron não é necessário para esta fase. A rota  aceita auth dupla (CRON_SECRET + getTenantContext). Agendamento pode usar cron-job.org (free) ou Supabase Cron quando habilitado — não bloqueia o deploy. O plano 06-03 implementa a rota sem dependência de pg_cron.
 
 2. **Logo GDS para o PDF**
-   - O que sabemos: D-12 menciona "logo GDS + título + período" no header do PDF.
-   - Incerto: Se existe um arquivo de logo (PNG/SVG) no projeto para embutir no PDF.
-   - Recomendação: Verificar se `public/logo.png` ou similar existe. PDFKit suporta `doc.image(buffer, x, y)`. Se não existir, header fica só com texto — não bloqueia a fase.
+   - RESOLVIDO: export-pdf.ts usa  antes de chamar  — fallback gracioso se o arquivo não existir. D-12 é honrado com implementação pragmática: logo incluído quando presente, header só com texto quando ausente.
 
 3. **Formato exato de resposta das APIs Pegasus/ISRP**
-   - O que sabemos: D-03 confirma que credenciais e docs não estão disponíveis.
-   - Incerto: Estrutura de dados retornada, método de autenticação, paginação.
-   - Recomendação: Stubs devem ter comentários detalhados de TODO com as perguntas que precisam ser respondidas quando a documentação chegar.
+   - RESOLVIDO: D-03 confirma que docs não estão disponíveis. Solução: stubs PegasusConnector e ISRPConnector que lançam Error com mensagem de TODO detalhada listando as perguntas a responder quando a documentação chegar (endpoint, auth, formato, paginação). Não bloqueia merge.
 
 ---
 
