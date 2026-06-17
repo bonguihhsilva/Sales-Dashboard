@@ -61,11 +61,11 @@ All roles match the declared `fontSize` tokens in `tailwind.config.js`.
 | Role | Size | Weight | Line Height | Font | Usage |
 |------|------|--------|-------------|------|-------|
 | Body | 16px | 400 | 1.5 (24px) | Manrope | Card descriptions, dropdown labels, modal body copy |
-| Label | 12px | 500 | 1.33 (16px) | JetBrains Mono | Section sub-labels (e.g. "SELECIONE O PERÍODO"), connector status text, format badge |
+| Label | 12px | 600 | 1.33 (16px) | JetBrains Mono | Section sub-labels (e.g. "SELECIONE O PERÍODO"), connector status text, format badge |
 | Title | 20px | 600 | 1.4 (28px) | Manrope | Card headings ("Exportar Relatório", "Importar Vendas", "Conectores") |
 | Heading | 32px | 600 | 1.25 (40px) | Hanken Grotesk | PageHeader title only (`text-headline-lg`) |
 
-> Source: `tailwind.config.js` fontSize tokens (headline-lg, title-md, body-base, label-sm). Exactly 4 sizes, 2 effective weights (400 + 600/500 collapsed to bold/regular contract).
+> Source: `tailwind.config.js` fontSize tokens (headline-lg, title-md, body-base, label-sm). Exactly 4 sizes, 2 weights: 400 (Body) and 600 (Label, Title, Heading).
 
 ---
 
@@ -229,6 +229,8 @@ Current: `grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl`
 Phase 06 change: `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl`
 
 All three cards use identical glass-card structure. No new layout primitives needed.
+
+**Focal point declaration:** All three cards (Export, Import, Conectores) are co-equal utility actions with equal visual weight — identical glass-card shell, same icon container size, same title size. No single dominant element exists on this page. Reading order (left-to-right, top-to-bottom) establishes implicit priority: Export > Import > Conectores. This is intentional — users arrive for different tasks at different times, so no card is elevated above the others.
 
 ### UploadModal additions
 
