@@ -191,7 +191,10 @@ export default function UploadModal({ periods, tenantId }: { periods: Period[], 
             commission_pct: 0.003,
           }
         })
-        await supabase.from('goals').insert(placeholders)
+        const { error: goalError } = await supabase.from('goals').insert(placeholders)
+        if (goalError) {
+          console.warn('Auto-registro de vendedores falhou:', goalError.message)
+        }
       }
 
       let inserted = 0
