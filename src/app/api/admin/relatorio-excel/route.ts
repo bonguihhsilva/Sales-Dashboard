@@ -8,14 +8,19 @@ import type { VendorReport } from '@/lib/export-xlsx'
 export async function GET(req: NextRequest) {
   // Auth check
   const { user, profile } = await getTenantContext()
-  if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-  
-  if (!['adm', 'gerente', 'super_admin'].includes(profile?.role || '')) {
+  if (!user || !profile) {
+    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  }
+  if (!['adm', 'gerente', 'super_admin'].includes(profile.role)) {
     return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
   }
 
   const { searchParams } = new URL(req.url)
-  const periodId = searchParams.get('period') ?? '1'
+  const rawPeriod = searchParams.get('period') ?? '1'
+  const periodId = parseInt(rawPeriod)
+  if (isNaN(periodId) || periodId <= 0) {
+    return NextResponse.json({ error: 'Período inválido' }, { status: 400 })
+  }
   const format = (searchParams.get('format') ?? 'csv') as 'csv' | 'xlsx' | 'pdf'
 
   const admin = createAdminClient()
@@ -24,7 +29,7 @@ export async function GET(req: NextRequest) {
   let summaryQuery = admin
     .from('vendor_summary')
     .select('vendor_id, vendor_name, store, total_sold, meta1, meta2, meta3, bonus1, bonus2, bonus3, bonus_earned, commission_pct')
-    .eq('period_id', parseInt(periodId))
+    .eq('period_id', periodId)
     .order('total_sold', { ascending: false })
 
   if (profile.tenant_id) {
@@ -35,7 +40,7 @@ export async function GET(req: NextRequest) {
   const { data: period } = await admin
     .from('periods')
     .select('label, tenant_id')
-    .eq('id', parseInt(periodId))
+    .eq('id', periodId)
     .single()
 
   if (!period || (profile.tenant_id && period.tenant_id !== profile.tenant_id)) {
@@ -46,7 +51,7 @@ export async function GET(req: NextRequest) {
   let goalQuery = admin
     .from('goals')
     .select('vendor_id')
-    .eq('period_id', parseInt(periodId))
+    .eq('period_id', periodId)
 
   if (profile.tenant_id) {
     goalQuery = goalQuery.eq('tenant_id', profile.tenant_id)
@@ -60,7 +65,7 @@ export async function GET(req: NextRequest) {
   let comissoesQuery = admin
     .from('comissoes_calculadas')
     .select('vendedor_id, comissao_base, bonus_total, total, aprovado')
-    .eq('periodo_id', parseInt(periodId))
+    .eq('periodo_id', periodId)
 
   if (profile.tenant_id) {
     comissoesQuery = comissoesQuery.eq('tenant_id', profile.tenant_id)
