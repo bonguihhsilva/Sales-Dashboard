@@ -16,11 +16,8 @@ export default async function RelatoriosPage({
   searchParams: Promise<{ period?: string }>
 }) {
   const { user, profile } = await getTenantContext()
-
-  if (user) {
-    const jwtRole = profile.role
-    if (jwtRole === 'vendedor') redirect('/vendedor/meu-resultado')
-  }
+  if (!user || !profile) redirect('/login')
+  if (profile.role === 'vendedor') redirect('/vendedor/meu-resultado')
 
   const adminDb = createAdminClient()
   const { data: periods } = await adminDb
