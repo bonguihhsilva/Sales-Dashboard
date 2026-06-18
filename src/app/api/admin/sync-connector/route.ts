@@ -14,6 +14,9 @@ export async function POST(req: NextRequest) {
   // Auth dupla: CRON_SECRET para chamadas agendadas, getTenantContext para triggers manuais (D-02)
   const authHeader = req.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
+  if (cronSecret && cronSecret.length < 16) {
+    console.warn('CRON_SECRET muito curto — configure um segredo com pelo menos 16 chars')
+  }
   const isCronCall = !!(cronSecret && authHeader === `Bearer ${cronSecret}`)
 
   let tenantId: string | null = null
