@@ -104,7 +104,7 @@ Plans:
 **Goal:** Adicionar detecção automática de formato por fingerprint no upload, exports em XLSX formatado e PDF, e arquitetura de conectores REST para Pegasus e ISRP com stubs prontos para implementação quando as credenciais chegarem.
 **Requirements**: D-01 a D-13 (ver 06-CONTEXT.md)
 **Depends on:** Phase 05
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 06-01-PLAN.md — Infraestrutura de testes (Wave 0) + fingerprint de formato + UploadModal com badge/dropdown
@@ -122,4 +122,4 @@ Plans:
 | 03. LMS / Treinamento | 3/3 | Complete | - |
 | 04. Relatórios & Export | 2/2 | Complete | - |
 | 05. Portal LMS (CMS) | 1/1 | Complete | - |
-| 06. Conectores & Formatos | 2/3 | In Progress|  |
+| 06. Conectores & Formatos | 3/3 | Complete    | 2026-06-18 |
