@@ -32,6 +32,13 @@ const ROW_HEIGHT = 18
 const HEADER_HEIGHT = 22
 const LOGO_PATH = path.join(process.cwd(), 'public', 'logo.png')
 
+// Cache result per cold start — avoids blocking fs.existsSync on every PDF generation
+let _logoExists: boolean | null = null
+function logoExists(): boolean {
+  if (_logoExists === null) _logoExists = fs.existsSync(LOGO_PATH)
+  return _logoExists
+}
+
 export async function generateCommissionPdf(
   vendors: VendorReport[],
   periodLabel: string
@@ -45,8 +52,7 @@ export async function generateCommissionPdf(
 
     // ── Header (D-12: logo GDS + título + período) ────
     // Logo: incluído se public/logo.png existir — fallback gracioso se ausente
-    const logoExists = fs.existsSync(LOGO_PATH)
-    if (logoExists) {
+    if (logoExists()) {
       doc.image(LOGO_PATH, PAGE_MARGIN, PAGE_MARGIN, { height: 36 })
       doc.moveDown(0.5)
     }
@@ -61,28 +67,42 @@ export async function generateCommissionPdf(
     doc.moveDown(1.2)
 
     // ── Cabeçalho da tabela ────
-    let x = PAGE_MARGIN
-    const tableTop = doc.y
+    const tableWidth = COLS.reduce((s, c) => s + c.width, 0)
+    const PAGE_USABLE_HEIGHT = doc.page.height - PAGE_MARGIN * 2
 
-    doc.fontSize(9).font('Helvetica-Bold')
-    doc.rect(x, tableTop, COLS.reduce((s, c) => s + c.width, 0), HEADER_HEIGHT).fill('#E8E8E8')
-    doc.fillColor('black')
-
-    COLS.forEach(col => {
-      doc.text(col.label, x + 3, tableTop + 5, {
-        width: col.width - 6,
-        align: col.align,
-        lineBreak: false,
+    const drawTableHeader = (y: number) => {
+      doc.fontSize(9).font('Helvetica-Bold')
+      doc.rect(PAGE_MARGIN, y, tableWidth, HEADER_HEIGHT).fill('#E8E8E8')
+      doc.fillColor('black')
+      let hx = PAGE_MARGIN
+      COLS.forEach(col => {
+        doc.text(col.label, hx + 3, y + 5, {
+          width: col.width - 6,
+          align: col.align,
+          lineBreak: false,
+        })
+        hx += col.width
       })
-      x += col.width
-    })
+      doc.font('Helvetica').fontSize(8)
+    }
+
+    let currentTableTop = doc.y
+    drawTableHeader(currentTableTop)
+    let rowsOnPage = 0
 
     // ── Linhas de dados ────
-    doc.font('Helvetica').fontSize(8)
-    vendors.forEach((vendor, idx) => {
-      const rowY = tableTop + HEADER_HEIGHT + idx * ROW_HEIGHT
-      if (idx % 2 === 0) {
-        doc.rect(PAGE_MARGIN, rowY, COLS.reduce((s, c) => s + c.width, 0), ROW_HEIGHT).fill('#F9F9F9')
+    vendors.forEach((vendor) => {
+      const maxRowsPerPage = Math.floor((PAGE_USABLE_HEIGHT - HEADER_HEIGHT) / ROW_HEIGHT)
+      if (rowsOnPage >= maxRowsPerPage) {
+        doc.addPage()
+        currentTableTop = PAGE_MARGIN
+        drawTableHeader(currentTableTop)
+        rowsOnPage = 0
+      }
+
+      const rowY = currentTableTop + HEADER_HEIGHT + rowsOnPage * ROW_HEIGHT
+      if (rowsOnPage % 2 === 0) {
+        doc.rect(PAGE_MARGIN, rowY, tableWidth, ROW_HEIGHT).fill('#F9F9F9')
         doc.fillColor('black')
       }
 
@@ -95,10 +115,11 @@ export async function generateCommissionPdf(
         })
         cx += col.width
       })
+      rowsOnPage++
     })
 
     // ── Rodapé ────
-    const footerY = tableTop + HEADER_HEIGHT + vendors.length * ROW_HEIGHT + 10
+    const footerY = currentTableTop + HEADER_HEIGHT + rowsOnPage * ROW_HEIGHT + 10
     doc
       .fontSize(8)
       .font('Helvetica')
