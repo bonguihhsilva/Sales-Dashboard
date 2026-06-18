@@ -24,7 +24,7 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions }: PageHeader
             ))}
           </nav>
         )}
-        <h1 className="font-sans text-xl font-bold text-on-surface md:text-[28px] md:leading-[1.2]">
+        <h1 className="font-sans text-2xl font-bold tracking-[-0.02em] text-on-surface md:text-[34px] md:leading-[1.1]">
           {title}
         </h1>
         {subtitle && <p className="font-sans text-base text-on-surface-variant">{subtitle}</p>}

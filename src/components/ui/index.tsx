@@ -62,7 +62,7 @@ export function ProgressBar({ sold, meta1, meta2, meta3, metaLevel }: ProgressBa
 
   return (
     <div>
-      <div className="relative h-2 bg-secondary rounded-full overflow-hidden">
+      <div className="relative h-2 bg-surface-container-highest rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${mcBg} transition-all duration-500`} style={{ width: `${barW}%` }} />
       </div>
       {/* Marker ticks */}
