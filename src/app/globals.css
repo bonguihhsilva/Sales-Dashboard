@@ -12,7 +12,7 @@
     --popover-foreground: 225 93% 92%;
     --border: 225 21% 22%; /* #2d3449 */
     --input: 225 21% 22%;
-    --ring: 261 100% 87%; /* #d2bbff */
+    --ring: 217 91% 60%; /* #3b82f6 royal blue */
     
     /* GDS store colors */
     --jebai: 271 81% 56%;
@@ -44,6 +44,7 @@
     background-color: #0b1326;
     color: #dae2fd;
     font-family: var(--font-manrope), 'sans-serif';
+    font-variant-numeric: tabular-nums;
     @apply antialiased overflow-x-hidden;
   }
 }
@@ -68,14 +69,14 @@
     border: 1px solid #af8d11;
   }
   .featured-gradient {
-    background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(11, 19, 38, 0) 100%);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.16) 0%, rgba(11, 19, 38, 0) 100%);
   }
   .inner-glow {
     box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
   }
   .neon-border-active {
     border: 1px solid transparent;
-    background-image: linear-gradient(#171f33, #171f33), linear-gradient(to right, #d2bbff, #4cd7f6);
+    background-image: linear-gradient(#171f33, #171f33), linear-gradient(to right, #3b82f6, #1d4ed8);
     background-origin: border-box;
     background-clip: padding-box, border-box;
   }
@@ -85,4 +86,4 @@
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #0b1326; }
 ::-webkit-scrollbar-thumb { background: #2d3449; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #d2bbff; }
+::-webkit-scrollbar-thumb:hover { background: #3b82f6; }

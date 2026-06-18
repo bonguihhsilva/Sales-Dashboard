@@ -25,7 +25,7 @@ export function StatCard({ label, value, delta, icon, className }: StatCardProps
       {deltaSign && (
         <div className={cn(
           'font-mono text-[12px]',
-          deltaSign === 'pos' && 'text-accent',
+          deltaSign === 'pos' && 'text-meta1',
           deltaSign === 'neg' && 'text-destructive',
           deltaSign === 'zero' && 'text-muted-foreground',
         )}>
