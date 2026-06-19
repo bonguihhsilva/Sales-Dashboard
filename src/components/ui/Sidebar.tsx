@@ -3,9 +3,10 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LogoutButton } from '@/components/ui'
+import { TenantSwitcher } from './TenantSwitcher'
 import { useState } from 'react'
 
-export function Sidebar({ role, name }: { role: string, name: string }) {
+export function Sidebar({ role, name, tenants = [], activeTenantId }: { role: string, name: string, tenants?: any[], activeTenantId?: string | null }) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
 
@@ -37,8 +38,8 @@ export function Sidebar({ role, name }: { role: string, name: string }) {
   return (
     <>
       {/* Mobile toggle */}
-      <button 
-        className="lg:hidden fixed top-[18px] left-4 z-[60] p-1 bg-surface-container rounded shadow-sm border border-white/5"
+      <button
+        className="lg:hidden fixed top-3 left-4 z-[60] p-1 bg-surface-container rounded shadow-sm border border-white/5"
         onClick={() => setIsOpen(!isOpen)}
       >
         <span className="material-symbols-outlined text-on-surface">menu</span>
@@ -46,7 +47,7 @@ export function Sidebar({ role, name }: { role: string, name: string }) {
 
       {/* Sidebar */}
       <aside className={`
-        fixed left-0 top-16 h-[calc(100vh-64px)] w-[280px] flex flex-col py-stack-lg border-r border-white/5 bg-surface-container z-40
+        fixed left-0 top-0 h-[100dvh] w-[280px] flex flex-col py-stack-lg border-r border-white/5 bg-surface-container z-40
         transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
         transition-transform duration-300 ease-in-out
       `}>
@@ -88,7 +89,34 @@ export function Sidebar({ role, name }: { role: string, name: string }) {
 
 
         <div className="border-t border-white/5 pt-4 space-y-1">
-          <div className="px-2 pb-4">
+          {role === 'super_admin' && (
+            <div className="px-4 pb-2">
+              <TenantSwitcher tenants={tenants} activeTenantId={activeTenantId} />
+            </div>
+          )}
+          {role !== 'vendedor' && (
+            <div className="px-2">
+              <Link
+                href="/dashboard/config"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all"
+              >
+                <span className="material-symbols-outlined">settings</span>
+                <span>Configurações</span>
+              </Link>
+            </div>
+          )}
+          <div className="px-2">
+            <Link
+              href="/perfil"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all"
+            >
+              <span className="material-symbols-outlined">person</span>
+              <span className="truncate">{name}</span>
+            </Link>
+          </div>
+          <div className="px-2 pt-1 pb-4">
             <LogoutButton />
           </div>
         </div>

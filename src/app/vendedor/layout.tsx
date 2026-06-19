@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/ui/Sidebar'
-import { TopNavBar } from '@/components/ui/TopNavBar'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,9 +25,8 @@ export default async function VendedorLayout({ children }: { children: React.Rea
 
   return (
     <div className="bg-background min-h-screen text-body-base font-body-base">
-      <TopNavBar name={userName} role="vendedor" />
       <Sidebar role="vendedor" name={userName} />
-      <main className="lg:ml-[280px] pt-16 min-h-screen bg-background">
+      <main className="lg:ml-[280px] pt-14 lg:pt-0 min-h-screen bg-background">
         {children}
       </main>
     </div>

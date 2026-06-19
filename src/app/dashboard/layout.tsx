@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getTenantContext } from '@/lib/auth/tenant'
 import { Sidebar } from '@/components/ui/Sidebar'
-import { TopNavBar } from '@/components/ui/TopNavBar'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,9 +25,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
       >
         Pular para o conteúdo
       </a>
-      <TopNavBar name={userName} role={role} tenants={tenants} activeTenantId={profile.tenant_id} />
-      <Sidebar role={role} name={userName} />
-      <main id="main-content" className="lg:ml-[280px] pt-16 min-h-screen bg-background">
+      <Sidebar role={role} name={userName} tenants={tenants} activeTenantId={profile.tenant_id} />
+      <main id="main-content" className="lg:ml-[280px] pt-14 lg:pt-0 min-h-screen bg-background">
         {children}
       </main>
     </div>
