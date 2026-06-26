@@ -36,6 +36,19 @@ export interface Goal {
   bonus2: number
   bonus3: number
   commission_pct: number
+  commission_type: 'revenue' | 'profit'
+}
+
+export interface Product {
+  id: string
+  tenant_id: string
+  period_id: number
+  product_code: string
+  name: string | null
+  cost_price: number | null
+  sale_price: number | null
+  margin_pct: number | null
+  updated_at: string
 }
 
 export interface VendorSummary {
@@ -60,9 +73,11 @@ export interface VendorSummary {
   bonus2: number
   bonus3: number
   commission_pct: number
+  commission_type: 'revenue' | 'profit'
   meta_level: number
   bonus_earned: number
   total_commission: number
+  total_profit: number
 }
 
 export interface ClientPortfolio {

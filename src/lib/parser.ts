@@ -1,12 +1,17 @@
 export interface SaleTransaction {
-  vendor_id: string
-  client_id: string
-  client_name: string
-  sale_date: string   // DD/MM/YY
-  sale_time: string   // HH:MM:SS
-  order_ref: string
-  valor: number
-  quantity: number
+  vendor_id:     string
+  client_id:     string
+  client_name:   string
+  sale_date:     string   // DD/MM/YY
+  sale_time:     string   // HH:MM:SS
+  order_ref:     string
+  valor:         number
+  quantity:      number
+  // Optional fields for profit-based commission support
+  product_code?: string
+  unit_price?:   number
+  unit_cost?:    number
+  margin_pct?:   number
 }
 
 export function parseSalesHtml(html: string): SaleTransaction[] {
