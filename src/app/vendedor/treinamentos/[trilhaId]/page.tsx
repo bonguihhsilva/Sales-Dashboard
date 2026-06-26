@@ -1,107 +1,100 @@
-import { createClient } from '@/lib/supabase/server'
+import { getTenantContext } from '@/lib/auth/tenant'
 import { redirect } from 'next/navigation'
-import { LogoutButton, SectionTitle, PageHeader } from '@/components/ui'
+import { LMS_TRILHAS } from '@/lib/lms'
+import { PageHeader, LogoutButton } from '@/components/ui'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
+const C = {
+  bg:      '#0C0C0E',
+  surface: '#1C1C22',
+  border:  'rgba(255,255,255,0.06)',
+  text:    '#F0F0F3',
+  muted:   '#6B6B78',
+  gold:    '#C9933A',
+  amber:   '#f5a742',
+  green:   '#22c55e',
+} as const
+
 export default async function TrilhaPage({ params }: { params: Promise<{ trilhaId: string }> }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  // if (!user) redirect('/login')
-  const userId = user?.id
-  if (!userId) redirect('/login')
+  const { user, profile } = await getTenantContext()
+  if (!user || !profile) redirect('/login')
 
   const { trilhaId } = await params
-
-  const { data: trilha } = await supabase
-    .from('trilhas').select('*').eq('id', trilhaId).single()
-
+  const trilha = LMS_TRILHAS.find(t => t.id === trilhaId)
   if (!trilha) redirect('/vendedor/treinamentos')
 
-  const { data: modulos } = await supabase
-    .from('modulos').select('*').eq('trilha_id', trilhaId).order('ordem', { ascending: true })
-
-  // Pegar progresso do quiz (para saber se o modulo foi concluído pelo user)
-  const { data: resultados } = await supabase
-    .from('quiz_resultados')
-    .select('modulo_id, aprovado')
-    .eq('usuario_id', userId)
-    .eq('aprovado', true)
-
-  const modulosAprovados = new Set(resultados?.map(r => r.modulo_id) || [])
-
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-      {/* Header */}
+    <div style={{ minHeight: '100vh', background: C.bg }}>
       <div style={{ padding: '1.5rem 2.5rem' }}>
         <PageHeader
-          title={trilha.titulo}
-          subtitle={trilha.descricao}
+          title={trilha.title}
+          subtitle={trilha.description}
           breadcrumbs={[
             { label: 'Treinamentos', href: '/vendedor/treinamentos' },
-            { label: trilha.titulo },
+            { label: trilha.title },
           ]}
           actions={<LogoutButton />}
         />
       </div>
 
-      <div style={{ padding: '2rem 2.5rem', maxWidth: '900px', margin: '0 auto' }}>
-        <SectionTitle>Módulos da Trilha</SectionTitle>
-        
-        {(!modulos || modulos.length === 0) ? (
-          <div style={{ padding: '2rem', textAlign: 'center', border: '1px dashed var(--border)', borderRadius: '12px', marginTop: '1rem' }}>
-            <p style={{ color: 'var(--muted)' }}>Nenhum módulo cadastrado nesta trilha.</p>
+      <div style={{ padding: '0 2.5rem 2rem', maxWidth: '900px' }}>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+          <span style={{ fontSize: '2rem' }}>{trilha.icon}</span>
+          <div style={{ fontSize: '0.5rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: C.amber, fontWeight: 700 }}>
+            +{trilha.xpReward} XP ao concluir
           </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem' }}>
-            {modulos.map((mod, index) => {
-              const concluido = modulosAprovados.has(mod.id)
-              return (
-                <Link key={mod.id} href={`/vendedor/treinamentos/${trilhaId}/${mod.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <div style={{ 
-                    background: 'var(--surface)', 
-                    border: `1px solid ${concluido ? '#22c55e' : 'var(--border)'}`, 
-                    borderRadius: '12px', 
-                    padding: '1.25rem 1.5rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    cursor: 'pointer',
-                    opacity: index === 0 || modulosAprovados.has(modulos[index - 1]?.id) || concluido ? 1 : 0.6,
-                    pointerEvents: index === 0 || modulosAprovados.has(modulos[index - 1]?.id) || concluido ? 'auto' : 'none'
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {trilha.lessons.map((lesson, idx) => (
+            <Link key={lesson.id} href={`/vendedor/treinamentos/${trilhaId}/${lesson.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <div style={{
+                background: C.surface,
+                border: `1px solid ${C.border}`,
+                borderRadius: '0.75rem',
+                padding: '1rem 1.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                cursor: 'pointer',
+                transition: 'border-color 0.15s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = C.border)}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+                  <div style={{
+                    width: '2rem', height: '2rem', borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.border}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: C.muted, fontWeight: 700,
                   }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>
-                          {index + 1}. {mod.titulo}
-                        </h3>
-                        {concluido && (
-                          <span style={{ background: '#22c55e22', color: '#22c55e', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
-                            Concluído ✓
-                          </span>
-                        )}
-                        {!concluido && index > 0 && !modulosAprovados.has(modulos[index - 1]?.id) && (
-                          <span style={{ background: 'var(--surface2)', color: 'var(--muted)', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
-                            Bloqueado 🔒
-                          </span>
-                        )}
-                      </div>
-                      <p style={{ fontSize: '0.8rem', color: 'var(--muted)', margin: '4px 0 0 0' }}>
-                        {mod.descricao || 'Sem descrição.'}
-                      </p>
+                    {String(idx + 1).padStart(2, '0')}
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '0.875rem', fontWeight: 700, color: C.text }}>
+                      {lesson.title}
                     </div>
-                    
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>Recompensa</div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--meta3, #f5a742)' }}>+{mod.xp_reward} XP</div>
+                    <div style={{ fontSize: '0.6875rem', color: C.muted, marginTop: 2 }}>
+                      {lesson.description}
                     </div>
                   </div>
-                </Link>
-              )
-            })}
-          </div>
-        )}
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '0.5rem', fontFamily: 'DM Mono, monospace', color: C.muted }}>{lesson.duration} min</div>
+                    <div style={{ fontSize: '0.5rem', fontFamily: 'DM Mono, monospace', color: C.muted }}>{lesson.quiz.length} questões</div>
+                  </div>
+                  <span style={{ fontSize: '0.75rem', color: C.muted }}>→</span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   )
