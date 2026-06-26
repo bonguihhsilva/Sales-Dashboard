@@ -20,6 +20,7 @@ interface DetectedInfo {
 
 export default function UploadModal({ periods, tenantId }: { periods: Period[], tenantId: string }) {
   const [open, setOpen]               = useState(false)
+  const [activeTab, setActiveTab]     = useState<'vendas' | 'catalogo'>('vendas')
   const [file, setFile]               = useState<File | null>(null)
   const [mode, setMode]               = useState<'incremental' | 'replace'>('incremental')
   const [detected, setDetected]       = useState<DetectedInfo | null>(null)
@@ -30,6 +31,12 @@ export default function UploadModal({ periods, tenantId }: { periods: Period[], 
   const [parsedData, setParsedData]   = useState<SaleTransaction[]>([])
   const [detectedSystem, setDetectedSystem] = useState<string | null>(null)
   const [selectedSystem, setSelectedSystem] = useState<string>('generic')
+  // Catalog upload state
+  const [catalogFile, setCatalogFile]         = useState<File | null>(null)
+  const [catalogPeriodId, setCatalogPeriodId] = useState<string>('')
+  const [catalogStatus, setCatalogStatus]     = useState<'idle' | 'uploading' | 'done' | 'error'>('idle')
+  const [catalogMessage, setCatalogMessage]   = useState('')
+  const catalogFileRef = useRef<HTMLInputElement>(null)
   const fileRef   = useRef<HTMLInputElement>(null)
   const modalRef  = useRef<HTMLDivElement>(null)
   const router    = useRouter()
@@ -248,11 +255,35 @@ export default function UploadModal({ periods, tenantId }: { periods: Period[], 
     }
   }
 
+  async function handleCatalogUpload() {
+    if (!catalogFile || !catalogPeriodId) return
+    setCatalogStatus('uploading')
+    setCatalogMessage('Enviando catálogo...')
+    try {
+      const formData = new FormData()
+      formData.append('file', catalogFile)
+      formData.append('period_id', catalogPeriodId)
+      const res = await fetch('/api/admin/upload-catalog', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      const periodLabel = periods.find(p => String(p.id) === catalogPeriodId)?.label ?? `Período ${catalogPeriodId}`
+      setCatalogMessage(`${data.imported} produtos importados para "${periodLabel}"`)
+      setCatalogStatus('done')
+      setCatalogFile(null)
+      if (catalogFileRef.current) catalogFileRef.current.value = ''
+    } catch (err: unknown) {
+      setCatalogStatus('error')
+      setCatalogMessage(`Erro: ${err instanceof Error ? err.message : 'Falha ao importar catálogo'}`)
+    }
+  }
+
   function handleClose() {
     setOpen(false); setStatus('idle'); setMessage('')
     setFile(null); setDetected(null); setStats(null)
     setDetectedSystem(null); setSelectedSystem('generic')
+    setCatalogFile(null); setCatalogPeriodId(''); setCatalogStatus('idle'); setCatalogMessage('')
     if (fileRef.current) fileRef.current.value = ''
+    if (catalogFileRef.current) catalogFileRef.current.value = ''
   }
 
   return (
@@ -274,7 +305,89 @@ export default function UploadModal({ periods, tenantId }: { periods: Period[], 
             aria-labelledby="upload-modal-title"
             className="bg-surface border border-white/10 rounded-2xl p-8 w-full max-w-lg max-h-[90svh] overflow-y-auto shadow-2xl glass-card"
           >
-            <h2 id="upload-modal-title" className="text-xl font-bold mb-2 text-on-surface">Importar Vendas</h2>
+            <h2 id="upload-modal-title" className="text-xl font-bold mb-2 text-on-surface">Importar Dados</h2>
+
+            {/* Tabs */}
+            <div className="flex gap-1 mb-6 bg-surface-container rounded-xl p-1">
+              {([
+                { id: 'vendas',   label: 'Vendas',             icon: 'upload_file' },
+                { id: 'catalogo', label: 'Catálogo de Produtos', icon: 'inventory_2' },
+              ] as const).map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-bold py-2 px-3 rounded-lg transition-colors ${
+                    activeTab === tab.id
+                      ? 'bg-primary text-on-primary'
+                      : 'text-muted-foreground hover:text-on-surface'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-sm">{tab.icon}</span>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* ── Catalog tab ── */}
+            {activeTab === 'catalogo' && (
+              <div>
+                <p className="text-xs font-mono text-muted-foreground mb-4">
+                  Faça upload de um catálogo de produtos (HTML ou XLSX) com colunas: código, nome, custo, preço de venda e margem.
+                </p>
+
+                <label className="block text-[0.65rem] font-mono text-muted-foreground uppercase tracking-wider mb-2">Período</label>
+                <select
+                  value={catalogPeriodId}
+                  onChange={e => setCatalogPeriodId(e.target.value)}
+                  className="bg-surface-container border border-white/5 rounded-xl text-sm text-on-surface px-3 py-2 w-full mb-4"
+                >
+                  <option value="">Selecione o período...</option>
+                  {periods.map(p => (
+                    <option key={p.id} value={String(p.id)}>{p.label}</option>
+                  ))}
+                </select>
+
+                <label className="block text-[0.65rem] font-mono text-muted-foreground uppercase tracking-wider mb-2">Arquivo (.html ou .xlsx)</label>
+                <input
+                  ref={catalogFileRef}
+                  type="file"
+                  accept=".html,.htm,.xlsx,.xls"
+                  onChange={e => { setCatalogFile(e.target.files?.[0] ?? null); setCatalogStatus('idle'); setCatalogMessage('') }}
+                  className="bg-surface-container border border-white/5 rounded-xl text-on-surface font-mono text-sm px-4 py-3 outline-none w-full mb-4 cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-on-primary hover:file:bg-primary/90 transition-all"
+                />
+
+                {catalogMessage && (
+                  <div className={`p-3 rounded-xl mb-4 text-xs font-mono border ${
+                    catalogStatus === 'error' ? 'bg-red-500/10 text-red-400 border-red-500/30' :
+                    catalogStatus === 'done'  ? 'bg-primary/10 text-primary border-primary/30' :
+                    'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                  }`}>
+                    {catalogMessage}
+                  </div>
+                )}
+
+                <div className="flex gap-3 mt-2">
+                  <button onClick={handleClose} className="flex-1 bg-transparent border border-white/10 hover:bg-white/5 rounded-xl text-muted-foreground font-bold text-sm py-2.5 transition-colors">
+                    Fechar
+                  </button>
+                  <button
+                    onClick={handleCatalogUpload}
+                    disabled={!catalogFile || !catalogPeriodId || catalogStatus === 'uploading'}
+                    className="flex-[2] bg-primary hover:bg-primary/90 text-on-primary font-bold text-sm rounded-xl py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {catalogStatus === 'uploading' ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="material-symbols-outlined text-sm animate-spin">sync</span>
+                        Importando...
+                      </span>
+                    ) : 'Importar Catálogo'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ── Sales tab ── */}
+            {activeTab === 'vendas' && (<>
             <p className="text-xs font-mono text-muted-foreground mb-6">
               Faça upload de planilhas (XLSX, CSV), Word (DOCX), PDF ou relatórios HTML.
             </p>
@@ -447,6 +560,7 @@ export default function UploadModal({ periods, tenantId }: { periods: Period[], 
                 </button>
               )}
             </div>
+            </>)}
           </div>
         </div>
       )}

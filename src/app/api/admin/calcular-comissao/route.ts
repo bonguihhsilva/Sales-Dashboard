@@ -82,9 +82,13 @@ export async function POST(req: NextRequest) {
       const prevApproval = approvedMap.get(vendedor_id)
 
       // Aritmética precisa baseada em centavos (arredondamento matemático exato)
-      const totalSoldCents = Math.round(Number(s.total_sold) * 100)
+      const commissionType = (s.commission_type as string | undefined) ?? 'revenue'
+      const baseValue = commissionType === 'profit'
+        ? Number(s.total_profit ?? 0)
+        : Number(s.total_sold)
+      const baseCents = Math.round(baseValue * 100)
       const commissionPct = Number(s.commission_pct)
-      const comissaoBaseCents = Math.round(totalSoldCents * commissionPct)
+      const comissaoBaseCents = Math.round(baseCents * commissionPct)
       const bonusCents = Math.round(Number(s.bonus_earned) * 100)
       const totalCents = comissaoBaseCents + bonusCents
 
@@ -101,6 +105,9 @@ export async function POST(req: NextRequest) {
         total,
         detalhamento: {
           total_sold: Math.round(Number(s.total_sold) * 100) / 100,
+          total_profit: Math.round(Number(s.total_profit ?? 0) * 100) / 100,
+          commission_type: commissionType,
+          base_value: Math.round(baseValue * 100) / 100,
           commission_pct: Number(s.commission_pct),
           meta_level: s.meta_level,
           meta1: Math.round(Number(s.meta1) * 100) / 100,
