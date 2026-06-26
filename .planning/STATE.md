@@ -96,6 +96,12 @@ Progress: [░░░░░░░░░░] 0%
 - [ ] Confirmar Site URL = `https://dashboard.gds-frame.com` no Supabase Auth — **você faz**
 - [ ] Criar usuário `suporte@gds-frame.com` com role `super_admin` no Supabase Auth — **pode delegar**
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260626-jq5 | Tour guiado na landing page com seleção de papel (admin/gerente/vendedor) | 2026-06-26 | f3f3656 | [260626-jq5-adicionar-tour-guiado-de-visita-auto-gui](.planning/quick/260626-jq5-adicionar-tour-guiado-de-visita-auto-gui/) |
+
 ## Session Continuity
 
 Last session: 2026-06-17T20:21:04.485Z
