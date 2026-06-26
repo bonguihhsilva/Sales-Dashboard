@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 Phase: 06
 Plan: Not started
 Status: Phase complete — ready for verification
-Last activity: 2026-06-18
+Last activity: 2026-06-26 - Completed quick task 260626-jnc: comissão sobre lucro (products, sale_items, engine, UI)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -101,6 +101,7 @@ Progress: [░░░░░░░░░░] 0%
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260626-jq5 | Tour guiado na landing page com seleção de papel (admin/gerente/vendedor) | 2026-06-26 | f3f3656 | [260626-jq5-adicionar-tour-guiado-de-visita-auto-gui](.planning/quick/260626-jq5-adicionar-tour-guiado-de-visita-auto-gui/) |
+| 260626-jnc | Implementar suporte a comissão sobre lucro: migration products+sale_items+goals.commission_type, parser catálogo HTML+Excel, estender parser vendas, enriquecimento sale_items, total_profit em vendor_summary, engine comissão, UI upload catálogo | 2026-06-26 | 590929b | [260626-jnc-implementar-suporte-a-comiss-o-sobre-luc](.planning/quick/260626-jnc-implementar-suporte-a-comiss-o-sobre-luc/) |
 
 ## Session Continuity
 
