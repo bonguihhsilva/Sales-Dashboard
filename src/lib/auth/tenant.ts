@@ -13,7 +13,7 @@ export async function getTenantContext() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, name, tenant_id')
+    .select('role, name, tenant_id, vendor_id')
     .eq('id', user.id)
     .single()
 

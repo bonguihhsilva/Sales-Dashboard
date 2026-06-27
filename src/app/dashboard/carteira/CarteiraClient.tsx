@@ -39,7 +39,7 @@ export default function CarteiraClient({ clients, color, periodId }: { clients: 
     if (!selected) return
     let alive = true
     setLoadingMix(true); setMix([])
-    fetchClientCategoryMix(selected.client_id, periodId)
+    fetchClientCategoryMix(selected.client_id, periodId, selected.vendor_id)
       .then(m => { if (alive) setMix(m) })
       .catch(() => {})
       .finally(() => { if (alive) setLoadingMix(false) })
@@ -153,6 +153,7 @@ export default function CarteiraClient({ clients, color, periodId }: { clients: 
           clientName={selected.client_name}
           initialTab={historyTab}
           onClose={() => setHistoryTab(null)}
+          vendorId={selected.vendor_id}
         />
       )}
 

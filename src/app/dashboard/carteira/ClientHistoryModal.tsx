@@ -6,8 +6,8 @@ import { fetchClientItemHistory } from './carteiraActions'
 
 interface Item { order_id?: string; order_ref?: string; product_code: string; product_name?: string; category?: string; qty?: number; quantity?: number; unit_price?: number; total_price?: number }
 
-export default function ClientHistoryModal({ clientId, clientName, initialTab, onClose }: {
-  clientId: string; clientName: string; initialTab: 'ultima' | 'todas'; onClose: () => void
+export default function ClientHistoryModal({ clientId, clientName, initialTab, onClose, vendorId }: {
+  clientId: string; clientName: string; initialTab: 'ultima' | 'todas'; onClose: () => void; vendorId: string
 }) {
   const [tab, setTab] = useState<'ultima' | 'todas' | 'produtos'>(initialTab)
   const [items, setItems] = useState<Item[]>([])
@@ -16,9 +16,9 @@ export default function ClientHistoryModal({ clientId, clientName, initialTab, o
   useEffect(() => {
     let alive = true
     setLoading(true)
-    fetchClientItemHistory(clientId).then(d => { if (alive) setItems((d as Item[]) ?? []) }).catch(() => {}).finally(() => { if (alive) setLoading(false) })
+    fetchClientItemHistory(clientId, vendorId).then(d => { if (alive) setItems((d as Item[]) ?? []) }).catch(() => {}).finally(() => { if (alive) setLoading(false) })
     return () => { alive = false }
-  }, [clientId])
+  }, [clientId, vendorId])
 
   const key = (i: Item) => i.order_id ?? i.order_ref ?? ''
   const orders = [...new Set(items.map(key))]

@@ -42,7 +42,7 @@ export function generateMockItems(notas: MockNota[]): MockItem[] {
     let allocated = 0
     chosen.forEach((p, i) => {
       const isLast = i === chosen.length - 1
-      const share = isLast ? (nota.valor - allocated) : Math.round((p.price / baseSum) * nota.valor)
+      const share = isLast ? Math.max(0, nota.valor - allocated) : Math.round((p.price / baseSum) * nota.valor)
       allocated += share
       const qty = Math.max(1, Math.round(share / p.price))
       out.push({
