@@ -10,8 +10,8 @@ import type { VendorSummary, Period } from '@/types'
 import UploadModal from './UploadModal'
 import PeriodSelector from './PeriodSelector'
 import StoreSelector from './StoreSelector'
-import ClientsTab from './ClientsTab'
-import ClientsTabClient from './ClientsTabClient'
+import CarteiraClient from './carteira/CarteiraClient'
+import type { CarteiraClient as Client } from '@/lib/carteira/types'
 import EvolucaoTab from './EvolucaoTab'
 
 import ExportButton from './ExportButton'
@@ -70,6 +70,33 @@ export default async function DashboardPage({
     .eq('tenant_id', profile.tenant_id)
     .order('total_spent', { ascending: false })
     .limit(2000)
+
+  // período anterior (para tendência + perdidos)
+  const carteiraIdx = (periods as Period[]).findIndex(p => p.id === activePeriod)
+  const carteiraPrevPeriodId = carteiraIdx >= 0 && carteiraIdx < (periods ?? []).length - 1 ? (periods as Period[])[carteiraIdx + 1].id : null
+
+  const carteiraPrevMap = new Map<string, { total: number; name: string; vendor_id: string }>()
+  if (carteiraPrevPeriodId) {
+    const { data: prevCarteira } = await adminDb
+      .from('client_portfolio')
+      .select('client_id, client_name, vendor_id, total_spent')
+      .eq('period_id', carteiraPrevPeriodId)
+      .eq('tenant_id', profile.tenant_id)
+    for (const p of prevCarteira ?? []) {
+      carteiraPrevMap.set(`${p.client_id}::${p.vendor_id}`, { total: Number(p.total_spent), name: p.client_name as string, vendor_id: p.vendor_id as string })
+    }
+  }
+  const currentCarteiraKeys = new Set((allClients ?? []).map(c => `${c.client_id}::${c.vendor_id}`))
+  const enrichedCarteira = (allClients ?? []).map(c => ({ ...c, prev_total_spent: carteiraPrevMap.get(`${c.client_id}::${c.vendor_id}`)?.total }))
+  const lostCarteira = [...carteiraPrevMap.entries()]
+    .filter(([key]) => !currentCarteiraKeys.has(key))
+    .map(([key, p]) => ({
+      client_id: key.split('::')[0], client_name: p.name, vendor_id: p.vendor_id,
+      total_spent: 0, visit_days: 0, total_orders: 0, total_items: 0, avg_items_per_order: 0,
+      avg_ticket: 0, first_purchase: '', last_purchase: '', last_purchase_time: '',
+      days_since_last: 9999, prev_total_spent: p.total,
+    }))
+  const carteiraClients = [...enrichedCarteira, ...lostCarteira]
 
   const filtered = activeStore === 'all'
     ? summaries ?? []
@@ -187,7 +214,7 @@ export default async function DashboardPage({
             stores={stores}
           />
         ) : activeTab === 'clientes' ? (
-          <ClientsTabClient clients={(allClients ?? []) as Parameters<typeof ClientsTabClient>[0]['clients']} />
+          <CarteiraClient clients={carteiraClients as Client[]} color="var(--accent)" periodId={activePeriod} />
         ) : (
           <>
             {/* KPIs */}
