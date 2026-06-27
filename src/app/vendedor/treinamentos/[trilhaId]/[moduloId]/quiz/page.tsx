@@ -1,6 +1,6 @@
 import { getTenantContext } from '@/lib/auth/tenant'
 import { redirect } from 'next/navigation'
-import { LMS_TRILHAS } from '@/lib/lms'
+import { ALL_TRILHAS } from '@/lib/lms'
 import { PageHeader, LogoutButton } from '@/components/ui'
 import QuizClient from './QuizClient'
 
@@ -11,7 +11,7 @@ export default async function QuizPage({ params }: { params: Promise<{ trilhaId:
   if (!user || !profile) redirect('/login')
 
   const { trilhaId, moduloId } = await params
-  const trilha = LMS_TRILHAS.find(t => t.id === trilhaId)
+  const trilha = ALL_TRILHAS.find(t => t.id === trilhaId)
   if (!trilha) redirect('/vendedor/treinamentos')
 
   const lesson = trilha.lessons.find(l => l.id === moduloId)
