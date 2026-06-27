@@ -1,7 +1,7 @@
 import { getTenantContext } from '@/lib/auth/tenant'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { LMS_TRILHAS } from '@/lib/lms'
+import { LMS_TRILHAS, SKINCARE_TRILHAS } from '@/lib/lms'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -45,8 +45,9 @@ export default async function TreinamentosAdminPage() {
     xpMap[g.usuario_id] = { xp: g.xp_total, nivel: g.nivel }
   }
 
-  const totalXP    = LMS_TRILHAS.reduce((a, t) => a + t.xpReward, 0)
-  const totalMods  = LMS_TRILHAS.reduce((a, t) => a + t.lessons.length, 0)
+  const ALL_TRILHAS = [...LMS_TRILHAS, ...SKINCARE_TRILHAS]
+  const totalXP    = ALL_TRILHAS.reduce((a, t) => a + t.xpReward, 0)
+  const totalMods  = ALL_TRILHAS.reduce((a, t) => a + t.lessons.length, 0)
 
   return (
     <div style={{ minHeight: '100vh', background: C.deep, color: C.text, padding: '1.5rem 2rem' }}>
@@ -80,14 +81,18 @@ export default async function TreinamentosAdminPage() {
 
         {/* Trilhas overview */}
         <div style={{ background: C.elevated, border: `1px solid ${C.border}`, borderRadius: '0.875rem', overflow: 'hidden' }}>
-          <div style={{ padding: '0.625rem 1rem', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ padding: '0.625rem 1rem', borderBottom: `1px solid ${C.border}` }}>
             <span style={{ fontSize: '0.5rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.09em', color: C.muted, fontWeight: 600 }}>Conteúdo disponível</span>
+          </div>
+          {/* Vendas */}
+          <div style={{ padding: '0.375rem 1rem 0.25rem', borderBottom: `1px solid rgba(255,255,255,0.03)` }}>
+            <span style={{ fontSize: '0.45rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: C.amber }}>Técnicas de Vendas</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {LMS_TRILHAS.map((trilha, i) => (
               <div key={trilha.id} style={{
-                padding: '0.75rem 1rem',
-                borderBottom: i < LMS_TRILHAS.length - 1 ? `1px solid rgba(255,255,255,0.03)` : 'none',
+                padding: '0.625rem 1rem',
+                borderBottom: `1px solid rgba(255,255,255,0.03)`,
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
@@ -103,9 +108,36 @@ export default async function TreinamentosAdminPage() {
                     fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: C.muted,
                     textDecoration: 'none', border: `1px solid ${C.border}`, borderRadius: '0.25rem',
                     padding: '0.2rem 0.5rem',
-                  }}>
-                    Ver →
-                  </Link>
+                  }}>Ver →</Link>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Skincare */}
+          <div style={{ padding: '0.375rem 1rem 0.25rem', borderBottom: `1px solid rgba(255,255,255,0.03)`, borderTop: `1px solid rgba(255,255,255,0.06)` }}>
+            <span style={{ fontSize: '0.45rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#E91E8C' }}>Skincare Profissional</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {SKINCARE_TRILHAS.map((trilha, i) => (
+              <div key={trilha.id} style={{
+                padding: '0.625rem 1rem',
+                borderBottom: i < SKINCARE_TRILHAS.length - 1 ? `1px solid rgba(255,255,255,0.03)` : 'none',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                  <span style={{ fontSize: '1rem' }}>{trilha.icon}</span>
+                  <div>
+                    <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: C.text }}>{trilha.title}</div>
+                    <div style={{ fontSize: '0.6rem', color: C.muted, fontFamily: 'DM Mono, monospace' }}>{trilha.lessons.length} módulos</div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
+                  <span style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: C.amber, fontWeight: 700 }}>+{trilha.xpReward} XP</span>
+                  <Link href={`/vendedor/treinamentos/${trilha.id}`} style={{
+                    fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: C.muted,
+                    textDecoration: 'none', border: `1px solid ${C.border}`, borderRadius: '0.25rem',
+                    padding: '0.2rem 0.5rem',
+                  }}>Ver →</Link>
                 </div>
               </div>
             ))}

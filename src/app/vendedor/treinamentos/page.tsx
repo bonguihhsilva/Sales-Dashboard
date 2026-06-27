@@ -1,6 +1,6 @@
 import { getTenantContext } from '@/lib/auth/tenant'
 import { redirect } from 'next/navigation'
-import { LMS_TRILHAS } from '@/lib/lms'
+import { LMS_TRILHAS, SKINCARE_TRILHAS } from '@/lib/lms'
 import { TrilhaCard } from './TrilhaCard'
 
 export const dynamic = 'force-dynamic'
@@ -25,8 +25,10 @@ export default async function TreinamentosPage() {
   // Training accessible to all roles — adm/gerente redirected from /dashboard/treinamentos
   if (!role) redirect('/dashboard')
 
-  const totalModulos = LMS_TRILHAS.reduce((acc, t) => acc + t.lessons.length, 0)
-  const totalXP      = LMS_TRILHAS.reduce((acc, t) => acc + t.xpReward, 0)
+  const totalModulos = [...LMS_TRILHAS, ...SKINCARE_TRILHAS].reduce((acc, t) => acc + t.lessons.length, 0)
+  const totalXP      = [...LMS_TRILHAS, ...SKINCARE_TRILHAS].reduce((acc, t) => acc + t.xpReward, 0)
+
+  const skincareXP = SKINCARE_TRILHAS.reduce((acc, t) => acc + t.xpReward, 0)
 
   return (
     <div style={{ minHeight: '100vh', background: C.deep, color: C.text, padding: '1.5rem 2rem' }}>
@@ -35,10 +37,10 @@ export default async function TreinamentosPage() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.5rem', gap: '1rem' }}>
         <div>
           <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1.0625rem', color: C.text, letterSpacing: '-0.02em' }}>
-            Universidade de Vendas
+            Centro de Treinamentos
           </div>
           <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6875rem', color: C.muted, marginTop: 3 }}>
-            {LMS_TRILHAS.length} trilhas · {totalModulos} módulos
+            {LMS_TRILHAS.length + SKINCARE_TRILHAS.length} trilhas · {totalModulos} módulos
           </div>
         </div>
 
@@ -54,14 +56,22 @@ export default async function TreinamentosPage() {
         </div>
       </div>
 
-      {/* Section label */}
+      {/* Vendas section */}
       <div style={{ fontSize: '0.5rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.09em', color: C.muted, fontWeight: 600, marginBottom: '0.75rem' }}>
-        Trilhas disponíveis
+        Técnicas de Vendas — {LMS_TRILHAS.length} trilhas · {LMS_TRILHAS.reduce((a, t) => a + t.lessons.length, 0)} módulos
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.875rem', marginBottom: '2rem' }}>
+        {LMS_TRILHAS.map(trilha => (
+          <TrilhaCard key={trilha.id} trilha={trilha} />
+        ))}
       </div>
 
-      {/* Trilhas grid */}
+      {/* Skincare section */}
+      <div style={{ fontSize: '0.5rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.09em', color: '#E91E8C', fontWeight: 600, marginBottom: '0.75rem' }}>
+        Skincare Profissional — {SKINCARE_TRILHAS.length} trilhas · {SKINCARE_TRILHAS.reduce((a, t) => a + t.lessons.length, 0)} módulos · {skincareXP} XP
+      </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.875rem' }}>
-        {LMS_TRILHAS.map(trilha => (
+        {SKINCARE_TRILHAS.map(trilha => (
           <TrilhaCard key={trilha.id} trilha={trilha} />
         ))}
       </div>
