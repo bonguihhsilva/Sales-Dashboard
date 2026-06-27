@@ -106,7 +106,11 @@ export default function CarteiraClient({ clients, color }: { clients: Client[]; 
                   </td>
                   <td style={{ padding: '7px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontWeight: 600, color: 'var(--accent)' }}>{fmtCurrency(Number(c.total_spent))}</td>
                   <td style={{ padding: '7px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem' }}>{fmtCurrency(Number(c.avg_ticket))}</td>
-                  <td style={{ padding: '7px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: 'var(--muted)' }}>—</td>
+                  <td style={{ padding: '7px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem',
+                    color: c.trendPct == null ? 'var(--muted)' : c.trendPct > 2 ? '#10b981' : c.trendPct < -2 ? '#f43f5e' : 'var(--muted)' }}>
+                    {c.trendPct == null ? (c.segment === 'novo' ? 'novo' : '—')
+                      : `${c.trendPct > 0 ? '▲' : c.trendPct < 0 ? '▼' : ''} ${Math.abs(Math.round(c.trendPct))}%`}
+                  </td>
                   <td style={{ padding: '7px 10px' }}>
                     <span style={{ display: 'inline-block', width: '7px', height: '7px', borderRadius: '50%', background: recencyColor(daysAgo), marginRight: '6px', verticalAlign: 'middle' }} />
                     <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.7rem' }}>{c.last_purchase}</span>

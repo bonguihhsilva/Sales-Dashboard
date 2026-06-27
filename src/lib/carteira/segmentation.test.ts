@@ -56,3 +56,18 @@ describe('paretoTop20Share', () => {
     expect(paretoTop20Share([])).toBe(0)
   })
 })
+
+describe('tendência', () => {
+  it('calcula variação % vs período anterior', () => {
+    const out = analyzeCarteira([mk({ total_spent: 120, prev_total_spent: 100 })])
+    expect(out[0].trendPct).toBeCloseTo(20)
+  })
+  it('trendPct é null sem período anterior', () => {
+    const out = analyzeCarteira([mk({ total_spent: 120 })])
+    expect(out[0].trendPct).toBeNull()
+  })
+  it('cliente com total_spent 0 e prev>0 é perdido', () => {
+    const out = analyzeCarteira([mk({ total_orders: 0, total_spent: 0, prev_total_spent: 500, days_since_last: 99 })])
+    expect(out[0].segment).toBe('perdido')
+  })
+})

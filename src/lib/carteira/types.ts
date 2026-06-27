@@ -14,6 +14,7 @@ export interface CarteiraClient {
   last_purchase: string
   last_purchase_time: string
   days_since_last: number
+  prev_total_spent?: number
 }
 
 export type Segment = 'vip' | 'recorrente' | 'novo' | 'em_risco' | 'perdido'
@@ -28,6 +29,7 @@ export interface AnalyzedClient extends CarteiraClient {
   rfm: RfmScore
   rfmSum: number
   segment: Segment
+  trendPct: number | null
 }
 
 export const SEGMENT_LABELS: Record<Segment, string> = {

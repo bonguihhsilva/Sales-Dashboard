@@ -77,6 +77,35 @@ export default async function MeuResultadoPage({
     .order('total_spent', { ascending: false })
     .limit(1000)
 
+  // período anterior (para tendência + perdidos)
+  const periodIdx = (periods as Period[]).findIndex(p => p.id === activePeriod)
+  const prevPeriodId = periodIdx >= 0 && periodIdx < periods.length - 1 ? (periods as Period[])[periodIdx + 1].id : null
+
+  const prevMap = new Map<string, { total: number; name: string; vendor_id: string }>()
+  if (prevPeriodId) {
+    const { data: prev } = await adminDb
+      .from('client_portfolio')
+      .select('client_id, client_name, vendor_id, total_spent')
+      .eq('period_id', prevPeriodId)
+      .eq('vendor_id', profile.vendor_id)
+      .eq('tenant_id', profile.tenant_id)
+    for (const p of prev ?? []) {
+      prevMap.set(`${p.client_id}::${p.vendor_id}`, { total: Number(p.total_spent), name: p.client_name as string, vendor_id: p.vendor_id as string })
+    }
+  }
+
+  const currentKeys = new Set((clientsData ?? []).map(c => `${c.client_id}::${c.vendor_id}`))
+  const enrichedClients = (clientsData ?? []).map(c => ({ ...c, prev_total_spent: prevMap.get(`${c.client_id}::${c.vendor_id}`)?.total }))
+  const lostClients = [...prevMap.entries()]
+    .filter(([key]) => !currentKeys.has(key))
+    .map(([key, p]) => ({
+      client_id: key.split('::')[0], client_name: p.name, vendor_id: p.vendor_id,
+      total_spent: 0, visit_days: 0, total_orders: 0, total_items: 0, avg_items_per_order: 0,
+      avg_ticket: 0, first_purchase: '', last_purchase: '', last_purchase_time: '',
+      days_since_last: 9999, prev_total_spent: p.total,
+    }))
+  const allClients = [...enrichedClients, ...lostClients]
+
   const { data: gamificacao } = await supabase
     .from('gamificacao')
     .select('*')
@@ -323,7 +352,7 @@ export default async function MeuResultadoPage({
         )}
 
         {activeTab === 'carteira' && (
-          <CarteiraClient clients={(clientsData ?? []) as Client[]} color={col} />
+          <CarteiraClient clients={allClients as Client[]} color={col} />
         )}
 
         {activeTab === 'analise' && (

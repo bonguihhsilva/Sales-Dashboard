@@ -25,12 +25,18 @@ export function analyzeCarteira(clients: CarteiraClient[]): AnalyzedClient[] {
       m: quintile(Number(c.total_spent), monetary, false),
     }
     const rfmSum = rfm.r + rfm.f + rfm.m
+
+    const prev = c.prev_total_spent
+    const trendPct = (prev != null && prev > 0) ? ((Number(c.total_spent) - prev) / prev) * 100 : null
+
     let segment: Segment
-    if (Number(c.total_orders) === 1) segment = 'novo'
+    if (Number(c.total_spent) === 0 && prev != null && prev > 0) segment = 'perdido'
+    else if (Number(c.total_orders) === 1) segment = 'novo'
     else if (Number(c.days_since_last) > EM_RISCO_DAYS) segment = 'em_risco'
     else if (rfmSum >= VIP_RFM_SUM) segment = 'vip'
     else segment = 'recorrente'
-    return { ...c, rfm, rfmSum, segment }
+
+    return { ...c, rfm, rfmSum, segment, trendPct }
   })
 }
 
