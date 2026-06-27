@@ -5,6 +5,7 @@ import { fmtCurrency, recencyColor, recencyLabel } from '@/lib/utils'
 import { analyzeCarteira, paretoTop20Share, segmentCounts } from '@/lib/carteira/segmentation'
 import { SEGMENT_LABELS, SEGMENT_COLORS, type CarteiraClient as Client, type Segment, type AnalyzedClient } from '@/lib/carteira/types'
 import { fetchClientCategoryMix } from './carteiraActions'
+import ClientHistoryModal from './ClientHistoryModal'
 import { findCategoryGaps, CATEGORY_UNIVERSE, type CategoryMix } from '@/lib/carteira/categories'
 
 type Filter = 'all' | Segment
@@ -44,9 +45,6 @@ export default function CarteiraClient({ clients, color, periodId }: { clients: 
       .finally(() => { if (alive) setLoadingMix(false) })
     return () => { alive = false }
   }, [selected, periodId])
-
-  // suppress unused warning while historyTab is consumed by a later task
-  void historyTab
 
   const kpis = [
     { label: 'Clientes', value: clients.length.toLocaleString() },
@@ -148,6 +146,15 @@ export default function CarteiraClient({ clients, color, periodId }: { clients: 
           </tbody>
         </table>
       </div>
+
+      {selected && historyTab && (
+        <ClientHistoryModal
+          clientId={selected.client_id}
+          clientName={selected.client_name}
+          initialTab={historyTab}
+          onClose={() => setHistoryTab(null)}
+        />
+      )}
 
       {selected && (
         <div onClick={() => setSelected(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9998 }}>
