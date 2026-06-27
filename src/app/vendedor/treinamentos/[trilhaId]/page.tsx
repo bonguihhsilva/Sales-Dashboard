@@ -60,11 +60,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ trilhaI
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 cursor: 'pointer',
-                transition: 'border-color 0.15s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = C.border)}
-              >
+              }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
                   <div style={{
                     width: '2rem', height: '2rem', borderRadius: '50%',
