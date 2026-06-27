@@ -5,10 +5,11 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { fmtCurrency, fmtK, metaLevel, bonusAmount } from '@/lib/utils'
 import { KpiCard, StorePill, ProgressBar, SectionTitle, LogoutButton } from '@/components/ui'
-import ClientsTabClient from './ClientsTabClient'
 import AnaliseTab from './AnaliseTab'
+import CarteiraClient from '@/app/dashboard/carteira/CarteiraClient'
 
 import type { Period, HRFreeDay, HRAbsence, HRVacation, HRPermission } from '@/types'
+import type { CarteiraClient as Client } from '@/lib/carteira/types'
 
 export default async function MeuResultadoPage({
   searchParams,
@@ -322,7 +323,7 @@ export default async function MeuResultadoPage({
         )}
 
         {activeTab === 'carteira' && (
-          <ClientsTabClient clients={(clientsData ?? []) as Parameters<typeof ClientsTabClient>[0]['clients']} color={col} />
+          <CarteiraClient clients={(clientsData ?? []) as Client[]} color={col} />
         )}
 
         {activeTab === 'analise' && (
