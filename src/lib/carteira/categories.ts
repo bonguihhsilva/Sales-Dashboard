@@ -1,3 +1,7 @@
+import { MOCK_CATALOG } from '@/lib/mock/carteira-items'
+
+export const CATEGORY_UNIVERSE: string[] = [...new Set(MOCK_CATALOG.map(p => p.category))]
+
 export interface CategoryItem { category: string; total_price: number }
 export interface CategoryMix { category: string; total: number; pct: number }
 

@@ -1,15 +1,23 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { fmtCurrency, recencyColor, recencyLabel } from '@/lib/utils'
 import { analyzeCarteira, paretoTop20Share, segmentCounts } from '@/lib/carteira/segmentation'
-import { SEGMENT_LABELS, SEGMENT_COLORS, type CarteiraClient as Client, type Segment } from '@/lib/carteira/types'
+import { SEGMENT_LABELS, SEGMENT_COLORS, type CarteiraClient as Client, type Segment, type AnalyzedClient } from '@/lib/carteira/types'
+import { fetchClientCategoryMix } from './carteiraActions'
+import { findCategoryGaps, CATEGORY_UNIVERSE, type CategoryMix } from '@/lib/carteira/categories'
 
 type Filter = 'all' | Segment
 
-export default function CarteiraClient({ clients, color }: { clients: Client[]; color: string }) {
+const CAT_COLORS = ['#2563eb', '#10b981', '#f5a742', '#8b5cf6', '#06b6d4', '#f43f5e']
+
+export default function CarteiraClient({ clients, color, periodId }: { clients: Client[]; color: string; periodId: number }) {
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<Filter>('all')
+  const [selected, setSelected] = useState<AnalyzedClient | null>(null)
+  const [mix, setMix] = useState<CategoryMix[]>([])
+  const [loadingMix, setLoadingMix] = useState(false)
+  const [historyTab, setHistoryTab] = useState<null | 'ultima' | 'todas'>(null)
 
   const analyzed = useMemo(() => analyzeCarteira(clients), [clients])
   const counts   = useMemo(() => segmentCounts(analyzed), [analyzed])
@@ -25,6 +33,20 @@ export default function CarteiraClient({ clients, color }: { clients: Client[]; 
     if (search) list = list.filter(c => c.client_name.toLowerCase().includes(search.toLowerCase()))
     return [...list].sort((a, b) => Number(b.total_spent) - Number(a.total_spent))
   }, [analyzed, filter, search])
+
+  useEffect(() => {
+    if (!selected) return
+    let alive = true
+    setLoadingMix(true); setMix([])
+    fetchClientCategoryMix(selected.client_id, periodId)
+      .then(m => { if (alive) setMix(m) })
+      .catch(() => {})
+      .finally(() => { if (alive) setLoadingMix(false) })
+    return () => { alive = false }
+  }, [selected, periodId])
+
+  // suppress unused warning while historyTab is consumed by a later task
+  void historyTab
 
   const kpis = [
     { label: 'Clientes', value: clients.length.toLocaleString() },
@@ -95,6 +117,7 @@ export default function CarteiraClient({ clients, color }: { clients: Client[]; 
               return (
                 <tr
                   key={`${c.client_id}-${c.vendor_id}`}
+                  onClick={() => setSelected(c)}
                   style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
                   onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface2)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
@@ -125,6 +148,49 @@ export default function CarteiraClient({ clients, color }: { clients: Client[]; 
           </tbody>
         </table>
       </div>
+
+      {selected && (
+        <div onClick={() => setSelected(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9998 }}>
+          <div onClick={e => e.stopPropagation()} style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '360px', background: 'var(--bg)', borderLeft: '1px solid var(--border)', overflowY: 'auto', zIndex: 9999 }}>
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '0.95rem', fontWeight: 800 }}>{selected.client_name}</div>
+              <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.62rem', color: 'var(--muted)', marginTop: '3px' }}>
+                {selected.vendor_name ?? selected.vendor_id} · {selected.total_orders} compras
+              </div>
+              <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
+                <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', padding: '2px 7px', borderRadius: '5px', background: `${SEGMENT_COLORS[selected.segment]}22`, color: SEGMENT_COLORS[selected.segment] }}>{SEGMENT_LABELS[selected.segment]}</span>
+                <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', padding: '2px 7px', borderRadius: '5px', background: '#2563eb22', color: '#5b9bff' }}>R{selected.rfm.r} F{selected.rfm.f} M{selected.rfm.m}</span>
+              </div>
+            </div>
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <button onClick={() => setHistoryTab('ultima')} style={{ padding: '9px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#fff', fontWeight: 600, cursor: 'pointer' }}>🧾 Abrir última nota</button>
+              <button onClick={() => setHistoryTab('todas')} style={{ padding: '9px', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontWeight: 600, cursor: 'pointer' }}>📜 Abrir histórico do cliente</button>
+            </div>
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '10px' }}>Mix por categoria</div>
+              {loadingMix ? <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', color: 'var(--muted)' }}>Carregando…</div>
+              : mix.length === 0 ? <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', color: 'var(--muted)' }}>Nenhum item registrado neste período.</div>
+              : (<>
+                <div style={{ display: 'flex', height: '14px', borderRadius: '4px', overflow: 'hidden', marginBottom: '10px' }}>
+                  {mix.map((m, i) => <div key={m.category} style={{ width: `${m.pct}%`, background: CAT_COLORS[i % CAT_COLORS.length] }} />)}
+                </div>
+                {mix.map((m, i) => (
+                  <div key={m.category} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', marginBottom: '5px' }}>
+                    <span><span style={{ display: 'inline-block', width: '7px', height: '7px', borderRadius: '50%', background: CAT_COLORS[i % CAT_COLORS.length], marginRight: '6px' }} />{m.category}</span>
+                    <span style={{ fontFamily: 'DM Mono, monospace' }}>{m.pct}%</span>
+                  </div>
+                ))}
+              </>)}
+            </div>
+            <div style={{ padding: '14px 16px' }}>
+              <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '10px' }}>Oportunidades (lacunas)</div>
+              {findCategoryGaps(mix.map(m => m.category), CATEGORY_UNIVERSE).map(g => (
+                <div key={g} style={{ fontSize: '0.72rem', padding: '6px 9px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', marginBottom: '6px' }}>{g} — nunca comprou</div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

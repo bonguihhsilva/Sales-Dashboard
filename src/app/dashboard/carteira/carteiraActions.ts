@@ -2,10 +2,9 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getTenantContext } from '@/lib/auth/tenant'
-import { generateMockItems, MOCK_CATALOG, type MockItem } from '@/lib/mock/carteira-items'
+import { generateMockItems, type MockItem } from '@/lib/mock/carteira-items'
 import { aggregateCategoryMix } from '@/lib/carteira/categories'
 
-export const CATEGORY_UNIVERSE = [...new Set(MOCK_CATALOG.map(p => p.category))]
 
 async function clientMockItems(clientId: string, tenantId: string): Promise<MockItem[]> {
   const admin = createAdminClient()

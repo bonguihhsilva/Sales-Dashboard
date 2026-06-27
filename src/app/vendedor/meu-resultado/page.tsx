@@ -352,7 +352,7 @@ export default async function MeuResultadoPage({
         )}
 
         {activeTab === 'carteira' && (
-          <CarteiraClient clients={allClients as Client[]} color={col} />
+          <CarteiraClient clients={allClients as Client[]} color={col} periodId={activePeriod} />
         )}
 
         {activeTab === 'analise' && (

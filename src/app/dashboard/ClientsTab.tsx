@@ -61,5 +61,5 @@ export default async function ClientsTab({
       days_since_last: 9999, prev_total_spent: p.total,
     }))
 
-  return <CarteiraClient clients={[...enriched, ...lost] as Client[]} color="var(--accent)" />
+  return <CarteiraClient clients={[...enriched, ...lost] as Client[]} color="var(--accent)" periodId={periodId} />
 }
