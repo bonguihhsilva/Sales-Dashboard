@@ -63,7 +63,7 @@ const GERENTE_PERM_RULES: Array<{ test: (p: string) => boolean; perm: Permission
 ]
 
 // Rotas publicas - sem auth check. /convite permite acesso sem sessao.
-const PUBLIC_PREFIXES = ['/login', '/convite', '/api/admin/accept-invite']
+const PUBLIC_PREFIXES = ['/login', '/convite', '/api/admin/accept-invite', '/landing']
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -105,7 +105,8 @@ export async function middleware(request: NextRequest) {
 
   if (!user) {
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    // Raiz sem sessao -> landing publica. Demais rotas protegidas -> login.
+    url.pathname = pathname === '/' ? '/landing' : '/login'
     return withAuthCookies(NextResponse.redirect(url))
   }
 
