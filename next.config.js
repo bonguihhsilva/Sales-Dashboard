@@ -5,7 +5,9 @@ const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
   // pdf-parse v2 nao empacota no webpack (exports field) -> tratar como externo do servidor
-  serverExternalPackages: ['pdf-parse'],
+  // pdfkit le arquivos .afm (metricas de fonte) do disco em runtime; webpack inlina o codigo
+  // mas nao copia os .afm -> ENOENT no build standalone. Externalizar faz o nft copiar o pacote.
+  serverExternalPackages: ['pdf-parse', 'pdfkit'],
 }
 
 module.exports = withSentryConfig(nextConfig, {
