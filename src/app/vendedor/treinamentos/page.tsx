@@ -1,83 +1,81 @@
-import { getTenantContext } from '@/lib/auth/tenant'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { LMS_TRILHAS, SKINCARE_TRILHAS } from '@/lib/lms'
+import { getCatalogo } from '@/lib/lms/queries'
+import { LMS as C } from '@/lib/lms/theme'
 import { TrilhaCard } from './TrilhaCard'
 
 export const dynamic = 'force-dynamic'
 
-const C = {
-  abyss:       '#0C0C0E',
-  deep:        '#141418',
-  elevated:    '#1C1C22',
-  border:      'rgba(255,255,255,0.06)',
-  borderStrong: 'rgba(255,255,255,0.12)',
-  text:        '#F0F0F3',
-  muted:       '#6B6B78',
-  gold:        '#C9933A',
-  amber:       '#f5a742',
-} as const
-
 export default async function TreinamentosPage() {
-  const { user, profile } = await getTenantContext()
-  if (!user || !profile) redirect('/login')
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
-  const role = profile.role || 'vendedor'
-  // Training accessible to all roles — adm/gerente redirected from /dashboard/treinamentos
-  if (!role) redirect('/dashboard')
+  const trilhas = await getCatalogo(user.id)
 
-  const totalModulos = [...LMS_TRILHAS, ...SKINCARE_TRILHAS].reduce((acc, t) => acc + t.lessons.length, 0)
-  const totalXP      = [...LMS_TRILHAS, ...SKINCARE_TRILHAS].reduce((acc, t) => acc + t.xpReward, 0)
-
-  const skincareXP = SKINCARE_TRILHAS.reduce((acc, t) => acc + t.xpReward, 0)
+  const totalModulos = trilhas.reduce((acc, t) => acc + t.moduloCount, 0)
+  const totalXP      = trilhas.reduce((acc, t) => acc + t.totalXp, 0)
+  const concluidas   = trilhas.filter(t => t.progressoPct === 100).length
 
   return (
     <div style={{ minHeight: '100vh', background: C.deep, color: C.text, padding: '2.5rem 2rem' }}>
-     <div style={{ maxWidth: '1320px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '1320px', margin: '0 auto' }}>
 
-      {/* Top bar */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2.5rem', gap: '1rem' }}>
-        <div>
-          <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1.5rem', color: C.text, letterSpacing: '-0.02em', lineHeight: 1.15 }}>
-            Centro de Treinamentos
-          </div>
-          <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.8125rem', color: C.muted, marginTop: 6 }}>
-            {LMS_TRILHAS.length + SKINCARE_TRILHAS.length} trilhas · {totalModulos} módulos
-          </div>
-        </div>
-
+        {/* Top bar */}
         <div style={{
-          display: 'flex', gap: 10, alignItems: 'stretch',
-          background: C.elevated, border: `1px solid ${C.borderStrong}`,
-          borderRadius: '0.75rem', padding: '0.75rem 1rem',
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+          marginBottom: '2.5rem', gap: '1rem',
         }}>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>XP disponível</div>
-            <div style={{ fontSize: '1.25rem', fontWeight: 700, fontFamily: 'DM Mono, monospace', color: C.amber, marginTop: 2 }}>{totalXP}</div>
+          <div>
+            <div style={{
+              fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1.5rem',
+              color: C.text, letterSpacing: '-0.02em', lineHeight: 1.15,
+            }}>
+              Centro de Treinamentos
+            </div>
+            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.8125rem', color: C.muted, marginTop: 6 }}>
+              {trilhas.length} trilhas · {totalModulos} módulos
+            </div>
+          </div>
+
+          <div style={{
+            display: 'flex', gap: 20, alignItems: 'stretch',
+            background: C.elevated, border: `1px solid ${C.borderStrong}`,
+            borderRadius: '0.75rem', padding: '0.75rem 1.25rem',
+          }}>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>XP disponível</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 700, fontFamily: 'DM Mono, monospace', color: C.amber, marginTop: 2 }}>{totalXP}</div>
+            </div>
+            <div style={{ width: '1px', background: C.border }} />
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Concluídas</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 700, fontFamily: 'DM Mono, monospace', color: C.green, marginTop: 2 }}>{concluidas}/{trilhas.length}</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Vendas section */}
-      <div style={{ fontSize: '0.6875rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.12em', color: C.muted, fontWeight: 600, marginBottom: '1.125rem' }}>
-        Técnicas de Vendas — {LMS_TRILHAS.length} trilhas · {LMS_TRILHAS.reduce((a, t) => a + t.lessons.length, 0)} módulos
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem', marginBottom: '3rem' }}>
-        {LMS_TRILHAS.map(trilha => (
-          <TrilhaCard key={trilha.id} trilha={trilha} />
-        ))}
-      </div>
+        {/* Grid de trilhas */}
+        {trilhas.length === 0 ? (
+          <div style={{
+            textAlign: 'center', padding: '4rem 2rem',
+            color: C.muted, fontFamily: 'DM Mono, monospace', fontSize: '0.875rem',
+          }}>
+            Nenhuma trilha disponível no momento.
+          </div>
+        ) : (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: '1.25rem',
+          }}>
+            {trilhas.map(trilha => (
+              <TrilhaCard key={trilha.id} trilha={trilha} />
+            ))}
+          </div>
+        )}
 
-      {/* Skincare section */}
-      <div style={{ fontSize: '0.6875rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.12em', color: '#E91E8C', fontWeight: 600, marginBottom: '1.125rem' }}>
-        Skincare Profissional — {SKINCARE_TRILHAS.length} trilhas · {SKINCARE_TRILHAS.reduce((a, t) => a + t.lessons.length, 0)} módulos · {skincareXP} XP
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
-        {SKINCARE_TRILHAS.map(trilha => (
-          <TrilhaCard key={trilha.id} trilha={trilha} />
-        ))}
-      </div>
-
-     </div>
     </div>
   )
 }
