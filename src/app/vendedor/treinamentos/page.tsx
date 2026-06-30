@@ -31,15 +31,16 @@ export default async function TreinamentosPage() {
   const skincareXP = SKINCARE_TRILHAS.reduce((acc, t) => acc + t.xpReward, 0)
 
   return (
-    <div style={{ minHeight: '100vh', background: C.deep, color: C.text, padding: '1.5rem 2rem' }}>
+    <div style={{ minHeight: '100vh', background: C.deep, color: C.text, padding: '2.5rem 2rem' }}>
+     <div style={{ maxWidth: '1320px', margin: '0 auto' }}>
 
       {/* Top bar */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.5rem', gap: '1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2.5rem', gap: '1rem' }}>
         <div>
-          <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1.0625rem', color: C.text, letterSpacing: '-0.02em' }}>
+          <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1.5rem', color: C.text, letterSpacing: '-0.02em', lineHeight: 1.15 }}>
             Centro de Treinamentos
           </div>
-          <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6875rem', color: C.muted, marginTop: 3 }}>
+          <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.8125rem', color: C.muted, marginTop: 6 }}>
             {LMS_TRILHAS.length + SKINCARE_TRILHAS.length} trilhas · {totalModulos} módulos
           </div>
         </div>
@@ -47,35 +48,36 @@ export default async function TreinamentosPage() {
         <div style={{
           display: 'flex', gap: 10, alignItems: 'stretch',
           background: C.elevated, border: `1px solid ${C.borderStrong}`,
-          borderRadius: '0.625rem', padding: '0.5rem 0.75rem',
+          borderRadius: '0.75rem', padding: '0.75rem 1rem',
         }}>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '0.5rem', fontFamily: 'DM Mono, monospace', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>XP disponível</div>
-            <div style={{ fontSize: '0.875rem', fontWeight: 700, fontFamily: 'DM Mono, monospace', color: C.amber }}>{totalXP}</div>
+            <div style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>XP disponível</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: 700, fontFamily: 'DM Mono, monospace', color: C.amber, marginTop: 2 }}>{totalXP}</div>
           </div>
         </div>
       </div>
 
       {/* Vendas section */}
-      <div style={{ fontSize: '0.5rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.09em', color: C.muted, fontWeight: 600, marginBottom: '0.75rem' }}>
+      <div style={{ fontSize: '0.6875rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.12em', color: C.muted, fontWeight: 600, marginBottom: '1.125rem' }}>
         Técnicas de Vendas — {LMS_TRILHAS.length} trilhas · {LMS_TRILHAS.reduce((a, t) => a + t.lessons.length, 0)} módulos
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.875rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem', marginBottom: '3rem' }}>
         {LMS_TRILHAS.map(trilha => (
           <TrilhaCard key={trilha.id} trilha={trilha} />
         ))}
       </div>
 
       {/* Skincare section */}
-      <div style={{ fontSize: '0.5rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.09em', color: '#E91E8C', fontWeight: 600, marginBottom: '0.75rem' }}>
+      <div style={{ fontSize: '0.6875rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.12em', color: '#E91E8C', fontWeight: 600, marginBottom: '1.125rem' }}>
         Skincare Profissional — {SKINCARE_TRILHAS.length} trilhas · {SKINCARE_TRILHAS.reduce((a, t) => a + t.lessons.length, 0)} módulos · {skincareXP} XP
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.875rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
         {SKINCARE_TRILHAS.map(trilha => (
           <TrilhaCard key={trilha.id} trilha={trilha} />
         ))}
       </div>
 
+     </div>
     </div>
   )
 }

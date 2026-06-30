@@ -30,23 +30,23 @@ export function TrilhaCard({ trilha }: { trilha: LmsTrilha }) {
           background: C.elevated,
           border: `1px solid ${C.border}`,
           borderRadius: '0.875rem',
-          padding: '1rem',
+          padding: '1.375rem',
           cursor: 'pointer',
           display: 'flex',
           flexDirection: 'column',
-          gap: '0.625rem',
+          gap: '0.875rem',
           height: '100%',
           transition: 'border-color 0.2s',
         }}
         onMouseEnter={e => (e.currentTarget.style.borderColor = accentBorder)}
         onMouseLeave={e => (e.currentTarget.style.borderColor = C.border)}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>{trilha.icon}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+          <span style={{ fontSize: '1.375rem', lineHeight: 1 }}>{trilha.icon}</span>
           <div style={{
-            fontSize: '0.5rem', fontFamily: 'DM Mono, monospace',
-            textTransform: 'uppercase', letterSpacing: '0.09em',
-            padding: '0.2rem 0.5rem', borderRadius: '0.25rem',
+            fontSize: '0.625rem', fontFamily: 'DM Mono, monospace',
+            textTransform: 'uppercase', letterSpacing: '0.08em',
+            padding: '0.25rem 0.5rem', borderRadius: '0.3125rem',
             background: accentBg, border: `1px solid ${accentBorder}`, color: accent,
           }}>
             {trilha.lessons.length} módulos
@@ -55,21 +55,21 @@ export function TrilhaCard({ trilha }: { trilha: LmsTrilha }) {
 
         <div style={{
           fontFamily: 'Syne, sans-serif',
-          fontSize: '0.875rem', fontWeight: 700,
-          color: C.text, letterSpacing: '-0.01em', lineHeight: 1.25,
+          fontSize: '1.0625rem', fontWeight: 700,
+          color: C.text, letterSpacing: '-0.01em', lineHeight: 1.3,
         }}>
           {trilha.title}
         </div>
 
-        <div style={{ fontSize: '0.6875rem', color: C.muted, lineHeight: 1.55, flex: 1 }}>
+        <div style={{ fontSize: '0.8125rem', color: C.muted, lineHeight: 1.6, flex: 1 }}>
           {trilha.description}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: '0.5rem', fontFamily: 'DM Mono, monospace', color: accent, fontWeight: 700 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.25rem' }}>
+          <span style={{ fontSize: '0.6875rem', fontFamily: 'DM Mono, monospace', color: accent, fontWeight: 700 }}>
             +{trilha.xpReward} XP
           </span>
-          <span style={{ fontSize: '0.5rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: C.muted }}>
+          <span style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: C.muted }}>
             Iniciar →
           </span>
         </div>
