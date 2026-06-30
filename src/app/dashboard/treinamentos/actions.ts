@@ -1,6 +1,5 @@
 'use server'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { getTenantContext } from '@/lib/auth/tenant'
@@ -12,8 +11,7 @@ async function checkAuth() {
   if (!['adm', 'gerente', 'super_admin'].includes(profile.role || '')) {
     throw new Error('Acesso negado')
   }
-  
-  // Se for super_admin e não tiver tenant ativo no cookie de masquerade, pega o primeiro tenant disponível
+
   let finalTenantId = profile.tenant_id ?? profile.original_tenant_id
   if (!finalTenantId) {
      throw new Error('Ação negada: Como Super Administrador, selecione uma organização (tenant) ativa no painel antes de gerenciar os treinamentos.')
@@ -22,17 +20,60 @@ async function checkAuth() {
   return { user, profile: { ...profile, tenant_id: finalTenantId } }
 }
 
+type AuthedProfile = { tenant_id: string; role?: string | null }
+
+// Garante que o usuário pode editar/apagar a trilha: dona do tenant, ou
+// global (tenant_id IS NULL) e o usuário é super_admin.
+async function assertTrilhaAccess(
+  adminDb: ReturnType<typeof createAdminClient>,
+  trilhaId: string,
+  profile: AuthedProfile
+) {
+  const { data: trilha, error } = await adminDb
+    .from('trilhas')
+    .select('id, tenant_id')
+    .eq('id', trilhaId)
+    .single()
+
+  if (error || !trilha) throw new Error('Trilha não encontrada')
+
+  const isOwnTenant = trilha.tenant_id === profile.tenant_id
+  const isGlobalAsSuperAdmin = trilha.tenant_id === null && profile.role === 'super_admin'
+
+  if (!isOwnTenant && !isGlobalAsSuperAdmin) {
+    throw new Error('Acesso negado a esta trilha')
+  }
+}
 
 // --- TRILHAS ---
-export async function createTrilhaAction(data: { titulo: string; descricao: string; ativa: boolean }) {
+export async function createTrilhaAction(data: {
+  titulo: string
+  descricao: string
+  ativa: boolean
+  icon?: string
+  cor?: string
+  ordem?: number
+  publico_alvo?: string
+  is_global?: boolean
+}) {
   try {
     const { profile } = await checkAuth()
+
+    if (data.is_global && profile.role !== 'super_admin') {
+      throw new Error('Apenas super administradores podem criar trilhas globais')
+    }
+
     const adminDb = createAdminClient()
+    const { is_global, ...rest } = data
 
     const { error } = await adminDb
       .from('trilhas')
-      .insert({ ...data, tenant_id: profile.tenant_id })
-      
+      .insert({
+        ...rest,
+        is_global: !!is_global,
+        tenant_id: is_global ? null : profile.tenant_id,
+      })
+
     if (error) throw new Error(error.message)
     revalidatePath('/dashboard/treinamentos')
     return { success: true }
@@ -42,14 +83,20 @@ export async function createTrilhaAction(data: { titulo: string; descricao: stri
   }
 }
 
-export async function updateTrilhaAction(id: string, data: { titulo?: string; descricao?: string; ativa?: boolean }) {
+export async function updateTrilhaAction(id: string, data: {
+  titulo?: string
+  descricao?: string
+  ativa?: boolean
+  icon?: string
+  cor?: string
+  ordem?: number
+  publico_alvo?: string
+}) {
   const { profile } = await checkAuth()
   const adminDb = createAdminClient()
-  const { error } = await adminDb
-    .from('trilhas')
-    .update(data)
-    .eq('id', id)
-    .eq('tenant_id', profile.tenant_id)
+  await assertTrilhaAccess(adminDb, id, profile)
+
+  const { error } = await adminDb.from('trilhas').update(data).eq('id', id)
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard/treinamentos')
 }
@@ -57,20 +104,25 @@ export async function updateTrilhaAction(id: string, data: { titulo?: string; de
 export async function deleteTrilhaAction(id: string) {
   const { profile } = await checkAuth()
   const adminDb = createAdminClient()
-  const { error } = await adminDb
-    .from('trilhas')
-    .delete()
-    .eq('id', id)
-    .eq('tenant_id', profile.tenant_id)
+  await assertTrilhaAccess(adminDb, id, profile)
+
+  const { error } = await adminDb.from('trilhas').delete().eq('id', id)
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard/treinamentos')
 }
 
 // --- MÓDULOS ---
-export async function createModuloAction(data: { trilha_id: string; titulo: string; descricao: string; ordem: number }) {
+export async function createModuloAction(data: {
+  trilha_id: string
+  titulo: string
+  descricao: string
+  ordem: number
+  xp_reward?: number
+  aprovacao_minima?: number
+}) {
   const { profile } = await checkAuth()
   const adminDb = createAdminClient()
-  
+
   const { error } = await adminDb
     .from('modulos')
     .insert({ ...data, tenant_id: profile.tenant_id })
@@ -78,7 +130,13 @@ export async function createModuloAction(data: { trilha_id: string; titulo: stri
   revalidatePath('/dashboard/treinamentos')
 }
 
-export async function updateModuloAction(id: string, data: { titulo?: string; descricao?: string; ordem?: number }) {
+export async function updateModuloAction(id: string, data: {
+  titulo?: string
+  descricao?: string
+  ordem?: number
+  xp_reward?: number
+  aprovacao_minima?: number
+}) {
   const { profile } = await checkAuth()
   const adminDb = createAdminClient()
   const { error } = await adminDb.from('modulos').update(data).eq('id', id).eq('tenant_id', profile.tenant_id)
@@ -95,7 +153,14 @@ export async function deleteModuloAction(id: string) {
 }
 
 // --- AULAS ---
-export async function createAulaAction(data: { modulo_id: string; titulo: string; tipo_conteudo: string; url_midia: string; conteudo_texto: string; ordem: number }) {
+export async function createAulaAction(data: {
+  modulo_id: string
+  titulo: string
+  tipo_conteudo: string
+  url_midia: string
+  conteudo_texto: string
+  ordem: number
+}) {
   const { profile } = await checkAuth()
   const adminDb = createAdminClient()
 
@@ -106,7 +171,13 @@ export async function createAulaAction(data: { modulo_id: string; titulo: string
   revalidatePath('/dashboard/treinamentos')
 }
 
-export async function updateAulaAction(id: string, data: { titulo?: string; tipo_conteudo?: string; url_midia?: string; conteudo_texto?: string; ordem?: number }) {
+export async function updateAulaAction(id: string, data: {
+  titulo?: string
+  tipo_conteudo?: string
+  url_midia?: string
+  conteudo_texto?: string
+  ordem?: number
+}) {
   const { profile } = await checkAuth()
   const adminDb = createAdminClient()
   const { error } = await adminDb.from('aulas').update(data).eq('id', id).eq('tenant_id', profile.tenant_id)
@@ -118,25 +189,6 @@ export async function deleteAulaAction(id: string) {
   const { profile } = await checkAuth()
   const adminDb = createAdminClient()
   const { error } = await adminDb.from('aulas').delete().eq('id', id).eq('tenant_id', profile.tenant_id)
-  if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/treinamentos')
-}
-
-// --- QUIZZES ---
-export async function createQuizAction(data: { aula_id: string; pergunta: string; opcoes: string[]; indice_correta: number }) {
-  const { profile } = await checkAuth()
-  const adminDb = createAdminClient()
-  const { error } = await adminDb
-    .from('quizzes')
-    .insert({ ...data, tenant_id: profile.tenant_id })
-  if (error) throw new Error(error.message)
-  revalidatePath('/dashboard/treinamentos')
-}
-
-export async function deleteQuizAction(id: string) {
-  const { profile } = await checkAuth()
-  const adminDb = createAdminClient()
-  const { error } = await adminDb.from('quizzes').delete().eq('id', id).eq('tenant_id', profile.tenant_id)
   if (error) throw new Error(error.message)
   revalidatePath('/dashboard/treinamentos')
 }
@@ -160,7 +212,13 @@ export async function deleteProvaAction(id: string) {
   revalidatePath('/dashboard/treinamentos')
 }
 
-export async function createQuestaoProvaAction(data: { prova_id: string; pergunta: string; opcoes: string[]; indice_correta: number }) {
+export async function createQuestaoProvaAction(data: {
+  prova_id: string
+  pergunta: string
+  opcoes: string[]
+  indice_correta: number
+  explicacao?: string
+}) {
   const { profile } = await checkAuth()
   const adminDb = createAdminClient()
   const { error } = await adminDb
