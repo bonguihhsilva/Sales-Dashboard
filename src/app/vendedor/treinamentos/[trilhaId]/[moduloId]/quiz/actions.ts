@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function submitQuiz(
-  moduloId: string, 
+  moduloId: string,
   respostas: Record<string, number> // id_questao -> index_alternativa
 ) {
   const supabase = await createClient()
@@ -28,12 +28,10 @@ export async function submitQuiz(
     throw new Error('Limite diário de tentativas atingido. Você excedeu o limite de 5 tentativas a cada 24 horas para este módulo.')
   }
 
-  // Buscar detalhes do módulo
   const { data: modulo } = await adminDb
     .from('modulos').select('xp_reward').eq('id', moduloId).single()
   if (!modulo) throw new Error('Módulo não encontrado')
 
-  // Verificar se o usuário concluiu todas as aulas deste módulo
   const { data: aulas, error: aulasErr } = await adminDb
     .from('aulas')
     .select('id')
@@ -57,39 +55,36 @@ export async function submitQuiz(
     }
   }
 
-  // Buscar prova do módulo
   const { data: prova } = await adminDb
     .from('provas').select('id, nota_minima').eq('modulo_id', moduloId).single()
   if (!prova) throw new Error('Prova deste módulo não configurada')
 
-  // Buscar questões da prova reais do banco (gabarito seguro)
+  // Gabarito real do banco — nunca exposto ao client antes do envio
   const { data: questoesReais } = await adminDb
     .from('questoes_prova')
-    .select('id, indice_correta')
+    .select('id, indice_correta, explicacao')
     .eq('prova_id', prova.id)
 
   if (!questoesReais || questoesReais.length === 0) {
     throw new Error('Nenhuma questão cadastrada para este quiz')
   }
 
-  // Calcular acertos de forma estritamente segura no servidor
   let acertos = 0
+  const gabarito: Record<string, { correta: number; explicacao: string | null; acertou: boolean }> = {}
   for (const q of questoesReais) {
     const escolhida = respostas[q.id]
-    if (escolhida !== undefined && escolhida === q.indice_correta) {
-      acertos++
-    }
+    const acertou = escolhida !== undefined && escolhida === q.indice_correta
+    if (acertou) acertos++
+    gabarito[q.id] = { correta: q.indice_correta, explicacao: q.explicacao ?? null, acertou }
   }
 
   const pontuacao = Math.round((acertos / questoesReais.length) * 100)
   const aprovado = pontuacao >= (prova.nota_minima || 70)
 
-  // Buscar tenant do usuário para isolamento RLS
   const { data: profile } = await adminDb
     .from('profiles').select('tenant_id').eq('id', user.id).single()
   if (!profile?.tenant_id) throw new Error('Tenant não configurado')
 
-  // Obter número da próxima tentativa
   const { data: maxTentativa } = await adminDb
     .from('quiz_resultados')
     .select('tentativa')
@@ -101,7 +96,6 @@ export async function submitQuiz(
 
   const proximaTentativa = maxTentativa ? (maxTentativa.tentativa + 1) : 1
 
-  // 2. Gravar tentativa em quiz_resultados para auditoria e controle de cooldown
   const { error: logError } = await adminDb
     .from('quiz_resultados')
     .insert({
@@ -115,7 +109,16 @@ export async function submitQuiz(
 
   if (logError) throw logError
 
-  // Salvar resultado no progresso_modulos (conforme o novo schema)
+  // Estado de aprovação ANTES desta tentativa (evita XP duplicado em re-tentativas)
+  const { data: progressoAnterior } = await adminDb
+    .from('progresso_modulos')
+    .select('aprovado')
+    .eq('usuario_id', user.id)
+    .eq('modulo_id', moduloId)
+    .maybeSingle()
+
+  const jaEstavaAprovado = progressoAnterior?.aprovado === true
+
   const { error: resError } = await adminDb
     .from('progresso_modulos')
     .upsert({
@@ -129,18 +132,17 @@ export async function submitQuiz(
 
   if (resError) throw resError
 
-  // Se aprovado, dar XP
-  if (aprovado) {
+  // XP só na 1a aprovação
+  if (aprovado && !jaEstavaAprovado) {
     const xpGanhado = modulo.xp_reward || 0
     if (xpGanhado > 0) {
-      const { error: xpError } = await adminDb.rpc('increment_user_xp', {
-        p_user_id: user.id,
-        p_xp_to_add: xpGanhado
+      const { error: xpError } = await adminDb.rpc('lms_grant_xp', {
+        p_user: user.id,
+        p_amount: xpGanhado,
       })
       if (xpError) throw xpError
     }
   }
 
-  return { pontuacao, aprovado }
+  return { pontuacao, aprovado, gabarito }
 }
-
