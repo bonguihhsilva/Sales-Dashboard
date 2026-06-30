@@ -1,41 +1,51 @@
-import { getTenantContext } from '@/lib/auth/tenant'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { ALL_TRILHAS } from '@/lib/lms'
+import { getProva } from '@/lib/lms/queries'
 import { PageHeader, LogoutButton } from '@/components/ui'
 import QuizClient from './QuizClient'
 
 export const dynamic = 'force-dynamic'
 
-export default async function QuizPage({ params }: { params: Promise<{ trilhaId: string; moduloId: string }> }) {
-  const { user, profile } = await getTenantContext()
-  if (!user || !profile) redirect('/login')
+export default async function QuizPage({
+  params,
+}: {
+  params: Promise<{ trilhaId: string; moduloId: string }>
+}) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   const { trilhaId, moduloId } = await params
-  const trilha = ALL_TRILHAS.find(t => t.id === trilhaId)
-  if (!trilha) redirect('/vendedor/treinamentos')
 
-  const lesson = trilha.lessons.find(l => l.id === moduloId)
-  if (!lesson) redirect(`/vendedor/treinamentos/${trilhaId}`)
+  const prova = await getProva(moduloId)
+  if (!prova || prova.questoes.length === 0) {
+    redirect(`/vendedor/treinamentos/${trilhaId}/${moduloId}`)
+  }
 
-  const questoes = lesson.quiz.map((q, i) => ({
-    id: String(i),
-    pergunta: q.question,
-    opcoes: q.options,
+  const [{ data: trilha }, { data: modulo }] = await Promise.all([
+    supabase.from('trilhas').select('titulo').eq('id', trilhaId).single(),
+    supabase.from('modulos').select('titulo').eq('id', moduloId).single(),
+  ])
+
+  const questoes = prova.questoes.map(q => ({
+    id: q.id,
+    pergunta: q.pergunta,
+    opcoes: q.opcoes,
   }))
 
-  const correctAnswers = lesson.quiz.map(q => q.correct)
-  const explanations   = lesson.quiz.map(q => q.explanation)
+  const correctAnswers = prova.questoes.map(q => q.indice_correta)
+  const explanations   = prova.questoes.map(q => q.explicacao ?? '')
 
   return (
     <div style={{ minHeight: '100vh', background: '#0C0C0E' }}>
       <div style={{ padding: '1.5rem 2.5rem' }}>
         <PageHeader
-          title={`Quiz: ${lesson.title}`}
+          title={`Prova: ${modulo?.titulo ?? prova.titulo}`}
           breadcrumbs={[
             { label: 'Treinamentos', href: '/vendedor/treinamentos' },
-            { label: trilha.title, href: `/vendedor/treinamentos/${trilhaId}` },
-            { label: lesson.title, href: `/vendedor/treinamentos/${trilhaId}/${moduloId}` },
-            { label: 'Quiz' },
+            { label: trilha?.titulo ?? 'Trilha', href: `/vendedor/treinamentos/${trilhaId}` },
+            { label: modulo?.titulo ?? 'Módulo', href: `/vendedor/treinamentos/${trilhaId}/${moduloId}` },
+            { label: 'Prova' },
           ]}
           actions={<LogoutButton />}
         />
