@@ -27,14 +27,12 @@ export default async function QuizPage({
     supabase.from('modulos').select('titulo').eq('id', moduloId).single(),
   ])
 
+  // Só id/pergunta/opcoes vão ao client — gabarito fica só no servidor (submitQuiz)
   const questoes = prova.questoes.map(q => ({
     id: q.id,
     pergunta: q.pergunta,
     opcoes: q.opcoes,
   }))
-
-  const correctAnswers = prova.questoes.map(q => q.indice_correta)
-  const explanations   = prova.questoes.map(q => q.explicacao ?? '')
 
   return (
     <div style={{ minHeight: '100vh', background: '#0C0C0E' }}>
@@ -56,8 +54,6 @@ export default async function QuizPage({
           questoes={questoes}
           trilhaId={trilhaId}
           moduloId={moduloId}
-          correctAnswers={correctAnswers}
-          explanations={explanations}
         />
       </div>
     </div>
