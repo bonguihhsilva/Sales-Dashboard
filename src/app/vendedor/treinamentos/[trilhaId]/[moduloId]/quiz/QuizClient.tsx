@@ -1,19 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-
-const C = {
-  surface: '#1C1C22',
-  surface2: '#252530',
-  border:  'rgba(255,255,255,0.06)',
-  text:    '#F0F0F3',
-  muted:   '#6B6B78',
-  gold:    '#C9933A',
-  green:   '#22c55e',
-  red:     '#ef4444',
-  bg:      '#0C0C0E',
-} as const
+import { LMS as C } from '@/lib/lms/theme'
+import { submitQuiz } from './actions'
 
 interface Questao {
   id: string
@@ -25,20 +15,26 @@ interface Props {
   questoes: Questao[]
   trilhaId: string
   moduloId: string
-  correctAnswers: number[]
-  explanations: string[]
+}
+
+interface GabaritoItem {
+  correta: number
+  explicacao: string | null
+  acertou: boolean
 }
 
 interface Resultado {
   pontuacao: number
   aprovado: boolean
-  acertos: boolean[]
+  gabarito: Record<string, GabaritoItem>
 }
 
-export default function QuizClient({ questoes, trilhaId, moduloId, correctAnswers, explanations }: Props) {
+export default function QuizClient({ questoes, trilhaId, moduloId }: Props) {
   const router = useRouter()
   const [respostas, setRespostas] = useState<Record<string, number>>({})
   const [resultado, setResultado] = useState<Resultado | null>(null)
+  const [erro, setErro] = useState<string | null>(null)
+  const [pending, startTransition] = useTransition()
 
   const handleChange = (questaoId: string, index: number) => {
     if (resultado) return
@@ -50,13 +46,19 @@ export default function QuizClient({ questoes, trilhaId, moduloId, correctAnswer
       alert('Responda todas as questões antes de submeter.')
       return
     }
-    const acertos = questoes.map((q, i) => respostas[q.id] === correctAnswers[i])
-    const total   = acertos.filter(Boolean).length
-    const pontuacao = Math.round((total / questoes.length) * 100)
-    setResultado({ pontuacao, aprovado: pontuacao >= 70, acertos })
+    setErro(null)
+    startTransition(async () => {
+      try {
+        const res = await submitQuiz(moduloId, respostas)
+        setResultado(res)
+      } catch (err: any) {
+        setErro(err.message ?? 'Erro ao enviar prova.')
+      }
+    })
   }
 
   if (resultado) {
+    const acertosCount = Object.values(resultado.gabarito).filter(g => g.acertou).length
     return (
       <div>
         {/* Resultado header */}
@@ -73,24 +75,23 @@ export default function QuizClient({ questoes, trilhaId, moduloId, correctAnswer
             {resultado.aprovado ? 'Aprovado!' : 'Continue estudando'}
           </h2>
           <p style={{ color: C.muted, fontFamily: 'DM Mono, monospace', fontSize: '0.875rem' }}>
-            {resultado.pontuacao}% de acerto · {resultado.acertos.filter(Boolean).length} de {questoes.length} corretas
+            {resultado.pontuacao}% de acerto · {acertosCount} de {questoes.length} corretas
           </p>
         </div>
 
         {/* Gabarito */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
           {questoes.map((q, idx) => {
-            const acertou   = resultado.acertos[idx]
-            const resposta  = respostas[q.id]
-            const correta   = correctAnswers[idx]
+            const g = resultado.gabarito[q.id]
+            const resposta = respostas[q.id]
             return (
               <div key={q.id} style={{
                 background: C.surface, borderRadius: '0.75rem',
-                border: `1px solid ${acertou ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
+                border: `1px solid ${g.acertou ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
                 padding: '1.25rem 1.5rem',
               }}>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                  <span style={{ fontSize: '1rem', flexShrink: 0 }}>{acertou ? '✅' : '❌'}</span>
+                  <span style={{ fontSize: '1rem', flexShrink: 0 }}>{g.acertou ? '✅' : '❌'}</span>
                   <h3 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 700, color: C.text, lineHeight: 1.4 }}>
                     {idx + 1}. {q.pergunta}
                   </h3>
@@ -98,15 +99,15 @@ export default function QuizClient({ questoes, trilhaId, moduloId, correctAnswer
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '0.875rem' }}>
                   {q.opcoes.map((op, aIdx) => {
-                    const isCorreta  = aIdx === correta
+                    const isCorreta  = aIdx === g.correta
                     const isResposta = aIdx === resposta
                     const bg = isCorreta
                       ? 'rgba(34,197,94,0.1)'
-                      : (isResposta && !acertou ? 'rgba(239,68,68,0.1)' : 'transparent')
+                      : (isResposta && !g.acertou ? 'rgba(239,68,68,0.1)' : 'transparent')
                     const borderColor = isCorreta
                       ? 'rgba(34,197,94,0.4)'
-                      : (isResposta && !acertou ? 'rgba(239,68,68,0.4)' : C.border)
-                    const color = isCorreta ? C.green : (isResposta && !acertou ? C.red : C.muted)
+                      : (isResposta && !g.acertou ? 'rgba(239,68,68,0.4)' : C.border)
+                    const color = isCorreta ? C.green : (isResposta && !g.acertou ? C.red : C.muted)
 
                     return (
                       <div key={aIdx} style={{
@@ -121,14 +122,16 @@ export default function QuizClient({ questoes, trilhaId, moduloId, correctAnswer
                   })}
                 </div>
 
-                <div style={{
-                  background: 'rgba(255,255,255,0.03)', borderRadius: '0.5rem',
-                  padding: '0.625rem 0.875rem',
-                  fontSize: '0.8125rem', color: C.muted, lineHeight: 1.55,
-                }}>
-                  <span style={{ color: C.gold, fontWeight: 700, fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Explicação — </span>
-                  {explanations[idx]}
-                </div>
+                {g.explicacao && (
+                  <div style={{
+                    background: 'rgba(255,255,255,0.03)', borderRadius: '0.5rem',
+                    padding: '0.625rem 0.875rem',
+                    fontSize: '0.8125rem', color: C.muted, lineHeight: 1.55,
+                  }}>
+                    <span style={{ color: C.gold, fontWeight: 700, fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Explicação — </span>
+                    {g.explicacao}
+                  </div>
+                )}
               </div>
             )
           })}
@@ -139,6 +142,7 @@ export default function QuizClient({ questoes, trilhaId, moduloId, correctAnswer
           {!resultado.aprovado && (
             <button
               onClick={() => { setResultado(null); setRespostas({}) }}
+              className="lms-chip"
               style={{
                 background: 'transparent', color: C.text,
                 border: `1px solid ${C.border}`,
@@ -152,6 +156,7 @@ export default function QuizClient({ questoes, trilhaId, moduloId, correctAnswer
           )}
           <button
             onClick={() => router.push(`/vendedor/treinamentos/${trilhaId}`)}
+            className="lms-cta"
             style={{
               background: C.gold, color: C.bg, border: 'none',
               padding: '0.625rem 1.25rem', borderRadius: '0.5rem',
@@ -168,6 +173,15 @@ export default function QuizClient({ questoes, trilhaId, moduloId, correctAnswer
 
   return (
     <div>
+      {erro && (
+        <div style={{
+          background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)',
+          borderRadius: '0.625rem', padding: '0.875rem 1.125rem', marginBottom: '1.25rem',
+          color: C.red, fontSize: '0.8125rem',
+        }}>
+          {erro}
+        </div>
+      )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '1.5rem' }}>
         {questoes.map((q, idx) => (
           <div key={q.id} style={{ background: C.surface, padding: '1.25rem 1.5rem', borderRadius: '0.75rem', border: `1px solid ${C.border}` }}>
@@ -178,7 +192,7 @@ export default function QuizClient({ questoes, trilhaId, moduloId, correctAnswer
               {q.opcoes.map((opcao, aIdx) => {
                 const selected = respostas[q.id] === aIdx
                 return (
-                  <label key={aIdx} style={{
+                  <label key={aIdx} className={selected ? undefined : 'lms-opt'} style={{
                     display: 'flex', alignItems: 'flex-start', gap: '0.625rem',
                     cursor: 'pointer', padding: '0.625rem 0.75rem',
                     border: `1px solid ${selected ? 'rgba(201,147,58,0.4)' : C.border}`,
@@ -208,7 +222,8 @@ export default function QuizClient({ questoes, trilhaId, moduloId, correctAnswer
         </span>
         <button
           onClick={handleSubmeter}
-          disabled={Object.keys(respostas).length < questoes.length}
+          disabled={Object.keys(respostas).length < questoes.length || pending}
+          className="lms-cta"
           style={{
             background: Object.keys(respostas).length < questoes.length ? C.surface2 : C.gold,
             color: Object.keys(respostas).length < questoes.length ? C.muted : C.bg,
@@ -218,7 +233,7 @@ export default function QuizClient({ questoes, trilhaId, moduloId, correctAnswer
             transition: 'all 0.15s',
           }}
         >
-          Submeter Quiz
+          {pending ? 'Enviando...' : 'Submeter Quiz'}
         </button>
       </div>
     </div>
