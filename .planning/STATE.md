@@ -102,9 +102,10 @@ Progress: [░░░░░░░░░░] 0%
 |---|-------------|------|--------|-----------|
 | 260626-jq5 | Tour guiado na landing page com seleção de papel (admin/gerente/vendedor) | 2026-06-26 | f3f3656 | [260626-jq5-adicionar-tour-guiado-de-visita-auto-gui](.planning/quick/260626-jq5-adicionar-tour-guiado-de-visita-auto-gui/) |
 | 260626-jnc | Implementar suporte a comissão sobre lucro: migration products+sale_items+goals.commission_type, parser catálogo HTML+Excel, estender parser vendas, enriquecimento sale_items, total_profit em vendor_summary, engine comissão, UI upload catálogo | 2026-06-26 | 590929b | [260626-jnc-implementar-suporte-a-comiss-o-sobre-luc](.planning/quick/260626-jnc-implementar-suporte-a-comiss-o-sobre-luc/) |
+| 260701-rm0 | Adicionar trilha Perfumaria (13 modulos) ao LMS | 2026-07-01 | (pending) | [260701-rm0-adicionar-trilha-perfumaria-13-modulos-a](.planning/quick/260701-rm0-adicionar-trilha-perfumaria-13-modulos-a/) |
 
 ## Session Continuity
 
-Last session: 2026-06-17T20:21:04.485Z
-Stopped at: Completed 06-03-PLAN.md
+Last session: 2026-07-01T22:52:49.956Z
+Stopped at: Completed quick task 260701-rm0: Adicionar trilha Perfumaria ao LMS
 Resume file: None

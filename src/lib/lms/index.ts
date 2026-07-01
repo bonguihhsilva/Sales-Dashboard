@@ -5,6 +5,7 @@ export { trilha3 } from './trilha-3'
 export { trilha4 } from './trilha-4'
 export { trilha5 } from './trilha-5'
 export { trilha6 } from './trilha-6'
+export { trilha7 } from './trilha-7'
 export { skincareT1 } from './skincare-1'
 export { skincareT2 } from './skincare-2'
 export { skincareT3 } from './skincare-3'
@@ -17,12 +18,13 @@ import { trilha3 } from './trilha-3'
 import { trilha4 } from './trilha-4'
 import { trilha5 } from './trilha-5'
 import { trilha6 } from './trilha-6'
+import { trilha7 } from './trilha-7'
 import { skincareT1 } from './skincare-1'
 import { skincareT2 } from './skincare-2'
 import { skincareT3 } from './skincare-3'
 import { skincareT4 } from './skincare-4'
 import { skincareT5 } from './skincare-5'
 
-export const LMS_TRILHAS = [trilha1, trilha2, trilha3, trilha4, trilha5, trilha6]
+export const LMS_TRILHAS = [trilha1, trilha2, trilha3, trilha4, trilha5, trilha6, trilha7]
 export const SKINCARE_TRILHAS = [skincareT1, skincareT2, skincareT3, skincareT4, skincareT5]
 export const ALL_TRILHAS = [...LMS_TRILHAS, ...SKINCARE_TRILHAS]
