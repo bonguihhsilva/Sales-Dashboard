@@ -24,7 +24,6 @@ const GERENTE_PERM_RULES: Array<{ test: (p: string) => boolean; perm: Permission
   {
     test: p =>
       p.startsWith('/dashboard/usuarios') ||
-      p.startsWith('/api/admin/create-user') ||
       p.startsWith('/api/admin/update-user') ||
       p.startsWith('/api/admin/disable-user') ||
       p.startsWith('/api/admin/invite') ||
