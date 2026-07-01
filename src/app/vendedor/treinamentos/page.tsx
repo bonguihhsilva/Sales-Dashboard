@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { getCatalogo } from '@/lib/lms/queries'
 import { LMS as C } from '@/lib/lms/theme'
 import { TrilhaCard } from './TrilhaCard'
+import { categorizarTrilhas } from './categorias'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,6 +13,7 @@ export default async function TreinamentosPage() {
   if (!user) redirect('/login')
 
   const trilhas = await getCatalogo(user.id)
+  const grupos = categorizarTrilhas(trilhas)
 
   const totalModulos = trilhas.reduce((acc, t) => acc + t.moduloCount, 0)
   const totalXP      = trilhas.reduce((acc, t) => acc + t.totalXp, 0)
@@ -64,15 +66,31 @@ export default async function TreinamentosPage() {
             Nenhuma trilha disponível no momento.
           </div>
         ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: '1.25rem',
-          }}>
-            {trilhas.map(trilha => (
-              <TrilhaCard key={trilha.id} trilha={trilha} />
-            ))}
-          </div>
+          grupos.map((grupo, idx) => (
+            <div key={grupo.categoria} style={{ marginTop: idx === 0 ? 0 : '2rem', marginBottom: '2rem' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.625rem', marginBottom: '0.875rem' }}>
+                <div style={{
+                  fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1.0625rem',
+                  color: C.text, letterSpacing: '-0.01em',
+                }}>
+                  {grupo.categoria}
+                </div>
+                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: C.muted }}>
+                  · {grupo.trilhas.length} trilha{grupo.trilhas.length === 1 ? '' : 's'}
+                </div>
+              </div>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: '1.25rem',
+              }}>
+                {grupo.trilhas.map(trilha => (
+                  <TrilhaCard key={trilha.id} trilha={trilha} />
+                ))}
+              </div>
+            </div>
+          ))
         )}
 
       </div>
