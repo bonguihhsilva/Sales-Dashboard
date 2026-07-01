@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Ferramenta Escalável
 status: verifying
-stopped_at: Completed 06-03-PLAN.md
-last_updated: "2026-06-18T00:01:06.205Z"
-last_activity: 2026-06-18
+stopped_at: "Completed quick task 260701-s5o: separar trilhas do Centro de Treinamentos em 3 categorias"
+last_updated: "2026-07-01T23:23:40.132Z"
+last_activity: "2026-06-26 - Completed quick task 260626-jnc: comissão sobre lucro (products, sale_items, engine, UI)"
 progress:
   total_phases: 6
   completed_phases: 1
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 Phase: 06
 Plan: Not started
 Status: Phase complete — ready for verification
-Last activity: 2026-06-26 - Completed quick task 260626-jnc: comissão sobre lucro (products, sale_items, engine, UI)
+Last activity: 2026-07-01 - Completed quick task 260701-s5o: separar trilhas do Centro de Treinamentos em 3 categorias
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -103,9 +103,10 @@ Progress: [░░░░░░░░░░] 0%
 | 260626-jq5 | Tour guiado na landing page com seleção de papel (admin/gerente/vendedor) | 2026-06-26 | f3f3656 | [260626-jq5-adicionar-tour-guiado-de-visita-auto-gui](.planning/quick/260626-jq5-adicionar-tour-guiado-de-visita-auto-gui/) |
 | 260626-jnc | Implementar suporte a comissão sobre lucro: migration products+sale_items+goals.commission_type, parser catálogo HTML+Excel, estender parser vendas, enriquecimento sale_items, total_profit em vendor_summary, engine comissão, UI upload catálogo | 2026-06-26 | 590929b | [260626-jnc-implementar-suporte-a-comiss-o-sobre-luc](.planning/quick/260626-jnc-implementar-suporte-a-comiss-o-sobre-luc/) |
 | 260701-rm0 | Adicionar trilha Perfumaria (13 modulos) ao LMS | 2026-07-01 | (pending) | [260701-rm0-adicionar-trilha-perfumaria-13-modulos-a](.planning/quick/260701-rm0-adicionar-trilha-perfumaria-13-modulos-a/) |
+| 260701-s5o | Separar as 14 trilhas do Centro de Treinamentos em 3 categorias visuais (Vendas e Atendimento, Skin Care, Perfumes) via mapa estático front-end | 2026-07-01 | 31e3e83 | [260701-s5o-separar-trilhas-do-centro-de-treinamento](.planning/quick/260701-s5o-separar-trilhas-do-centro-de-treinamento/) |
 
 ## Session Continuity
 
-Last session: 2026-07-01T22:52:49.956Z
-Stopped at: Completed quick task 260701-rm0: Adicionar trilha Perfumaria ao LMS
+Last session: 2026-07-01T23:23:40.129Z
+Stopped at: Completed quick task 260701-s5o: separar trilhas do Centro de Treinamentos em 3 categorias
 Resume file: None
