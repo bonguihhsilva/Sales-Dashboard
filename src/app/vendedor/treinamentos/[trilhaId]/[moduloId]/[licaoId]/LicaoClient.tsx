@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { markLicaoComplete } from './actions'
 import { toast } from 'sonner'
+import { LMS as C } from '@/lib/lms/theme'
 
 // ── Slide model ──────────────────────────────────────────────
 interface Slide {
@@ -19,7 +20,7 @@ function renderInline(text: string) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g)
   return parts.map((p, i) =>
     p.startsWith('**') && p.endsWith('**')
-      ? <strong key={i} style={{ color: 'var(--text)', fontWeight: 800 }}>{p.slice(2, -2)}</strong>
+      ? <strong key={i} style={{ color: C.text, fontWeight: 800 }}>{p.slice(2, -2)}</strong>
       : <span key={i}>{p}</span>
   )
 }
@@ -36,13 +37,13 @@ function SlideBody({ corpo }: { corpo: string }) {
       {blocks.map((b, i) =>
         b.type === 'bullet' ? (
           <div key={i} style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start' }}>
-            <span style={{ color: 'var(--accent)', fontWeight: 900, lineHeight: '1.7', flexShrink: 0 }}>•</span>
-            <p style={{ margin: 0, fontSize: '1.05rem', lineHeight: '1.7', color: 'var(--muted)' }}>
+            <span style={{ color: C.gold, fontWeight: 900, lineHeight: '1.7', flexShrink: 0 }}>•</span>
+            <p style={{ margin: 0, fontSize: '1.05rem', lineHeight: '1.7', color: C.muted }}>
               {renderInline(b.text)}
             </p>
           </div>
         ) : (
-          <p key={i} style={{ margin: 0, fontSize: '1.1rem', lineHeight: '1.7', color: 'var(--muted)' }}>
+          <p key={i} style={{ margin: 0, fontSize: '1.1rem', lineHeight: '1.7', color: C.muted }}>
             {renderInline(b.text)}
           </p>
         )
@@ -139,7 +140,7 @@ export default function LicaoClient({
     <div style={{ padding: '1.5rem 1.25rem 3rem', maxWidth: '820px', margin: '0 auto' }}>
       {/* Contador */}
       <div style={{
-        fontFamily: 'DM Mono, monospace', fontSize: '0.8rem', color: 'var(--muted)',
+        fontFamily: 'DM Mono, monospace', fontSize: '0.8rem', color: C.muted,
         letterSpacing: '0.05em', marginBottom: '1rem'
       }}>
         {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
@@ -157,8 +158,8 @@ export default function LicaoClient({
         }}
         style={{
           position: 'relative',
-          background: 'var(--surface)',
-          border: '1px solid var(--border)',
+          background: C.surface,
+          border: `1px solid ${C.border}`,
           borderRadius: '16px',
           padding: 'clamp(1.5rem, 5vw, 3rem)',
           minHeight: '340px',
@@ -172,7 +173,7 @@ export default function LicaoClient({
           {slides.map((_, i) => (
             <div key={i} style={{
               height: '4px', flex: 1, borderRadius: '4px',
-              background: i <= index ? 'var(--accent)' : 'var(--surface2)',
+              background: i <= index ? C.gold : C.surface2,
               transition: 'background 0.3s ease',
             }} />
           ))}
@@ -180,6 +181,7 @@ export default function LicaoClient({
 
         <div
           key={index}
+          className="lms-slide"
           style={{
             animation: `${dir === 1 ? 'slideInRight' : 'slideInLeft'} 0.32s ease`,
             display: 'flex', flexDirection: 'column', gap: '1.5rem', flex: 1,
@@ -191,11 +193,11 @@ export default function LicaoClient({
                 <h2 style={slideTitleStyle}>{current.titulo}</h2>
               )}
               <div style={{
-                width: '100%', aspectRatio: '16/9', background: 'var(--surface2)',
+                width: '100%', aspectRatio: '16/9', background: C.surface2,
                 borderRadius: '12px', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', border: '1px solid var(--border)',
+                justifyContent: 'center', border: `1px solid ${C.border}`,
               }}>
-                <span style={{ color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>
+                <span style={{ color: C.muted, fontFamily: 'DM Mono, monospace' }}>
                   Video Player: {current.videoUrl}
                 </span>
               </div>
@@ -220,6 +222,7 @@ export default function LicaoClient({
           onClick={() => go(index - 1)}
           disabled={index === 0}
           aria-label="Slide anterior"
+          className="lms-cta"
           style={{ ...navBtnStyle, opacity: index === 0 ? 0.35 : 1, cursor: index === 0 ? 'default' : 'pointer' }}
         >
           <ChevronLeft size={20} />
@@ -235,7 +238,7 @@ export default function LicaoClient({
               style={{
                 width: i === index ? '22px' : '8px', height: '8px', borderRadius: '4px',
                 border: 'none', cursor: 'pointer', padding: 0,
-                background: i === index ? 'var(--accent)' : 'var(--surface2)',
+                background: i === index ? C.gold : C.surface2,
                 transition: 'all 0.25s ease',
               }}
             />
@@ -246,6 +249,7 @@ export default function LicaoClient({
           <button
             onClick={() => go(index + 1)}
             aria-label="Próximo slide"
+            className="lms-cta"
             style={{ ...navBtnStyle, cursor: 'pointer' }}
           >
             <ChevronRight size={20} />
@@ -263,10 +267,11 @@ export default function LicaoClient({
           <button
             onClick={handleConcluir}
             disabled={loading}
+            className="lms-cta"
             style={{
-              background: jaConcluida ? 'var(--surface)' : 'var(--accent)',
-              color: jaConcluida ? 'var(--text)' : 'var(--bg)',
-              border: jaConcluida ? '1px solid var(--border)' : 'none',
+              background: jaConcluida ? C.surface : C.gold,
+              color: jaConcluida ? C.text : C.bg,
+              border: jaConcluida ? `1px solid ${C.border}` : 'none',
               padding: '14px 32px', borderRadius: '10px', fontWeight: 800,
               cursor: loading ? 'default' : 'pointer', fontSize: '1rem',
               fontFamily: 'Syne, sans-serif',
@@ -286,6 +291,9 @@ export default function LicaoClient({
           from { opacity: 0; transform: translateX(-24px); }
           to { opacity: 1; transform: translateX(0); }
         }
+        @media (prefers-reduced-motion: reduce) {
+          .lms-slide { animation: none !important; }
+        }
       `}</style>
     </div>
   )
@@ -296,14 +304,14 @@ const slideTitleStyle: React.CSSProperties = {
   fontFamily: 'DM Mono, monospace',
   fontSize: 'clamp(1.25rem, 4vw, 1.6rem)',
   fontWeight: 600,
-  color: 'var(--accent)',
+  color: C.gold,
   letterSpacing: '-0.01em',
   lineHeight: '1.3',
 }
 
 const navBtnStyle: React.CSSProperties = {
   width: '44px', height: '44px', borderRadius: '50%',
-  background: 'var(--surface)', border: '1px solid var(--border)',
-  color: 'var(--text)', display: 'flex', alignItems: 'center',
+  background: C.surface, border: `1px solid ${C.border}`,
+  color: C.text, display: 'flex', alignItems: 'center',
   justifyContent: 'center', flexShrink: 0,
 }

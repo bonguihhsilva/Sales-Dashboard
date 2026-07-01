@@ -33,7 +33,7 @@ export default async function LicaoPage({ params }: { params: Promise<{ trilhaId
   const jaConcluida = !!progresso
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+    <div style={{ minHeight: '100vh', background: '#0C0C0E' }}>
       {/* Header */}
       <div style={{ padding: '1.5rem 2.5rem' }}>
         <PageHeader

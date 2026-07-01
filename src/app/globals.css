@@ -87,3 +87,44 @@
 ::-webkit-scrollbar-track { background: #0b1326; }
 ::-webkit-scrollbar-thumb { background: #2d3449; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+
+/* ── LMS / Treinamentos: estados de interação compartilhados ──────────────
+   Telas do LMS são server components com estilo inline e não podem expressar
+   :hover/:focus inline. Estas classes dão estados reais (hover, active,
+   foco por teclado) de forma consistente, respeitando reduced-motion. */
+.lms-lift {
+  transition: transform .18s cubic-bezier(.2,.8,.2,1), border-color .18s ease, box-shadow .18s ease;
+  outline: none;
+}
+.lms-lift:hover { transform: translateY(-2px); box-shadow: 0 8px 24px -14px rgba(0,0,0,0.7); }
+.lms-lift:active { transform: translateY(0); }
+
+.lms-row { outline: none; }
+.lms-row > div { transition: border-color .16s ease, background-color .16s ease; }
+.lms-row:hover > div { border-color: rgba(201,147,58,0.28) !important; background-color: rgba(201,147,58,0.04) !important; }
+.lms-row:active > div { background-color: rgba(201,147,58,0.07) !important; }
+
+.lms-cta { transition: filter .16s ease, transform .16s ease; }
+.lms-cta:hover { filter: brightness(1.08); }
+.lms-cta:active { transform: translateY(1px); }
+
+.lms-chip { transition: border-color .16s ease, color .16s ease, background-color .16s ease; }
+.lms-chip:hover { border-color: rgba(201,147,58,0.4) !important; color: #C9933A !important; background-color: rgba(201,147,58,0.06); }
+
+.lms-opt { transition: border-color .16s ease, background-color .16s ease; }
+.lms-opt:hover { border-color: rgba(201,147,58,0.3) !important; background-color: rgba(201,147,58,0.05); }
+
+/* Foco por teclado visível em qualquer alvo interativo do LMS */
+.lms-lift:focus-visible,
+.lms-row:focus-visible,
+.lms-cta:focus-visible,
+.lms-chip:focus-visible,
+.lms-opt:focus-visible {
+  outline: 2px solid rgba(201,147,58,0.6);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lms-lift, .lms-row, .lms-cta, .lms-chip, .lms-opt { transition: none; }
+  .lms-lift:hover, .lms-cta:active { transform: none; }
+}
