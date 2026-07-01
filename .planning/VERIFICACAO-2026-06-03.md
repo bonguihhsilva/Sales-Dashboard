@@ -63,3 +63,5 @@ A: Bash/build · B: Supabase advisors + semgrep + /security-review · C: Supabas
 ## Log de execução
 - 2026-06-03: diagnóstico completo; board criado; metas e cross-tenant confirmados resolvidos.
 - 2026-06-03: Wave 1 commitada (tokens + metas). UAT adm no deploy → achados acima. RBAC gerente confirmado como P0.
+- 2026-06-03: Wave 2 — RBAC engine (VERIFICADO runtime no preview) + fix cross-tenant (comissao/relatorios) + nav dupla/rebrand GDS. **PR #3 MERGEADO na main (55ffe07) → prod.**
+- PENDENTE (próxima sessão): Track E PageHeader rollout (~21 telas) · Track B perf RLS (115 warns) + refresh-token console error · Track F `regras_comissao` desconectada do cálculo · UAT vendedor/super_admin · MANUAL: período Junho p/ Star + SERVICE_ROLE_KEY Vercel + Leaked Password Protection + convidar vendedores.

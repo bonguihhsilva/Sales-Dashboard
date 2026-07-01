@@ -8,7 +8,11 @@ updated: 2026-06-17T00:00:00Z
 
 ## Current Test
 
-[aguardando testes humanos]
+number: 1
+name: Badge de formato detectado após upload CEC
+expected: |
+  Após selecionar um arquivo HTML do sistema CEC, o UploadModal exibe badge "Formato detectado: CEC" (sem dropdown)
+awaiting: user response
 
 ## Tests
 
