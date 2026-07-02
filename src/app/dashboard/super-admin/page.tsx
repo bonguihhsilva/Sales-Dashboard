@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
+import { PageHeader } from '@/components/ui'
 import SuperAdminClient from './SuperAdminClient'
 
 export const dynamic = 'force-dynamic'
@@ -37,18 +38,11 @@ export default async function SuperAdminPage() {
 
   return (
     <div style={{ minHeight: '100%', background: 'var(--bg)' }}>
-      {/* Top App Bar */}
-      <div style={{
-        padding: '1rem 2rem', background: 'var(--surface)', borderBottom: '1px solid var(--border)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)', zIndex: 10, position: 'sticky', top: 0
-      }}>
-        <div className="flex flex-col">
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)', margin: 0, letterSpacing: '-0.02em' }}>
-            Painel Super Admin
-          </h1>
-          <span className="text-sm text-muted-foreground mt-1">Gestão global de empresas parceiras (Tenants)</span>
-        </div>
+      <div style={{ padding: '1.5rem 2rem 0' }}>
+        <PageHeader
+          title="Painel Super Admin"
+          subtitle="Gestão global de empresas parceiras (Tenants)"
+        />
       </div>
 
       <div style={{ padding: '2rem' }}>

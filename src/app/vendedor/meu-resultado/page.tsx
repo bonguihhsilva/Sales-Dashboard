@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { fmtCurrency, fmtK, metaLevel, bonusAmount } from '@/lib/utils'
-import { KpiCard, StorePill, ProgressBar, SectionTitle, LogoutButton } from '@/components/ui'
+import { KpiCard, StorePill, ProgressBar, SectionTitle, LogoutButton, PageHeader } from '@/components/ui'
 import AnaliseTab from './AnaliseTab'
 import CarteiraClient from '@/app/dashboard/carteira/CarteiraClient'
 
@@ -170,19 +170,12 @@ export default async function MeuResultadoPage({
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       {/* Header */}
-      <div style={{ padding: '1.5rem 2.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <div style={{ display: 'inline-block', background: '#2563eb', borderRadius: '6px', padding: '3px 10px', marginBottom: '6px' }}>
-            <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.75rem' }}>GDS - MEU RESULTADO</span>
-          </div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>
-            Olá, <span style={{ color: col }}>{profile.name}</span>
-          </h1>
-          <p style={{ fontSize: '0.72rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '2px' }}>
-            {activePeriodLabel}
-          </p>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div style={{ padding: '1.5rem 2.5rem' }}>
+        <PageHeader
+          title={<>Olá, <span style={{ color: col }}>{profile.name}</span></>}
+          subtitle={activePeriodLabel}
+          breadcrumbs={[{ label: 'GDS' }, { label: 'Meu Resultado' }]}
+          actions={<div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           {<StorePill store={currentSummary.store} label={storeObj?.label} colorClass={storeObj?.color} />}
           {/* Period selector */}
           <div style={{ display: 'flex', gap: '4px' }}>
@@ -231,7 +224,8 @@ export default async function MeuResultadoPage({
               <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--meta3, #f5a742)' }}>Lvl {gamificacao?.nivel || 1} • {gamificacao?.xp_total || 0} XP</div>
             </div>
           </a>
-        </div>
+        </div>}
+        />
       </div>
 
       <div style={{ padding: '1.5rem 2.5rem 3rem' }}>

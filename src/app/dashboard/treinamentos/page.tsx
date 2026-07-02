@@ -2,6 +2,7 @@ import { getTenantContext } from '@/lib/auth/tenant'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { LMS as C } from '@/lib/lms/theme'
+import { PageHeader } from '@/components/ui'
 import Link from 'next/link'
 import AdminLmsClient from './AdminLmsClient'
 
@@ -62,21 +63,17 @@ export default async function TreinamentosAdminPage({
     <div style={{ minHeight: '100vh', background: C.deep, color: C.text }}>
 
       {/* Header + tabs */}
-      <div style={{ padding: '1.5rem 2rem 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1.0625rem', letterSpacing: '-0.02em' }}>
-              Treinamentos — Visão Gerencial
+      <div style={{ padding: '1.5rem 2rem 0', marginBottom: '1.25rem' }}>
+        <PageHeader
+          title="Treinamentos — Visão Gerencial"
+          subtitle={`${(trilhas || []).length} trilhas · ${totalModulos} módulos · ${totalXP} XP total disponível`}
+          actions={
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <Link href={tabLink('conteudo')} style={tabStyle('conteudo')}>Conteúdo</Link>
+              <Link href={tabLink('progresso')} style={tabStyle('progresso')}>Progresso</Link>
             </div>
-            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6875rem', color: C.muted, marginTop: 3 }}>
-              {(trilhas || []).length} trilhas · {totalModulos} módulos · {totalXP} XP total disponível
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <Link href={tabLink('conteudo')} style={tabStyle('conteudo')}>Conteúdo</Link>
-            <Link href={tabLink('progresso')} style={tabStyle('progresso')}>Progresso</Link>
-          </div>
-        </div>
+          }
+        />
       </div>
 
       {activeTab === 'conteudo' ? (

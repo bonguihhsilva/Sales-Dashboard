@@ -4,7 +4,7 @@ import Link from 'next/link'
 interface Crumb { label: string; href?: string }
 
 interface PageHeaderProps {
-  title: string
+  title: ReactNode
   subtitle?: string
   breadcrumbs?: Crumb[]
   actions?: ReactNode

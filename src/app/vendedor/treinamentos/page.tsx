@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getCatalogo } from '@/lib/lms/queries'
 import { LMS as C } from '@/lib/lms/theme'
+import { PageHeader } from '@/components/ui'
 import { TrilhaCard } from './TrilhaCard'
 import { categorizarTrilhas } from './categorias'
 
@@ -24,37 +25,28 @@ export default async function TreinamentosPage() {
       <div style={{ maxWidth: '1320px', margin: '0 auto' }}>
 
         {/* Top bar */}
-        <div style={{
-          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-          marginBottom: '2.5rem', gap: '1rem',
-        }}>
-          <div>
-            <div style={{
-              fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1.5rem',
-              color: C.text, letterSpacing: '-0.02em', lineHeight: 1.15,
-            }}>
-              Centro de Treinamentos
-            </div>
-            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.8125rem', color: C.muted, marginTop: 6 }}>
-              {trilhas.length} trilhas · {totalModulos} módulos
-            </div>
-          </div>
-
-          <div style={{
-            display: 'flex', gap: 20, alignItems: 'stretch',
-            background: C.elevated, border: `1px solid ${C.borderStrong}`,
-            borderRadius: '0.75rem', padding: '0.75rem 1.25rem',
-          }}>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>XP disponível</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 700, fontFamily: 'DM Mono, monospace', color: C.amber, marginTop: 2 }}>{totalXP}</div>
-            </div>
-            <div style={{ width: '1px', background: C.border }} />
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Concluídas</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 700, fontFamily: 'DM Mono, monospace', color: C.green, marginTop: 2 }}>{concluidas}/{trilhas.length}</div>
-            </div>
-          </div>
+        <div style={{ marginBottom: '2.5rem' }}>
+          <PageHeader
+            title="Centro de Treinamentos"
+            subtitle={`${trilhas.length} trilhas · ${totalModulos} módulos`}
+            actions={
+              <div style={{
+                display: 'flex', gap: 20, alignItems: 'stretch',
+                background: C.elevated, border: `1px solid ${C.borderStrong}`,
+                borderRadius: '0.75rem', padding: '0.75rem 1.25rem',
+              }}>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>XP disponível</div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 700, fontFamily: 'DM Mono, monospace', color: C.amber, marginTop: 2 }}>{totalXP}</div>
+                </div>
+                <div style={{ width: '1px', background: C.border }} />
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Concluídas</div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 700, fontFamily: 'DM Mono, monospace', color: C.green, marginTop: 2 }}>{concluidas}/{trilhas.length}</div>
+                </div>
+              </div>
+            }
+          />
         </div>
 
         {/* Grid de trilhas */}
