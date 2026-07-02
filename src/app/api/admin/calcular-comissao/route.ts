@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { strictRateLimiter } from '@/lib/ratelimit'
+import { evaluateRules, type RegraComissao } from '@/lib/commission-rules'
 
 export async function POST(req: NextRequest) {
   // Rate limiter
@@ -75,11 +76,28 @@ export async function POST(req: NextRequest) {
     (existingCommissions ?? []).map(c => [c.vendedor_id, { aprovado: c.aprovado, aprovado_por: c.aprovado_por }])
   )
 
+  // Regras de comissão definidas pelos gerentes do tenant (fonte de verdade).
+  // Sem regras ativas → fallback para goals.commission_pct (comportamento legado).
+  const { data: regrasAtivas } = await admin
+    .from('regras_comissao')
+    .select('id, nome, prioridade, condicoes, acao')
+    .eq('tenant_id', profile.tenant_id)
+    .eq('ativo', true)
+  const regras = (regrasAtivas ?? []) as RegraComissao[]
+
   const rows = summaries
     .filter(s => vendorToProfileId.has(s.vendor_id as string))
     .map(s => {
       const vendedor_id = vendorToProfileId.get(s.vendor_id as string)!
       const prevApproval = approvedMap.get(vendedor_id)
+
+      // Regras do gerente têm precedência sobre goals.commission_pct
+      const ruleEval = evaluateRules(regras, {
+        total_sold: Number(s.total_sold),
+        meta1: Number(s.meta1),
+        meta2: Number(s.meta2),
+        meta3: Number(s.meta3),
+      })
 
       // Aritmética precisa baseada em centavos (arredondamento matemático exato)
       const commissionType = (s.commission_type as string | undefined) ?? 'revenue'
@@ -87,9 +105,10 @@ export async function POST(req: NextRequest) {
         ? Number(s.total_profit ?? 0)
         : Number(s.total_sold)
       const baseCents = Math.round(baseValue * 100)
-      const commissionPct = Number(s.commission_pct)
+      const commissionPct = ruleEval.commissionPct ?? Number(s.commission_pct)
       const comissaoBaseCents = Math.round(baseCents * commissionPct)
       const bonusCents = Math.round(Number(s.bonus_earned) * 100)
+        + Math.round(ruleEval.extraBonus * 100)
       const totalCents = comissaoBaseCents + bonusCents
 
       const comissao_base = comissaoBaseCents / 100
@@ -108,7 +127,10 @@ export async function POST(req: NextRequest) {
           total_profit: Math.round(Number(s.total_profit ?? 0) * 100) / 100,
           commission_type: commissionType,
           base_value: Math.round(baseValue * 100) / 100,
-          commission_pct: Number(s.commission_pct),
+          commission_pct: commissionPct,
+          commission_pct_source: ruleEval.commissionPct !== null ? 'regras_comissao' : 'goals',
+          regras_aplicadas: ruleEval.appliedRules,
+          bonus_regras: Math.round(ruleEval.extraBonus * 100) / 100,
           meta_level: s.meta_level,
           meta1: Math.round(Number(s.meta1) * 100) / 100,
           meta2: Math.round(Number(s.meta2) * 100) / 100,
