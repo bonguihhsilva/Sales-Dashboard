@@ -72,8 +72,9 @@ export default async function DashboardPage({
     .limit(2000)
 
   // período anterior (para tendência + perdidos)
-  const carteiraIdx = (periods as Period[]).findIndex(p => p.id === activePeriod)
-  const carteiraPrevPeriodId = carteiraIdx >= 0 && carteiraIdx < (periods ?? []).length - 1 ? (periods as Period[])[carteiraIdx + 1].id : null
+  const periodsList = (periods ?? []) as Period[]
+  const carteiraIdx = periodsList.findIndex(p => p.id === activePeriod)
+  const carteiraPrevPeriodId = carteiraIdx >= 0 && carteiraIdx < periodsList.length - 1 ? periodsList[carteiraIdx + 1].id : null
 
   const carteiraPrevMap = new Map<string, { total: number; name: string; vendor_id: string }>()
   if (carteiraPrevPeriodId) {
