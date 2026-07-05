@@ -84,56 +84,89 @@ export async function getCatalogo(userId: string): Promise<CatalogoTrilha[]> {
 
   if (error || !trilhas) return []
 
-  const result = await Promise.all(
-    trilhas.map(async (trilha): Promise<CatalogoTrilha> => {
-      const { data: modulos } = await supabase
-        .from('modulos')
-        .select('id, xp_reward')
-        .eq('trilha_id', trilha.id)
+  const trilhaIds = trilhas.map(t => t.id)
+  if (trilhaIds.length === 0) return []
 
-      const moduloIds = (modulos ?? []).map(m => m.id)
-      const totalXp = (modulos ?? []).reduce((acc, m) => acc + (m.xp_reward ?? 0), 0)
+  // 1. Buscar todos os módulos de todas as trilhas ativas de uma vez
+  const { data: todosModulos } = await supabase
+    .from('modulos')
+    .select('id, trilha_id, xp_reward')
+    .in('trilha_id', trilhaIds)
 
-      let totalAulas = 0
-      let aulasConcluidas = 0
+  const modulosPorTrilha = new Map<string, Array<{ id: string; xp_reward: number }>>()
+  const todosModuloIds: string[] = []
+  for (const m of todosModulos ?? []) {
+    todosModuloIds.push(m.id)
+    const list = modulosPorTrilha.get(m.trilha_id) ?? []
+    list.push({ id: m.id, xp_reward: m.xp_reward ?? 0 })
+    modulosPorTrilha.set(m.trilha_id, list)
+  }
 
-      if (moduloIds.length > 0) {
-        const { data: aulas } = await supabase
-          .from('aulas')
-          .select('id')
-          .in('modulo_id', moduloIds)
+  let todasAulas: Array<{ id: string; modulo_id: string }> = []
+  if (todosModuloIds.length > 0) {
+    // 2. Buscar todas as aulas dos módulos de uma vez
+    const { data } = await supabase
+      .from('aulas')
+      .select('id, modulo_id')
+      .in('modulo_id', todosModuloIds)
+    todasAulas = data ?? []
+  }
 
-        const aulaIds = (aulas ?? []).map(a => a.id)
-        totalAulas = aulaIds.length
+  const aulasPorModulo = new Map<string, string[]>()
+  const todasAulaIds: string[] = []
+  for (const a of todasAulas) {
+    todasAulaIds.push(a.id)
+    const list = aulasPorModulo.get(a.modulo_id) ?? []
+    list.push(a.id)
+    aulasPorModulo.set(a.modulo_id, list)
+  }
 
-        if (aulaIds.length > 0) {
-          const { data: progresso } = await supabase
-            .from('progresso_aulas')
-            .select('aula_id')
-            .eq('usuario_id', userId)
-            .in('aula_id', aulaIds)
+  let progressoSet = new Set<string>()
+  if (todasAulaIds.length > 0) {
+    // 3. Buscar progresso das aulas do usuário em lote
+    const { data: progresso } = await supabase
+      .from('progresso_aulas')
+      .select('aula_id')
+      .eq('usuario_id', userId)
+      .in('aula_id', todasAulaIds)
+    progressoSet = new Set((progresso ?? []).map(p => p.aula_id))
+  }
 
-          aulasConcluidas = (progresso ?? []).length
+  // 4. Montar o catálogo em memória
+  const result: CatalogoTrilha[] = trilhas.map(trilha => {
+    const modulos = modulosPorTrilha.get(trilha.id) ?? []
+    const moduloIds = modulos.map(m => m.id)
+    const totalXp = modulos.reduce((acc, m) => acc + m.xp_reward, 0)
+
+    let totalAulas = 0
+    let aulasConcluidas = 0
+
+    for (const moduloId of moduloIds) {
+      const aulaIds = aulasPorModulo.get(moduloId) ?? []
+      totalAulas += aulaIds.length
+      for (const aulaId of aulaIds) {
+        if (progressoSet.has(aulaId)) {
+          aulasConcluidas++
         }
       }
+    }
 
-      const progressoPct =
-        totalAulas > 0 ? Math.round((aulasConcluidas / totalAulas) * 100) : 0
+    const progressoPct =
+      totalAulas > 0 ? Math.round((aulasConcluidas / totalAulas) * 100) : 0
 
-      return {
-        id: trilha.id,
-        titulo: trilha.titulo,
-        descricao: trilha.descricao ?? null,
-        icon: trilha.icon ?? null,
-        cor: trilha.cor ?? null,
-        is_global: trilha.is_global ?? false,
-        ordem: trilha.ordem ?? 0,
-        moduloCount: moduloIds.length,
-        totalXp,
-        progressoPct,
-      }
-    })
-  )
+    return {
+      id: trilha.id,
+      titulo: trilha.titulo,
+      descricao: trilha.descricao ?? null,
+      icon: trilha.icon ?? null,
+      cor: trilha.cor ?? null,
+      is_global: trilha.is_global ?? false,
+      ordem: trilha.ordem ?? 0,
+      moduloCount: moduloIds.length,
+      totalXp,
+      progressoPct,
+    }
+  })
 
   return result
 }
@@ -160,48 +193,75 @@ export async function getTrilha(
     .eq('trilha_id', trilhaId)
     .order('ordem', { ascending: true })
 
-  const modulos: ModuloResumo[] = await Promise.all(
-    (modulosRaw ?? []).map(async (m): Promise<ModuloResumo> => {
-      const { count: aulaCount } = await supabase
+  const modulosRawList = modulosRaw ?? []
+  const moduloIds = modulosRawList.map(m => m.id)
+
+  let aulaCountMap = new Map<string, number>()
+  let questaoCountMap = new Map<string, number>()
+  let progressoMap = new Map<string, boolean>()
+
+  if (moduloIds.length > 0) {
+    const [aulasResult, provasResult, progressoResult] = await Promise.all([
+      supabase
         .from('aulas')
-        .select('id', { count: 'exact', head: true })
-        .eq('modulo_id', m.id)
-
-      let questaoCount = 0
-      const { data: prova } = await supabase
+        .select('id, modulo_id')
+        .in('modulo_id', moduloIds),
+      supabase
         .from('provas')
-        .select('id')
-        .eq('modulo_id', m.id)
-        .maybeSingle()
-
-      if (prova) {
-        const { count: qCount } = await supabase
-          .from('questoes_prova')
-          .select('id', { count: 'exact', head: true })
-          .eq('prova_id', prova.id)
-        questaoCount = qCount ?? 0
-      }
-
-      const { data: prog } = await supabase
+        .select('id, modulo_id')
+        .in('modulo_id', moduloIds),
+      supabase
         .from('progresso_modulos')
-        .select('aprovado')
+        .select('modulo_id, aprovado')
         .eq('usuario_id', userId)
-        .eq('modulo_id', m.id)
-        .maybeSingle()
+        .in('modulo_id', moduloIds),
+    ])
 
-      return {
-        id: m.id,
-        titulo: m.titulo,
-        descricao: m.descricao ?? null,
-        ordem: m.ordem ?? 0,
-        xp_reward: m.xp_reward ?? 0,
-        aprovacao_minima: m.aprovacao_minima ?? null,
-        aulaCount: aulaCount ?? 0,
-        questaoCount,
-        aprovado: prog?.aprovado === true,
+    const aulasData = aulasResult.data
+    const provasData = provasResult.data
+    const progressoData = progressoResult.data
+
+    for (const a of aulasData ?? []) {
+      aulaCountMap.set(a.modulo_id, (aulaCountMap.get(a.modulo_id) ?? 0) + 1)
+    }
+
+    const provas = provasData ?? []
+    const provaIds = provas.map(p => p.id)
+    const provaIdToModuloId = new Map<string, string>()
+    for (const p of provas) {
+      provaIdToModuloId.set(p.id, p.modulo_id)
+    }
+
+    if (provaIds.length > 0) {
+      const { data: questoesData } = await supabase
+        .from('questoes_prova')
+        .select('id, prova_id')
+        .in('prova_id', provaIds)
+
+      for (const q of questoesData ?? []) {
+        const moduloId = provaIdToModuloId.get(q.prova_id)
+        if (moduloId) {
+          questaoCountMap.set(moduloId, (questaoCountMap.get(moduloId) ?? 0) + 1)
+        }
       }
-    })
-  )
+    }
+
+    for (const p of progressoData ?? []) {
+      progressoMap.set(p.modulo_id, p.aprovado === true)
+    }
+  }
+
+  const modulos: ModuloResumo[] = modulosRawList.map(m => ({
+    id: m.id,
+    titulo: m.titulo,
+    descricao: m.descricao ?? null,
+    ordem: m.ordem ?? 0,
+    xp_reward: m.xp_reward ?? 0,
+    aprovacao_minima: m.aprovacao_minima ?? null,
+    aulaCount: aulaCountMap.get(m.id) ?? 0,
+    questaoCount: questaoCountMap.get(m.id) ?? 0,
+    aprovado: progressoMap.get(m.id) === true,
+  }))
 
   return {
     id: trilha.id,
@@ -229,11 +289,22 @@ export async function getModulo(
 
   if (error || !modulo) return null
 
-  const { data: aulasRaw } = await supabase
-    .from('aulas')
-    .select('id, titulo, tipo_conteudo, ordem, xp_reward')
-    .eq('modulo_id', moduloId)
-    .order('ordem', { ascending: true })
+  // Busca aulas e prova em paralelo
+  const [aulasResult, provaResult] = await Promise.all([
+    supabase
+      .from('aulas')
+      .select('id, titulo, tipo_conteudo, ordem, xp_reward')
+      .eq('modulo_id', moduloId)
+      .order('ordem', { ascending: true }),
+    supabase
+      .from('provas')
+      .select('id')
+      .eq('modulo_id', moduloId)
+      .maybeSingle(),
+  ])
+
+  const aulasRaw = aulasResult.data
+  const prova = provaResult.data
 
   const aulaIds = (aulasRaw ?? []).map(a => a.id)
 
@@ -256,12 +327,6 @@ export async function getModulo(
     xp_reward: a.xp_reward ?? 0,
     concluida: concluidasSet.has(a.id),
   }))
-
-  const { data: prova } = await supabase
-    .from('provas')
-    .select('id')
-    .eq('modulo_id', moduloId)
-    .maybeSingle()
 
   return {
     id: modulo.id,

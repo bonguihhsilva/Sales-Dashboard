@@ -65,6 +65,14 @@ const GERENTE_PERM_RULES: Array<{ test: (p: string) => boolean; perm: Permission
 const PUBLIC_PREFIXES = ['/login', '/convite', '/api/admin/accept-invite', '/landing']
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // Ignorar imediatamente qualquer asset estático comum ou arquivo com extensão
+  const staticExtensions = /\.(ico|png|jpg|jpeg|gif|svg|webp|pdf|mp4|webm|woff2?|ttf|otf|css|js|json|xml|txt)$/i
+  if (staticExtensions.test(pathname)) {
+    return NextResponse.next({ request })
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -92,7 +100,7 @@ export async function middleware(request: NextRequest) {
     return res
   }
 
-  const { pathname } = request.nextUrl
+
 
   // Rotas publicas: deixa passar (apos refresh de cookie acima)
   if (PUBLIC_PREFIXES.some(p => pathname.startsWith(p))) {
@@ -160,5 +168,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|pdf|mp4|webm|woff2?|ttf|otf|css|js|json|xml|txt)$).*)'],
 }

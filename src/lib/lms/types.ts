@@ -23,5 +23,5 @@ export interface LmsTrilha {
   color: string
   xpReward: number
   lessons: LmsLesson[]
-  area?: 'vendas' | 'skincare'
+  area?: 'vendas' | 'skincare' | 'informatica'
 }
