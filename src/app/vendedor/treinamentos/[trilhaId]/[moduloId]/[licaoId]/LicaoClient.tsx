@@ -25,8 +25,31 @@ function renderInline(text: string) {
   )
 }
 
-// Corpo markdown-lite: linhas "- " viram bullets; resto vira parágrafos
+// Conteúdo das lições é HTML (autoria admin) — detecta tags de bloco
+function isHtml(text: string) {
+  return /<(h[1-6]|p|ul|ol|li|table|tr|td|th|pre|code|strong|em|br|blockquote)\b/i.test(text)
+}
+
+// Sanitização defensiva: conteúdo vem de admin/gerente (role-gated), mas
+// removemos vetores óbvios de XSS antes de injetar como HTML.
+function sanitizeHtml(html: string) {
+  return html
+    .replace(/<\/?(script|style|iframe|object|embed|link|meta)\b[^>]*>/gi, '')
+    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/(href|src)\s*=\s*("|')\s*javascript:[^"']*\2/gi, '$1=$2#$2')
+}
+
+// Corpo HTML (prose) ou markdown-lite (fallback)
 function SlideBody({ corpo }: { corpo: string }) {
+  if (isHtml(corpo)) {
+    return (
+      <div
+        className="lms-prose"
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(corpo) }}
+      />
+    )
+  }
+
   const lines = corpo.split('\n').map(l => l.trim()).filter(Boolean)
   const blocks: { type: 'bullet' | 'p'; text: string }[] = lines.map(l =>
     l.startsWith('- ') ? { type: 'bullet', text: l.slice(2) } : { type: 'p', text: l }
@@ -293,6 +316,89 @@ export default function LicaoClient({
         }
         @media (prefers-reduced-motion: reduce) {
           .lms-slide { animation: none !important; }
+        }
+
+        /* Prose — renderização do conteúdo HTML das lições */
+        .lms-prose {
+          display: flex;
+          flex-direction: column;
+          gap: 1.1rem;
+          font-size: 1.05rem;
+          line-height: 1.7;
+          color: ${C.muted};
+        }
+        .lms-prose > * { margin: 0; }
+        .lms-prose h1, .lms-prose h2, .lms-prose h3 {
+          font-family: 'DM Mono', monospace;
+          color: ${C.gold};
+          letter-spacing: -0.01em;
+          line-height: 1.3;
+          margin-top: 0.75rem;
+        }
+        .lms-prose h1 { font-size: clamp(1.35rem, 4.5vw, 1.75rem); }
+        .lms-prose h2 { font-size: clamp(1.2rem, 4vw, 1.5rem); }
+        .lms-prose h3 { font-size: clamp(1.05rem, 3.5vw, 1.25rem); color: ${C.text}; }
+        .lms-prose p { color: ${C.muted}; }
+        .lms-prose strong { color: ${C.text}; font-weight: 800; }
+        .lms-prose em { color: ${C.text}; font-style: italic; }
+        .lms-prose a { color: ${C.gold}; text-decoration: underline; }
+        .lms-prose ul, .lms-prose ol {
+          display: flex;
+          flex-direction: column;
+          gap: 0.6rem;
+          padding-left: 1.4rem;
+          margin: 0;
+        }
+        .lms-prose li { color: ${C.muted}; padding-left: 0.2rem; }
+        .lms-prose ul li::marker { color: ${C.gold}; }
+        .lms-prose ol li::marker { color: ${C.gold}; font-family: 'DM Mono', monospace; }
+        .lms-prose code {
+          font-family: 'DM Mono', monospace;
+          background: ${C.surface2};
+          color: ${C.text};
+          padding: 0.1em 0.4em;
+          border-radius: 4px;
+          font-size: 0.9em;
+        }
+        .lms-prose pre {
+          font-family: 'DM Mono', monospace;
+          background: ${C.surface2};
+          border: 1px solid ${C.border};
+          border-radius: 10px;
+          padding: 1rem;
+          overflow-x: auto;
+          font-size: 0.85rem;
+          line-height: 1.5;
+          color: ${C.text};
+        }
+        .lms-prose pre code { background: none; padding: 0; }
+        .lms-prose table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 0.9rem;
+          display: block;
+          overflow-x: auto;
+        }
+        .lms-prose th, .lms-prose td {
+          border: 1px solid ${C.border};
+          padding: 0.55rem 0.7rem;
+          text-align: left;
+          vertical-align: top;
+        }
+        .lms-prose th {
+          background: ${C.surface2};
+          color: ${C.text};
+          font-family: 'DM Mono', monospace;
+          font-weight: 600;
+          font-size: 0.8rem;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+        }
+        .lms-prose blockquote {
+          border-left: 3px solid ${C.gold};
+          padding-left: 1rem;
+          color: ${C.text};
+          font-style: italic;
         }
       `}</style>
     </div>
