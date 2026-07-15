@@ -113,13 +113,17 @@ Plans:
 
 ### Phase 7: API pública de ingest — api_keys por tenant + endpoints /api/v1 vendas e estoque
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Adicionar um terceiro canal de entrada de dados: uma API HTTP pública (POST /api/v1/sales, POST /api/v1/stock) autenticada por API key por tenant, com schema/gestão de keys (super_admin), ingest idempotente de vendas com line items e snapshots diários de estoque — insumo direto das métricas da Fase 08.
+**Requirements**: D-01 a D-16 (ver 07-CONTEXT.md)
 **Depends on:** Phase 6
-**Plans:** 0 plans
+**Plans:** 5 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 7 to break down)
+- [ ] 07-01-PLAN.md — Schema (api_keys, stock_snapshots, ALTER connector_id_mappings) + [BLOCKING] db push
+- [ ] 07-02-PLAN.md — Auth por API key + ensurePeriodForDate + schemas Zod + middleware/rate limiter (Wave 0 tests)
+- [ ] 07-03-PLAN.md — POST /api/v1/sales (batch, idempotência, period auto, namespacing, envelope)
+- [ ] 07-04-PLAN.md — POST /api/v1/stock (snapshot diário upsert, validação parcial, envelope)
+- [ ] 07-05-PLAN.md — UI super-admin de gestão de keys (criar/exibir uma vez/revogar) + checkpoint e2e
 
 ### Phase 8: Schema de inventário + métricas DoS, WoS, giro e quebra de estoque
 
