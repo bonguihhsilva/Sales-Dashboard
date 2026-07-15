@@ -111,6 +111,36 @@ Plans:
 - [x] 06-02-PLAN.md — Export XLSX formatado (xlsx-js-style) e PDF (pdfkit) + seletor de formato no ExportButton
 - [x] 06-03-PLAN.md — Arquitetura de conectores (base, registry, stubs Pegasus/ISRP) + rota sync + card Conectores na UI
 
+### Phase 7: API pública de ingest — api_keys por tenant + endpoints /api/v1 vendas e estoque
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 6
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 7 to break down)
+
+### Phase 8: Schema de inventário + métricas DoS, WoS, giro e quebra de estoque
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 7
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 8 to break down)
+
+### Phase 9: Role compras + telas /dashboard/compras — ranking produtos, alertas reposição, curva ABC
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 8
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 9 to break down)
+
 ---
 
 ## Progress
