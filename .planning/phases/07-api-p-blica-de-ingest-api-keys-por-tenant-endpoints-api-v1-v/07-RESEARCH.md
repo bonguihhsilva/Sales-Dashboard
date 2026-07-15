@@ -391,20 +391,16 @@ ALTER TABLE connector_id_mappings
 
 ## Open Questions
 
-1. **Nome exato da tabela de snapshot de estoque**
-   - O que sabemos: CONTEXT.md diz apenas "Nova tabela de snapshots de estoque (schema mínimo nesta fase; métricas na Fase 08)"
-   - O que não está claro: se a Fase 08 já tem uma expectativa de nome/schema para consumir essa série temporal
-   - Recomendação: o planner deve nomear como `stock_snapshots` (sugestão desta pesquisa) e documentar a decisão em STATE.md, já que a Fase 08 depende diretamente deste schema (ver `06-CONTEXT.md`/ROADMAP: "Fase 08 consome snapshots desta fase")
+> Todas as questões abaixo foram fechadas durante o planejamento da fase (revisão pós-checker). Decisões registradas.
 
-2. **Header de autenticação: `Authorization: Bearer` vs header customizado (`X-API-Key`)**
-   - O que sabemos: D-01 fixa o formato da key (`gds_live_<random>`), mas não o header de transporte
-   - O que não está claro: qual convenção o integrador (sistema de vendas externo do parceiro) vai esperar
-   - Recomendação: usar `Authorization: Bearer gds_live_...` (padrão HTTP mais amplamente suportado por bibliotecas de cliente HTTP genéricas) — documentar claramente na resposta de erro 401 qual formato é esperado
+1. **Nome exato da tabela de snapshot de estoque** — (RESOLVED)
+   - Decisão: tabela nomeada `stock_snapshots` (Plan 01, migration 20260714000001). A Fase 08 consome esta série; a decisão de nome/schema deve ser registrada em STATE.md ao fechar a fase.
 
-3. **Limite de tamanho de payload/batch em bytes (Vercel)**
-   - O que sabemos: D-06 fixa ~500 vendas por request; Vercel Route Handlers têm limite de body (4.5MB no plano padrão para Serverless Functions)
-   - O que não está claro: se 500 vendas com line items completos podem se aproximar desse limite em payloads muito verbosos
-   - Recomendação: validar tamanho do body recebido (similar ao `MAX_SIZE` de 10MB em `parse-upload`, mas ajustado — JSON de 500 vendas dificilmente passa de 1-2MB) e documentar o limite explicitamente na resposta de erro 413
+2. **Header de autenticação: `Authorization: Bearer` vs header customizado (`X-API-Key`)** — (RESOLVED)
+   - Decisão: `Authorization: Bearer gds_live_...` (Plan 02, `getApiKeyContext`). A resposta 401 documenta o formato esperado no campo `error` do envelope.
+
+3. **Limite de tamanho de payload/batch em bytes (Vercel)** — (RESOLVED)
+   - Decisão: validar o tamanho do body ANTES de processar e rejeitar com HTTP 413. Limite concreto `MAX_BODY_BYTES = 4 * 1024 * 1024` (4MB — abaixo do teto de 4.5MB de Serverless Functions da Vercel). Implementado em `/api/v1/sales` (Plan 03) e `/api/v1/stock` (Plan 04): fast-path pelo header `content-length` + reconferência via `Buffer.byteLength(rawBody,'utf8')`. Complementa o limite de 500 itens (D-06) e o rate limit por key. Mensagem de erro documentada: "Payload excede o limite de 4MB. Envie o batch em partes menores."
 
 ## Environment Availability
 
