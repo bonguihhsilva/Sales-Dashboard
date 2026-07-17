@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Ferramenta Escalável
-status: verifying
+status: executing
 stopped_at: Phase 7 context gathered
-last_updated: "2026-07-15T00:03:58.294Z"
-last_activity: "2026-07-01 - Completed quick task 260701-s5o: separar trilhas do Centro de Treinamentos em 3 categorias"
+last_updated: "2026-07-17T23:34:18.186Z"
+last_activity: 2026-07-17 -- Phase 07 execution started
 progress:
   total_phases: 9
   completed_phases: 1
-  total_plans: 3
+  total_plans: 8
   completed_plans: 3
-  percent: 100
+  percent: 38
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Gerentes enxergam performance real de cada vendedor e calculam comissões corretamente.
-**Current focus:** Phase 06 — formatos-de-upload-download-e-conectores-de-sistemas-de-vend
+**Current focus:** Phase 07 — api-p-blica-de-ingest-api-keys-por-tenant-endpoints-api-v1-v
 
 ## Current Position
 
-Phase: 06
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-07-01 - Completed quick task 260701-s5o: separar trilhas do Centro de Treinamentos em 3 categorias
+Phase: 07 (api-p-blica-de-ingest-api-keys-por-tenant-endpoints-api-v1-v) — EXECUTING
+Plan: 1 of 5
+Status: Executing Phase 07
+Last activity: 2026-07-17 -- Phase 07 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -84,6 +84,7 @@ Progress: [░░░░░░░░░░] 0%
 - **CRÍTICO — MANUAL**: Site URL Supabase Auth — confirmar se está `https://dashboard.gds-frame.com` (não localhost:3000). **Ação:** Supabase → Auth → URL Configuration → Site URL
 - **Pendente**: `suporte@gds-frame.com` (super_admin) não existe no Supabase Auth — criar via painel
 - Banco compartilhado com PetHub (`zsczxblhtdhpdqvkpuwz`) — migrar PetHub antes de escalar multi-tenant
+- Fase 07 Plano 01 Task 2 [BLOCKING]: supabase db push falha por drift de historico de migrations entre local e remoto (~45 versoes registradas no remoto sob timestamps diferentes dos arquivos locais atuais). CLI sugere migration repair --status reverted, mas isso marcaria migrations JA aplicadas em producao (47 usuarios, 63906 vendas) como nao-aplicadas, arriscando re-execucao de INSERTs/ALTERs nao-idempotentes num push seguinte. Requer decisao humana antes de aplicar migration 20260714000001.
 
 ### Roadmap Evolution
 
