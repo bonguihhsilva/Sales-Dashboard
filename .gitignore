@@ -32,3 +32,6 @@ next-env.d.ts
 # tooling
 .claude/
 .playwright-mcp/
+
+# supabase cli (link metadata com project refs)
+supabase/.temp/
