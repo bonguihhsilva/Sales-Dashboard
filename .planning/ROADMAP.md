@@ -120,7 +120,7 @@ Plans:
 
 Plans:
 - [x] 07-01-PLAN.md — Schema (api_keys, stock_snapshots, ALTER connector_id_mappings) + [BLOCKING] db push
-- [ ] 07-02-PLAN.md — Auth por API key + ensurePeriodForDate + schemas Zod + middleware/rate limiter (Wave 0 tests)
+- [x] 07-02-PLAN.md — Auth por API key + ensurePeriodForDate + schemas Zod + middleware/rate limiter (Wave 0 tests)
 - [ ] 07-03-PLAN.md — POST /api/v1/sales (batch, idempotência, period auto, namespacing, envelope)
 - [ ] 07-04-PLAN.md — POST /api/v1/stock (snapshot diário upsert, validação parcial, envelope)
 - [ ] 07-05-PLAN.md — UI super-admin de gestão de keys (criar/exibir uma vez/revogar) + checkpoint e2e

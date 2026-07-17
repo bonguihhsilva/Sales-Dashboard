@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Ferramenta Escalável
 status: executing
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-07-17T23:41:55.031Z"
+stopped_at: Completed 07-02-PLAN.md
+last_updated: "2026-07-17T23:49:10.321Z"
 last_activity: 2026-07-17
 progress:
   total_phases: 9
   completed_phases: 1
   total_plans: 8
-  completed_plans: 4
-  percent: 50
+  completed_plans: 5
+  percent: 63
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 ## Current Position
 
 Phase: 07 (api-p-blica-de-ingest-api-keys-por-tenant-endpoints-api-v1-v) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-07-17
 
@@ -46,6 +46,7 @@ Progress: [░░░░░░░░░░] 0%
 |-------|-------|-------|----------|
 | 06 | 3 | - | - |
 | Phase 07 P01 | 10min | 2 tasks | 4 files |
+| Phase 07 P02 | 6min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,7 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 07]: stock_snapshots e o nome da serie de estoque desta fase — Fase 08 (inventario/giro/quebra) consome esta serie
 - [Phase 07]: api_keys nunca armazena a key crua: so key_hash (SHA-256 hex) + key_prefix; RLS deny-all (USING false), gestao exclusiva via service-role
 - [Phase 07]: Drift legado de migration history (~45 versoes) NAO reparado — padrao desta base: aplicar migrations novas via MCP apply_migration + migration repair --status applied pontual
+- [Phase 07]: ensure-period/route.ts mantem checagem de existencia previa para reportar created:true/false na resposta, ja que ensurePeriodForDate() retorna apenas o id (assinatura fixada no plano)
 
 ### Blockers/Concerns
 
@@ -112,6 +114,6 @@ Progress: [░░░░░░░░░░] 0%
 
 ## Session Continuity
 
-Last session: 2026-07-17T23:41:55.028Z
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-07-17T23:49:10.316Z
+Stopped at: Completed 07-02-PLAN.md
 Resume file: None
