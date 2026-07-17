@@ -62,7 +62,7 @@ const GERENTE_PERM_RULES: Array<{ test: (p: string) => boolean; perm: Permission
 ]
 
 // Rotas publicas - sem auth check. /convite permite acesso sem sessao.
-const PUBLIC_PREFIXES = ['/login', '/convite', '/api/admin/accept-invite', '/landing']
+const PUBLIC_PREFIXES = ['/login', '/convite', '/api/admin/accept-invite', '/landing', '/api/v1']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl

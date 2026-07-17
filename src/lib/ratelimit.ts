@@ -36,3 +36,6 @@ export const rateLimiter: Limiter = makeLimiter(20, 60)
 
 // 5 req/min — rotas sensíveis (invite, accept-invite, parse-upload)
 export const strictRateLimiter: Limiter = makeLimiter(5, 60)
+
+// 60 req/min por api_key_id — API pública de ingest /api/v1/* (Pitfall 5)
+export const apiV1RateLimiter: Limiter = makeLimiter(60, 60)
