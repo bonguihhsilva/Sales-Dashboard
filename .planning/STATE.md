@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Ferramenta Escalável
 status: executing
-stopped_at: Phase 7 context gathered
-last_updated: "2026-07-17T23:34:18.186Z"
-last_activity: 2026-07-17 -- Phase 07 execution started
+stopped_at: Completed 07-01-PLAN.md
+last_updated: "2026-07-17T23:41:55.031Z"
+last_activity: 2026-07-17
 progress:
   total_phases: 9
   completed_phases: 1
   total_plans: 8
-  completed_plans: 3
-  percent: 38
+  completed_plans: 4
+  percent: 50
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 ## Current Position
 
 Phase: 07 (api-p-blica-de-ingest-api-keys-por-tenant-endpoints-api-v1-v) — EXECUTING
-Plan: 1 of 5
-Status: Executing Phase 07
-Last activity: 2026-07-17 -- Phase 07 execution started
+Plan: 2 of 5
+Status: Ready to execute
+Last activity: 2026-07-17
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -45,6 +45,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 06 | 3 | - | - |
+| Phase 07 P01 | 10min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,9 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 06]: Roundtrip bold via Styles.Fonts: xlsx-js-style persiste font.bold no XML mas popula wb.Styles.Fonts, não cell.s.font — teste verifica via array de fontes do workbook
 - [Phase 06]: applySystemPrefix é idempotente — não duplica prefixo se ID já contém o prefixo correto
 - [Phase 06]: sync-connector retorna 200 para status stub/not_configured — comportamento esperado, não erro de infra
+- [Phase 07]: stock_snapshots e o nome da serie de estoque desta fase — Fase 08 (inventario/giro/quebra) consome esta serie
+- [Phase 07]: api_keys nunca armazena a key crua: so key_hash (SHA-256 hex) + key_prefix; RLS deny-all (USING false), gestao exclusiva via service-role
+- [Phase 07]: Drift legado de migration history (~45 versoes) NAO reparado — padrao desta base: aplicar migrations novas via MCP apply_migration + migration repair --status applied pontual
 
 ### Blockers/Concerns
 
@@ -84,7 +88,7 @@ Progress: [░░░░░░░░░░] 0%
 - **CRÍTICO — MANUAL**: Site URL Supabase Auth — confirmar se está `https://dashboard.gds-frame.com` (não localhost:3000). **Ação:** Supabase → Auth → URL Configuration → Site URL
 - **Pendente**: `suporte@gds-frame.com` (super_admin) não existe no Supabase Auth — criar via painel
 - Banco compartilhado com PetHub (`zsczxblhtdhpdqvkpuwz`) — migrar PetHub antes de escalar multi-tenant
-- Fase 07 Plano 01 Task 2 [BLOCKING]: supabase db push falha por drift de historico de migrations entre local e remoto (~45 versoes registradas no remoto sob timestamps diferentes dos arquivos locais atuais). CLI sugere migration repair --status reverted, mas isso marcaria migrations JA aplicadas em producao (47 usuarios, 63906 vendas) como nao-aplicadas, arriscando re-execucao de INSERTs/ALTERs nao-idempotentes num push seguinte. Requer decisao humana antes de aplicar migration 20260714000001.
+- **✅ RESOLVIDO (parcial)**: Blocker do push da migration 20260714000001 — Opção A executada: `20260617000001_connectors.sql` (fase 6, nunca aplicada no remoto — root cause) e `20260714000001` aplicadas via MCP `apply_migration` + `migration repair --status applied` pontual. **Drift legado (~45 versões) permanece**: futuros `supabase db push` continuarão falhando — usar MCP apply_migration + repair pontual como padrão desta base.
 
 ### Roadmap Evolution
 
@@ -108,6 +112,6 @@ Progress: [░░░░░░░░░░] 0%
 
 ## Session Continuity
 
-Last session: 2026-07-15T00:03:58.285Z
-Stopped at: Phase 7 context gathered
-Resume file: .planning/phases/07-api-p-blica-de-ingest-api-keys-por-tenant-endpoints-api-v1-v/07-CONTEXT.md
+Last session: 2026-07-17T23:41:55.028Z
+Stopped at: Completed 07-01-PLAN.md
+Resume file: None
