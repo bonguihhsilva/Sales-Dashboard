@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Ferramenta Escalável
 status: executing
-stopped_at: Completed 07-03-PLAN.md
-last_updated: "2026-07-17T23:56:11.658Z"
-last_activity: 2026-07-17
+stopped_at: Completed 07-04-PLAN.md
+last_updated: "2026-07-18T00:01:00.730Z"
+last_activity: 2026-07-18
 progress:
   total_phases: 9
   completed_phases: 1
   total_plans: 8
-  completed_plans: 6
-  percent: 75
+  completed_plans: 7
+  percent: 88
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 ## Current Position
 
 Phase: 07 (api-p-blica-de-ingest-api-keys-por-tenant-endpoints-api-v1-v) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
-Last activity: 2026-07-17
+Last activity: 2026-07-18
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -48,6 +48,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 07 P01 | 10min | 2 tasks | 4 files |
 | Phase 07 P02 | 6min | 3 tasks | 8 files |
 | Phase 07 P03 | 8min | 2 tasks | 2 files |
+| Phase 07 P04 | 10min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,7 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 07]: Drift legado de migration history (~45 versoes) NAO reparado — padrao desta base: aplicar migrations novas via MCP apply_migration + migration repair --status applied pontual
 - [Phase 07]: ensure-period/route.ts mantem checagem de existencia previa para reportar created:true/false na resposta, ja que ensurePeriodForDate() retorna apenas o id (assinatura fixada no plano)
 - [Phase 07]: D-15 (07-03): deteccao de vendor/product desconhecido reusa queries ja necessarias (goals/products) em vez de query dedicada
+- [Phase 07]: [Phase 07 P04]: D-15 para /api/v1/stock simplificado — upsert incondicional em connector_id_mappings com ignoreDuplicates:true (sem query previa de 'conhecidos'), pois o endpoint nao consulta products/goals
 
 ### Blockers/Concerns
 
@@ -116,6 +118,6 @@ Progress: [░░░░░░░░░░] 0%
 
 ## Session Continuity
 
-Last session: 2026-07-17T23:56:11.649Z
-Stopped at: Completed 07-03-PLAN.md
+Last session: 2026-07-18T00:01:00.725Z
+Stopped at: Completed 07-04-PLAN.md
 Resume file: None
