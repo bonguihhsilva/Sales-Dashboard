@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { PageHeader } from '@/components/ui'
 import SuperAdminClient from './SuperAdminClient'
+import ApiKeysManager from './ApiKeysManager'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,6 +37,11 @@ export default async function SuperAdminPage() {
     user_count: userCounts[t.id] || 0
   }))
 
+  const { data: apiKeys } = await adminDb
+    .from('api_keys')
+    .select('id, tenant_id, name, key_prefix, last_used_at, revoked_at, created_at')
+    .order('created_at', { ascending: false })
+
   return (
     <div style={{ minHeight: '100%', background: 'var(--bg)' }}>
       <div style={{ padding: '1.5rem 2rem 0' }}>
@@ -47,6 +53,19 @@ export default async function SuperAdminPage() {
 
       <div style={{ padding: '2rem' }}>
         <SuperAdminClient tenants={tenants || []} />
+      </div>
+
+      <div style={{ padding: '0 2rem 2rem' }}>
+        <PageHeader
+          title="API Keys"
+          subtitle="Emissão e revogação de chaves de acesso à API pública de ingest"
+        />
+        <div style={{ marginTop: '1.5rem' }}>
+          <ApiKeysManager
+            tenants={(tenantsData || []).map((t: any) => ({ id: t.id, nome: t.nome }))}
+            keys={apiKeys || []}
+          />
+        </div>
       </div>
     </div>
   )
