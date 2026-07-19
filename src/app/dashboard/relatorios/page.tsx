@@ -5,7 +5,6 @@ import type { Period } from '@/types'
 import UploadModal from '../UploadModal'
 import PeriodSelector from '../PeriodSelector'
 import ExportButton from '../ExportButton'
-import ConnectorsCard from '../ConnectorsCard'
 import { PageHeader } from '@/components/ui'
 
 export const dynamic = 'force-dynamic'
@@ -78,9 +77,6 @@ export default async function RelatoriosPage({
             </div>
           </div>
         </div>
-
-        {/* Conectores Card */}
-        <ConnectorsCard />
       </div>
     </div>
   )
