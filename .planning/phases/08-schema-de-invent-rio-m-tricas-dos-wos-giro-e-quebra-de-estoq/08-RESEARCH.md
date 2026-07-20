@@ -475,19 +475,19 @@ Não há mudança de versão do Postgres relevante para esta fase — todas as c
 
 **Se esta tabela parecer vazia:** não está — A3 e A4 são os dois riscos que o próprio `08-CONTEXT.md` já sinalizava (R-01, R-02) e que esta pesquisa não pôde resolver por falta de acesso a ferramentas de banco de dados na sessão. Isso não é uma lacuna desta pesquisa especificamente — é uma limitação de ambiente que o plano deve herdar como tarefa de Wave 0 executável (o executor de fase normalmente tem acesso a MCP Supabase).
 
-## Open Questions
+## Open Questions (RESOLVED via Wave 0 — ver 08-00-PLAN.md)
 
-1. **Taxa real de órfãos `order_ref` em produção**
+1. **Taxa real de órfãos `order_ref` em produção** — ✅ RESOLVIDO operacionalmente pelo Plano 08-00 (Wave 0): a query de diagnóstico de órfãos roda via MCP `execute_sql` antes de `product_daily_sales`; a decisão (aceitar taxa baixa vs. fallback) é registrada no 08-00.
    - O que sabemos: a junção `sale_items.order_id = sales_records.order_ref` já é usada em produção (`client_category_mix`), então uma taxa alta de órfãos já afetaria essa view existente hoje — não há relato de bug conhecido sobre isso no STATE.md, o que é um sinal fraco (não uma prova) de que a taxa é baixa.
    - O que é incerto: o número exato, e se ele varia por tenant/período de ingest (upload manual antigo vs. API nova).
    - Recomendação: rodar a query de diagnóstico (seção Code Examples) como primeira tarefa do plano, antes de escrever `product_daily_sales`. Se a taxa for < 1%, seguir com D-08 como está (excluir órfãos). Se for maior, decidir entre as duas opções já listadas no R-01 do CONTEXT.
 
-2. **Custo real das views em produção (`EXPLAIN ANALYZE`)**
+2. **Custo real das views em produção (`EXPLAIN ANALYZE`)** — ✅ RESOLVIDO operacionalmente pelo Plano 08-00 (Wave 0): `EXPLAIN ANALYZE` das 4 views roda após os índices D-22; se >2s, a decisão de materialização é registrada no 08-00.
    - O que sabemos: 63.906 registros em `sales_records` hoje, mais `sale_items` (volume não confirmado, mas correlacionado), mais um snapshot diário por produto desde a Fase 07 (poucas semanas de histórico, portanto `stock_snapshots` ainda é pequeno — o que é bom para R-02 no curto prazo, mas o volume só cresce).
    - O que é incerto: se os índices de D-22 sozinhos bastam ou se a v1 de `product_inventory_metrics` já precisa de materialização mesmo com dataset pequeno (ex., por causa de um plano de query ruim independente de volume).
    - Recomendação: medir com `EXPLAIN ANALYZE` **depois** de criar os índices de D-22, nunca antes — comparar with/without para confirmar que os índices realmente resolvem o gargalo antes de considerar materialização.
 
-3. **`product_costs` seed cobre quantos SKUs?** (R-04)
+3. **`product_costs` seed cobre quantos SKUs?** (R-04) — ✅ RESOLVIDO operacionalmente pelo Plano 08-00 (Wave 0): a contagem de SKUs do período mais recente vs. histórico completo roda via MCP e dimensiona o gap antes de aceitar o seed simples.
    - O que sabemos: o seed do Code Examples usa o período mais recente por tenant de `products`.
    - O que é incerto: quantos `product_code` distintos existem no período mais recente vs. no histórico completo — se o catálogo mais recente for parcial (upload incompleto), produtos vendidos historicamente mas ausentes do catálogo mais recente ficam sem custo no dia 1, mesmo existindo em `products` de períodos antigos.
    - Recomendação: no plano, rodar `SELECT count(DISTINCT product_code) FROM products WHERE tenant_id = X AND period_id = <mais recente>` vs. `SELECT count(DISTINCT product_code) FROM products WHERE tenant_id = X` para dimensionar o gap antes de aceitar o seed simples do período mais recente como suficiente.
