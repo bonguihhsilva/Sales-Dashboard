@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: Ferramenta Escalável
 status: executing
 stopped_at: Completed 07-04-PLAN.md
-last_updated: "2026-07-20T21:01:48.969Z"
-last_activity: 2026-07-20 -- Phase 8 planning complete
+last_updated: "2026-07-20T21:02:47.679Z"
+last_activity: 2026-07-20 -- Phase 8 execution started
 progress:
   total_phases: 9
   completed_phases: 1
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Gerentes enxergam performance real de cada vendedor e calculam comissões corretamente.
-**Current focus:** Phase 07 — api-p-blica-de-ingest-api-keys-por-tenant-endpoints-api-v1-v
+**Current focus:** Phase 8 — schema-de-invent-rio-m-tricas-dos-wos-giro-e-quebra-de-estoq
 
 ## Current Position
 
-Phase: 07 (api-p-blica-de-ingest-api-keys-por-tenant-endpoints-api-v1-v) — EXECUTING
-Plan: 5 of 5
-Status: Ready to execute
-Last activity: 2026-07-20 -- Phase 8 planning complete
+Phase: 8 (schema-de-invent-rio-m-tricas-dos-wos-giro-e-quebra-de-estoq) — EXECUTING
+Plan: 1 of 8
+Status: Executing Phase 8
+Last activity: 2026-07-20 -- Phase 8 execution started
 
 Progress: [░░░░░░░░░░] 0%
 

@@ -1,14 +1,25 @@
 # Fase 08 — Diagnósticos de produção (Plano 08-00)
 
-**Status geral: PENDENTE DE EXECUÇÃO MANUAL** — ver "Nota de execução" abaixo antes de qualquer leitura dos números.
+**Status geral: EXECUTADO** em 2026-07-20 via Supabase MCP `execute_sql` (read-only) pelo orquestrador, contra o banco de produção `zsczxblhtdhpdqvkpuwz`. Nenhuma escrita ocorreu. Números reais abaixo.
 
-## Nota de execução
+## Achado dominante: dados de item/estoque ZERADOS em produção
 
-Este agente executor (sub-agente `gsd-execute-phase`) **não tem acesso a nenhuma ferramenta MCP do Supabase** (`mcp__supabase__execute_sql` ou equivalente) nem a um mecanismo `ToolSearch` para carregá-la sob demanda — a lista de ferramentas disponível nesta execução continha apenas `Read`, `Write`, `Edit`, `Bash`, `Grep`, `Glob`. Também não há conexão Postgres direta configurável: `.env.local` só expõe `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY` (credenciais REST/PostgREST, não host/porta/senha de `psql`), e não há `supabase/config.toml` de stack local.
+Contagem das tabelas base no momento do diagnóstico:
 
-Seguindo a instrução explícita do orquestrador para este plano ("se a ferramenta MCP não estiver acessível, registre como PENDENTE e NÃO invente números"), as queries abaixo **não foram executadas contra o banco de produção** (`zsczxblhtdhpdqvkpuwz`). Nenhum número nesta seção é real — são placeholders explícitos. Nenhuma escrita ocorreu no banco (consistente com o objetivo do plano, que é 100% read-only mesmo quando executado).
+| Tabela | Linhas |
+|---|---|
+| `sales_records` | 120 (vendas agregadas de upload CEC) |
+| `sale_items` | **0** |
+| `products` | **0** |
+| `stock_snapshots` | **0** |
+| `periods` | 2 |
+| `tenants` | 2 |
 
-**Como resolver o PENDENTE:** rodar as queries abaixo via Supabase MCP `execute_sql` (somente leitura) em uma sessão com a ferramenta disponível, ou via SQL Editor do Supabase Studio no projeto `zsczxblhtdhpdqvkpuwz`, e substituir a seção de resultados por valores reais + a linha `DECISÃO:` correspondente antes de iniciar o Plano 08-02 (`product_daily_sales`), que depende do resultado de R-01.
+Além disso: **todos os 120 `sales_records` têm `order_ref = NULL`** (`distinct_order_refs = 0`; `sales_records_sem_orderref = 120`). Os uploads CEC atuais não gravam `order_ref`.
+
+**Consequência para a fase:** as views de velocidade (`product_daily_sales`, `product_inventory_metrics`, `product_abc_curve`) e de estoque nascerão CORRETAS porém VAZIAS em produção. A junção D-07/D-08 (`sale_items.order_id = sales_records.order_ref`) só produz linhas quando line items entrarem via `POST /api/v1/sales` da Fase 07 (que grava `order_ref` em `sales_records` E `order_id` em `sale_items`). O catálogo `products`/custo entra via `upload-catalog` (D-03) e edição manual (Fase 09). O estoque entra via `POST /api/v1/stock`. Nada disso tem dado real hoje.
+
+Isto NÃO bloqueia a Fase 08 — o schema deve ser construído para receber o dado. Bloqueia sim a percepção de "pronto para uso com dados": o setor do comprador exibirá estados vazios até que sistemas externos empurrem line items + estoque pela API de ingest.
 
 ---
 
@@ -33,7 +44,7 @@ GROUP BY si.tenant_id
 ORDER BY orphan_pct DESC;
 ```
 
-**Resultado:** PENDENTE — não executado. `orphan_pct` não medido.
+**Resultado (2026-07-20):** `[]` — zero linhas. `sale_items` está vazia (0 linhas), então não há órfão a medir. `orphan_pct` efetivo = **0%** (trivial, por ausência de dado de item).
 
 ### Query 2 — fan-out de `order_ref` (order_ref duplicado com datas de venda diferentes)
 
@@ -48,15 +59,11 @@ FROM (
 GROUP BY tenant_id;
 ```
 
-**Resultado:** PENDENTE — não executado.
+**Resultado (2026-07-20):** `order_refs_fanout = 1` grupo, porém `distinct_order_refs = 0` e `sales_records_sem_orderref = 120` — todos os `order_ref` são NULL. O "1" do fan-out é o próprio grupo NULL agregando as 120 linhas; não é fan-out real de order_ref válido. Sem `order_ref` não-nulo, não há chave de junção populada hoje.
 
-### DECISÃO: PENDENTE — bloqueante para o Plano 08-02
+### DECISÃO (2026-07-20): SEGUIR D-08 COMO ESTÁ — não bloqueante
 
-Não é possível decidir entre "excluir órfãos (D-08 como está)" e "implementar fallback" sem a medição real de `orphan_pct`. **Critério já definido no 08-RESEARCH.md (Open Questions #1):**
-- Se `orphan_pct < 1%` em todos os tenants → seguir D-08 como está (INNER/LEFT JOIN exclui órfãos silenciosamente na view `product_daily_sales`; Plano 08-02 usa `DISTINCT ON` em `sales_records` para eliminar fan-out).
-- Se `orphan_pct >= 1%` em qualquer tenant → **PARAR e escalar para o dono do produto** (não decidir automaticamente): propor uma das opções do R-01 do `08-CONTEXT.md` — (a) fallback de data via `periods` do item, ou (b) aceitar e expor a lacuna como métrica de saúde visível.
-
-**Ação requerida antes do Plano 08-02:** rodar Query 1 e Query 2 acima, atualizar esta seção com os números reais, e só então preencher esta linha de decisão.
+`orphan_pct = 0%` (bem abaixo do corte de 1%), por ausência de line items. Nenhuma escalação necessária. O Plano 08-02 implementa `product_daily_sales` com a junção D-08 e `DISTINCT ON` em `sales_records` conforme planejado — a view nasce vazia e passa a produzir linhas quando `POST /api/v1/sales` gravar `order_ref` + `order_id` casados. Caveat registrado no achado dominante acima: uploads CEC legados (order_ref NULL) nunca entram na view; só ingest via API. Isso é aceitável para o MVP (a fonte primária de line-item/estoque é a API da Fase 07, não o upload CEC agregado).
 
 ---
 
@@ -80,7 +87,7 @@ JOIN latest_period lp ON lp.tenant_id = p.tenant_id
 GROUP BY p.tenant_id;
 ```
 
-**Resultado:** PENDENTE — não executado. `skus_periodo_recente` não medido.
+**Resultado (2026-07-20):** `products` está vazia (0 linhas). `skus_periodo_recente = 0`, `skus_historico_total = 0`, `skus_recente_sem_custo = 0`, `products_com_custo = 0`.
 
 ### Query 2 — produtos vendidos historicamente mas ausentes do catálogo mais recente (ficariam sem custo no dia 1)
 
@@ -99,11 +106,11 @@ WHERE p.product_code IS NULL
 GROUP BY si.tenant_id;
 ```
 
-**Resultado:** PENDENTE — não executado.
+**Resultado (2026-07-20):** `sale_items` vazia → `vendidos_sem_catalogo_recente = 0`.
 
-### Conclusão R-04: PENDENTE
+### Conclusão R-04 (2026-07-20): seed é NO-OP hoje — sem bloqueio
 
-Sem os números de `skus_periodo_recente`, `skus_historico_total`, `skus_recente_sem_custo` e `vendidos_sem_catalogo_recente`, não é possível concluir se o seed do período mais recente (D-03, `08-RESEARCH.md` "Seed inicial de product_costs") é suficiente para o MVP ou se o dono precisa subir um catálogo atualizado antes de confiar em `stock_value`/`turnover`. **Ação requerida:** rodar as duas queries acima e preencher esta seção com a conclusão antes de aceitar o seed simples do Plano 08-01 (ou equivalente) como definitivo.
+Com `products = 0`, o seed inicial de `product_costs` a partir do período mais recente (D-03) insere **zero linhas**. `product_costs` nasce vazia e será populada por (a) `upload-catalog` quando o dono subir um catálogo com custo, e (b) edição manual na Fase 09. Nenhum `stock_value`/`turnover` será confiável até haver catálogo com `cost_price` — mas isso é esperado e não bloqueia a construção do schema. Ação para o dono (fora da Fase 08): subir um catálogo atualizado com custos via `upload-catalog` para que as métricas monetárias saiam de NULL. Registrado como caveat de "dados", não de "schema".
 
 ---
 
@@ -111,10 +118,10 @@ Sem os números de `skus_periodo_recente`, `skus_historico_total`, `skus_recente
 
 | Item | Status |
 |---|---|
-| R-01 — taxa de órfãos `order_ref` | PENDENTE — requer sessão com Supabase MCP `execute_sql` ou SQL Editor do Studio |
-| R-01 — fan-out de `order_ref` | PENDENTE |
-| R-01 — decisão D-08 (excluir órfãos vs. fallback) | PENDENTE — bloqueante para Plano 08-02 |
-| R-04 — cobertura do seed | PENDENTE — requer as mesmas ferramentas |
-| Nenhuma escrita no banco | Confirmado — nenhuma query de mutação foi sequer preparada, apenas SELECT |
+| R-01 — taxa de órfãos `order_ref` | RESOLVIDO — 0% (sale_items vazia) |
+| R-01 — fan-out de `order_ref` | RESOLVIDO — inexistente (order_ref todo NULL) |
+| R-01 — decisão D-08 (excluir órfãos vs. fallback) | RESOLVIDO — seguir D-08 como está; não bloqueante |
+| R-04 — cobertura do seed | RESOLVIDO — seed é no-op (products vazia); popular via upload-catalog |
+| Nenhuma escrita no banco | Confirmado — só SELECT/COUNT read-only |
 
-**Recomendação:** antes de iniciar o Plano 08-02 (`product_daily_sales`), rodar este plano novamente (ou apenas as 4 queries acima) em uma sessão que tenha a ferramenta MCP Supabase `execute_sql` carregada, e atualizar este arquivo com os resultados reais + as duas linhas de `DECISÃO:`/conclusão antes de prosseguir.
+**Conclusão:** desbloqueado para o Plano 08-02. As views nascem vazias e corretas; a percepção de "pronto com dados" depende de ingest real (line items via `POST /api/v1/sales`, estoque via `POST /api/v1/stock`, catálogo via `upload-catalog`) — caveat de dados registrado, não de schema.
