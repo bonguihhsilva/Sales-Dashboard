@@ -127,13 +127,20 @@ Plans:
 
 ### Phase 8: Schema de inventário + métricas DoS, WoS, giro e quebra de estoque
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Transformar os snapshots diários de estoque (Fase 07) e o histórico de vendas por item em métricas de inventário consultáveis — DoS, WoS, giro, cobertura, quebra, classificação de movimentação e curva ABC — expostas como views/RPCs no Postgres, mais a tabela `product_costs` (custo vigente por produto). Camada de dados exclusiva; contrato de saída consumido pela Fase 09.
+**Requirements**: D-01 a D-23 (ver 08-CONTEXT.md)
 **Depends on:** Phase 7
-**Plans:** 0 plans
+**Plans:** 8 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 8 to break down)
+- [ ] 08-00-PLAN.md — Wave 0: diagnósticos R-01 (órfãos order_ref) e R-04 (cobertura do seed)
+- [ ] 08-01-PLAN.md — Tabelas product_costs + inventory_settings (RLS) + 4 índices D-22
+- [ ] 08-02-PLAN.md — Views de venda: product_daily_sales (D-08) + product_sales_ranking (D-23)
+- [ ] 08-03-PLAN.md — Seed product_costs + RPC upsert_product_costs + upload-catalog D-03
+- [ ] 08-04-PLAN.md — Views de métrica: product_inventory_metrics (D-10..D-19) + product_abc_curve (D-16)
+- [ ] 08-05-PLAN.md — RPCs product_stock_history + inventory_summary
+- [ ] 08-06-PLAN.md — Script de verificação SQL sintético (supabase/tests)
+- [ ] 08-07-PLAN.md — [BLOCKING] db push + verificação + EXPLAIN ANALYZE R-02
 
 ### Phase 9: Role compras + telas /dashboard/compras — ranking produtos, alertas reposição, curva ABC
 
