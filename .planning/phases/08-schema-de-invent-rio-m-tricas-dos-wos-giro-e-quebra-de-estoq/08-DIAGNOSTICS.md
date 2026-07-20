@@ -60,6 +60,53 @@ Não é possível decidir entre "excluir órfãos (D-08 como está)" e "implemen
 
 ---
 
+## R-04 — Cobertura do seed de `product_costs`
+
+### Query 1 — SKUs no período mais recente vs. histórico total, e SKUs sem custo no período recente
+
+```sql
+WITH latest_period AS (
+  SELECT DISTINCT ON (tenant_id) tenant_id, id AS period_id
+  FROM periods
+  ORDER BY tenant_id, year DESC, month DESC
+)
+SELECT
+  p.tenant_id,
+  count(DISTINCT p.product_code) FILTER (WHERE p.period_id = lp.period_id) AS skus_periodo_recente,
+  count(DISTINCT p.product_code)                                            AS skus_historico_total,
+  count(DISTINCT p.product_code) FILTER (WHERE p.cost_price IS NULL AND p.period_id = lp.period_id) AS skus_recente_sem_custo
+FROM products p
+JOIN latest_period lp ON lp.tenant_id = p.tenant_id
+GROUP BY p.tenant_id;
+```
+
+**Resultado:** PENDENTE — não executado. `skus_periodo_recente` não medido.
+
+### Query 2 — produtos vendidos historicamente mas ausentes do catálogo mais recente (ficariam sem custo no dia 1)
+
+```sql
+WITH latest_period AS (
+  SELECT DISTINCT ON (tenant_id) tenant_id, id AS period_id
+  FROM periods ORDER BY tenant_id, year DESC, month DESC
+)
+SELECT si.tenant_id, count(DISTINCT si.product_code) AS vendidos_sem_catalogo_recente
+FROM sale_items si
+LEFT JOIN products p
+  ON p.tenant_id = si.tenant_id
+ AND p.product_code = si.product_code
+ AND p.period_id = (SELECT period_id FROM latest_period lp WHERE lp.tenant_id = si.tenant_id)
+WHERE p.product_code IS NULL
+GROUP BY si.tenant_id;
+```
+
+**Resultado:** PENDENTE — não executado.
+
+### Conclusão R-04: PENDENTE
+
+Sem os números de `skus_periodo_recente`, `skus_historico_total`, `skus_recente_sem_custo` e `vendidos_sem_catalogo_recente`, não é possível concluir se o seed do período mais recente (D-03, `08-RESEARCH.md` "Seed inicial de product_costs") é suficiente para o MVP ou se o dono precisa subir um catálogo atualizado antes de confiar em `stock_value`/`turnover`. **Ação requerida:** rodar as duas queries acima e preencher esta seção com a conclusão antes de aceitar o seed simples do Plano 08-01 (ou equivalente) como definitivo.
+
+---
+
 ## Resumo para o orquestrador / próximo executor
 
 | Item | Status |
@@ -67,6 +114,7 @@ Não é possível decidir entre "excluir órfãos (D-08 como está)" e "implemen
 | R-01 — taxa de órfãos `order_ref` | PENDENTE — requer sessão com Supabase MCP `execute_sql` ou SQL Editor do Studio |
 | R-01 — fan-out de `order_ref` | PENDENTE |
 | R-01 — decisão D-08 (excluir órfãos vs. fallback) | PENDENTE — bloqueante para Plano 08-02 |
+| R-04 — cobertura do seed | PENDENTE — requer as mesmas ferramentas |
 | Nenhuma escrita no banco | Confirmado — nenhuma query de mutação foi sequer preparada, apenas SELECT |
 
-**Recomendação:** antes de iniciar o Plano 08-02 (`product_daily_sales`), rodar este plano novamente (ou apenas as queries acima) em uma sessão que tenha a ferramenta MCP Supabase `execute_sql` carregada, e atualizar este arquivo com os resultados reais + a linha `DECISÃO:` antes de prosseguir.
+**Recomendação:** antes de iniciar o Plano 08-02 (`product_daily_sales`), rodar este plano novamente (ou apenas as 4 queries acima) em uma sessão que tenha a ferramenta MCP Supabase `execute_sql` carregada, e atualizar este arquivo com os resultados reais + as duas linhas de `DECISÃO:`/conclusão antes de prosseguir.
