@@ -29,7 +29,21 @@ export function Sidebar({ role, name, tenants = [], activeTenantId }: { role: st
     { href: '/vendedor/rh', label: 'Recursos Humanos', icon: 'groups' },
   ]
 
-  const links = role === 'vendedor' ? vendorLinks : adminLinks
+  // Role 'compras' ve apenas seu proprio setor — sem comissao, RH ou
+  // performance nominal de vendedor (D-04/D-05 da Fase 09).
+  const comprasLinks = [
+    { href: '/dashboard/compras', label: 'Compras', icon: 'inventory_2' },
+  ]
+
+  const links =
+    role === 'vendedor' ? vendorLinks :
+    role === 'compras'  ? comprasLinks :
+    adminLinks
+
+  // adm/gerente/super_admin acessam o setor de compras pelo menu completo.
+  if (role !== 'vendedor' && role !== 'compras') {
+    links.push({ href: '/dashboard/compras', label: 'Compras', icon: 'inventory_2' })
+  }
 
   if (role === 'super_admin') {
     links.push({ href: '/dashboard/super-admin', label: 'Super Admin', icon: 'admin_panel_settings' })

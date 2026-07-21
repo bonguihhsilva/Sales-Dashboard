@@ -12,20 +12,22 @@ RETURNS TABLE(day date, quantity numeric, qty_sold numeric)
 LANGUAGE sql
 SET search_path = public
 AS $$
+  -- generate_series é set-returning: não pode levar ::date direto no FROM
+  -- (erro 42601). O cast vai no SELECT e nas condições de junção.
   SELECT
-    d.day,
+    g.day::date AS day,
     s.quantity,
     COALESCE(ds.qty_sold, 0) AS qty_sold
-  FROM generate_series(CURRENT_DATE - p_days, CURRENT_DATE, interval '1 day')::date AS d(day)
+  FROM generate_series(CURRENT_DATE - p_days, CURRENT_DATE, interval '1 day') AS g(day)
   LEFT JOIN stock_snapshots s
     ON s.tenant_id = p_tenant_id
    AND s.product_code = p_product_code
-   AND s.snapshot_date = d.day
+   AND s.snapshot_date = g.day::date
   LEFT JOIN product_daily_sales ds
     ON ds.tenant_id = p_tenant_id
    AND ds.product_code = p_product_code
-   AND ds.sale_date = d.day
-  ORDER BY d.day;
+   AND ds.sale_date = g.day::date
+  ORDER BY g.day;
 $$;
 
 REVOKE ALL ON FUNCTION public.product_stock_history(uuid, text, integer) FROM anon, authenticated, public;

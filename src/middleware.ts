@@ -8,14 +8,27 @@ import type { PermissionKey } from '@/lib/permissions'
 const ROLE_RULES: Array<{ prefix: string; allowed: string[] }> = [
   { prefix: '/admin', allowed: ['super_admin'] },
   { prefix: '/dashboard/config', allowed: ['adm', 'super_admin'] },
+  { prefix: '/dashboard/compras', allowed: ['compras', 'adm', 'gerente', 'super_admin'] },
   { prefix: '/dashboard', allowed: ['adm', 'gerente', 'super_admin'] },
   { prefix: '/vendedor', allowed: ['vendedor', 'adm', 'gerente', 'super_admin'] },
-  { prefix: '/mural', allowed: ['vendedor', 'adm', 'gerente', 'super_admin'] },
-  { prefix: '/perfil', allowed: ['vendedor', 'adm', 'gerente', 'super_admin'] },
-  { prefix: '/configuracoes', allowed: ['vendedor', 'adm', 'gerente', 'super_admin'] },
+  { prefix: '/mural', allowed: ['vendedor', 'adm', 'gerente', 'super_admin', 'compras'] },
+  { prefix: '/perfil', allowed: ['vendedor', 'adm', 'gerente', 'super_admin', 'compras'] },
+  { prefix: '/configuracoes', allowed: ['vendedor', 'adm', 'gerente', 'super_admin', 'compras'] },
+  // Mais especifico que /api/admin: compras precisa subir catalogo (D-23),
+  // sem ganhar as demais rotas admin (comissao, RH, usuarios).
+  { prefix: '/api/admin/upload-catalog', allowed: ['adm', 'gerente', 'super_admin', 'compras'] },
   { prefix: '/api/admin', allowed: ['adm', 'gerente', 'super_admin'] },
+  { prefix: '/api/compras', allowed: ['compras', 'adm', 'gerente', 'super_admin'] },
   { prefix: '/api/vendor', allowed: ['vendedor', 'adm', 'gerente', 'super_admin'] },
 ]
+
+// Destino de fallback por role. Sem isto, 'compras' seria barrado em /dashboard
+// e redirecionado de volta para /dashboard — loop infinito.
+const ROLE_HOME: Record<string, string> = {
+  vendedor: '/vendedor/meu-resultado',
+  compras: '/dashboard/compras',
+}
+const homeFor = (role: string) => ROLE_HOME[role] ?? '/dashboard'
 
 // Permissoes finas do gerente: cada flag de gerente_permissions gateia rotas especificas.
 // adm/super_admin ignoram estas regras (acesso total). Avaliado so quando role === 'gerente'.
@@ -122,8 +135,15 @@ export async function middleware(request: NextRequest) {
 
   const rule = ROLE_RULES.find(r => pathname.startsWith(r.prefix))
   if (rule && !rule.allowed.includes(role)) {
+    // API responde 403 em JSON — redirect em fetch vira erro opaco no client.
+    if (pathname.startsWith('/api/')) {
+      return withAuthCookies(NextResponse.json({ error: 'Acesso negado' }, { status: 403 }))
+    }
     const url = request.nextUrl.clone()
-    url.pathname = role === 'vendedor' ? '/vendedor/meu-resultado' : '/dashboard'
+    const target = homeFor(role)
+    // Guarda anti-loop: se o destino tambem seria barrado, manda para /perfil
+    // (liberado a todas as roles) em vez de redirecionar em circulo.
+    url.pathname = target === pathname ? '/perfil' : target
     return withAuthCookies(NextResponse.redirect(url))
   }
 
@@ -155,11 +175,12 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Se o vendedor tentar ir para a raiz ou acessar caminhos genéricos
+  // Raiz e /dashboard genericos: manda cada role para sua home.
   if (pathname === '/' || pathname === '/dashboard') {
-    if (role === 'vendedor') {
+    const home = homeFor(role)
+    if (home !== pathname) {
       const url = request.nextUrl.clone()
-      url.pathname = '/vendedor/meu-resultado'
+      url.pathname = home
       return withAuthCookies(NextResponse.redirect(url))
     }
   }
