@@ -18,15 +18,30 @@ export default async function ComprasPage({
   if (!user || !profile) redirect('/login')
   if (!ALLOWED.includes(profile.role)) redirect('/vendedor/meu-resultado')
 
-  // super_admin sem tenant "incorporado" nao tem escopo — pede selecao.
+  // super_admin sem tenant "incorporado" nao tem escopo de dados — nao e erro,
+  // e o estado neutro do seletor. Explica o passo exato em vez de so avisar.
   if (!profile.tenant_id) {
     return (
       <div className="min-h-full bg-background flex flex-col p-margin-page">
         <PageHeader
           title="Compras"
-          subtitle="Selecione uma empresa no seletor de tenant para ver o inventario."
+          subtitle="Nenhuma empresa selecionada."
           breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Compras' }]}
         />
+        <section className="mt-6 rounded-xl bg-surface-container border border-white/5 p-6 max-w-2xl">
+          <h3 className="text-title-md font-bold text-on-surface mb-2">
+            Escolha uma empresa para ver o inventário
+          </h3>
+          <p className="text-body-sm text-on-surface-variant">
+            Você está como <strong>super admin</strong> com o seletor <strong>Empresa</strong> em
+            {' '}<code className="px-1 rounded bg-surface-variant">reset</code>. Nesse estado não há
+            escopo de dados — as métricas de estoque são sempre por empresa.
+          </p>
+          <p className="text-body-sm text-on-surface-variant mt-3">
+            Use o seletor <strong>Empresa</strong> na barra lateral e escolha a loja que deseja
+            analisar. O setor de compras carrega o catálogo, o estoque e as métricas daquela empresa.
+          </p>
+        </section>
       </div>
     )
   }
