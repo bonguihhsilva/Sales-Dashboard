@@ -81,7 +81,23 @@ export async function POST(req: NextRequest) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-    return NextResponse.json({ imported: rows.length })
+    // Segundo destino (D-03, Fase 08): custo vigente em product_costs.
+    // Aditivo — precedência (manual não sobrescrito) é resolvida na RPC.
+    const costRows = rows.map((r) => ({
+      product_code: r.product_code,
+      unit_cost: r.cost_price,
+      name: r.name,
+    }))
+    const { data: costsUpdated, error: costErr } = await adminDb.rpc('upsert_product_costs', {
+      p_tenant_id: profile.tenant_id,
+      p_rows: costRows,
+    })
+    if (costErr) {
+      // Não derruba o upload: products já foi gravado com sucesso.
+      console.error('upsert_product_costs falhou:', costErr.message)
+    }
+
+    return NextResponse.json({ imported: rows.length, costs_updated: costsUpdated ?? 0 })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Falha ao processar catálogo'
     return NextResponse.json({ error: msg }, { status: 500 })
