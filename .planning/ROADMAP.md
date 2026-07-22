@@ -123,7 +123,7 @@ Plans:
 - [x] 07-02-PLAN.md — Auth por API key + ensurePeriodForDate + schemas Zod + middleware/rate limiter (Wave 0 tests)
 - [x] 07-03-PLAN.md — POST /api/v1/sales (batch, idempotência, period auto, namespacing, envelope)
 - [x] 07-04-PLAN.md — POST /api/v1/stock (snapshot diário upsert, validação parcial, envelope)
-- [ ] 07-05-PLAN.md — UI super-admin de gestão de keys (criar/exibir uma vez/revogar) + checkpoint e2e
+- [x] 07-05-PLAN.md — UI super-admin de gestão de keys (criar/exibir uma vez/revogar) — checkpoint e2e manual PENDENTE
 
 ### Phase 8: Schema de inventário + métricas DoS, WoS, giro e quebra de estoque
 
@@ -133,24 +133,25 @@ Plans:
 **Plans:** 8 plans
 
 Plans:
-- [ ] 08-00-PLAN.md — Wave 0: diagnósticos R-01 (órfãos order_ref) e R-04 (cobertura do seed)
-- [ ] 08-01-PLAN.md — Tabelas product_costs + inventory_settings (RLS) + 4 índices D-22
-- [ ] 08-02-PLAN.md — Views de venda: product_daily_sales (D-08) + product_sales_ranking (D-23)
-- [ ] 08-03-PLAN.md — Seed product_costs + RPC upsert_product_costs + upload-catalog D-03
-- [ ] 08-04-PLAN.md — Views de métrica: product_inventory_metrics (D-10..D-19) + product_abc_curve (D-16)
-- [ ] 08-05-PLAN.md — RPCs product_stock_history + inventory_summary
+- [x] 08-00-PLAN.md — Wave 0: diagnósticos R-01 (órfãos order_ref) e R-04 (cobertura do seed)
+- [x] 08-01-PLAN.md — Tabelas product_costs + inventory_settings (RLS) + 4 índices D-22
+- [x] 08-02-PLAN.md — Views de venda: product_daily_sales (D-08) + product_sales_ranking (D-23)
+- [x] 08-03-PLAN.md — Seed product_costs + RPC upsert_product_costs + upload-catalog D-03
+- [x] 08-04-PLAN.md — Views de métrica: product_inventory_metrics (D-10..D-19) + product_abc_curve (D-16)
+- [x] 08-05-PLAN.md — RPCs product_stock_history + inventory_summary
 - [ ] 08-06-PLAN.md — Script de verificação SQL sintético (supabase/tests)
-- [ ] 08-07-PLAN.md — [BLOCKING] db push + verificação + EXPLAIN ANALYZE R-02
+- [~] 08-07-PLAN.md — OBSOLETO: as 10 migrations já foram aplicadas no banco de prod via MCP (conferido em `list_migrations` 2026-07-22). Resta apenas o EXPLAIN ANALYZE R-02.
 
 ### Phase 9: Role compras + telas /dashboard/compras — ranking produtos, alertas reposição, curva ABC
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Expor a camada de dados da Fase 08 para um novo perfil de usuário — a role `compras` — através de `/dashboard/compras`, com visão geral de inventário, ranking de produtos, alertas de reposição/ruptura, curva ABC e edição de custo vigente.
+**Requirements**: ver 09-CONTEXT.md
 **Depends on:** Phase 8
-**Plans:** 0 plans
+**Plans:** implementada direto (sem quebra em planos formais)
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 9 to break down)
+- [x] 09: role `compras` no middleware + `/dashboard/compras` com 5 abas (Visão Geral, Ranking, Estoque, Curva ABC, Preços) + item na Sidebar + upload-catalog gravando em `product_costs`
+- [ ] 09-UAT: checkpoint manual com login real — NUNCA executado
 
 ---
 
@@ -164,3 +165,8 @@ Plans:
 | 04. Relatórios & Export | 2/2 | Complete | - |
 | 05. Portal LMS (CMS) | 1/1 | Complete | - |
 | 06. Conectores & Formatos | 3/3 | Complete    | 2026-06-18 |
+| 07. API pública de ingest | 5/5 | Complete (UAT e2e pendente) | 2026-07-22 |
+| 08. Inventário & métricas | 6/8 | Em progresso (08-06, 08-07) | - |
+| 09. Role compras & telas | 1/1 | Complete (UAT manual pendente) | 2026-07-22 |
+
+**Deploy:** Fases 07, 08 e 09 em produção desde 2026-07-22 (`f000cc3` em `origin/main`, `https://dashboard.gds-frame.com`). Migrations aplicadas no banco antes do código. Verificado: `GET /api/v1/sales` → 405 (rota existe), `/dashboard/compras` → redirect para login (guard ativo).

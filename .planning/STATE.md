@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Ferramenta Escalável
 status: executing
-stopped_at: Completed 07-04-PLAN.md
-last_updated: "2026-07-20T21:02:47.679Z"
-last_activity: 2026-07-20 -- Phase 8 execution started
+stopped_at: Completed 08-05-PLAN.md + Phase 09 implementada; deploy de 07/08/09 em produção
+last_updated: "2026-07-22T00:00:00.000Z"
+last_activity: 2026-07-22 -- merge ff-only na main + push (44 commits) + deploy prod verificado
 progress:
   total_phases: 9
-  completed_phases: 1
-  total_plans: 16
-  completed_plans: 7
-  percent: 44
+  completed_phases: 7
+  total_plans: 25
+  completed_plans: 23
+  percent: 92
 ---
 
 # Project State
@@ -21,14 +21,41 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Gerentes enxergam performance real de cada vendedor e calculam comissões corretamente.
-**Current focus:** Phase 8 — schema-de-invent-rio-m-tricas-dos-wos-giro-e-quebra-de-estoq
+**Current focus:** Fechar pendências de verificação das Fases 08/09 — o código já está em produção.
 
 ## Current Position
 
-Phase: 8 (schema-de-invent-rio-m-tricas-dos-wos-giro-e-quebra-de-estoq) — EXECUTING
-Plan: 1 of 8
-Status: Executing Phase 8
-Last activity: 2026-07-20 -- Phase 8 execution started
+Phase: 8 (inventário) — 6/8 planos; Phase 9 (role compras) — implementada
+Status: Código de 07/08/09 EM PRODUÇÃO desde 2026-07-22
+Last activity: 2026-07-22 -- merge ff-only + push de 44 commits; deploy verificado
+
+### Deploy (2026-07-22)
+
+`origin/main` = `f000cc3`. Vercel → `https://dashboard.gds-frame.com`.
+Antes deste push, `origin/main` estava 44 commits atrás: as Fases 07, 08 e 09 estavam prontas mas invisíveis em produção. O gargalo era push, não código.
+
+Verificação pós-deploy (sem login):
+- `GET /api/v1/sales` → **405** = rota existe = Fase 07 no ar
+- `/dashboard/compras` → redirect para `/login` = rota existe + guard do middleware OK = Fase 09 no ar
+- Landing renderiza normal — middleware não quebrou nada
+
+Migrations: as 10 da Fase 08/09 já estavam aplicadas no banco de prod ANTES do deploy do código (conferido via MCP `list_migrations`). Banco à frente do código = direção segura.
+
+### Pendências abertas
+
+| Item | Status | Bloqueia? |
+|---|---|---|
+| `SUPABASE_SERVICE_ROLE_KEY` na Vercel | NÃO VERIFICADA — só o dono acessa | Se inválida, telas de Compras e rotas admin renderizam vazio **em silêncio**. App não cai (`f000cc3`). |
+| `SUPABASE_SERVICE_ROLE_KEY` em `.env.local` | CORROMPIDA (60 chars, segs 36/11/11, payload não decodifica) | Dev local: `createAdminClient` falha. Corrigir com `node scripts/fix-service-role.mjs` |
+| 08-06 script SQL de verificação | Em execução | Não — nada em produção depende dele |
+| 08-07 plano formal de push | Obsoleto — migrations já aplicadas via MCP | Não |
+| UAT manual (07-05 e2e, 09-UAT) | NUNCA executado com login real | Não bloqueia deploy, mas nenhuma tela foi aberta por um usuário |
+| 12 erros de tipo em `src/__tests__/api-v1-sales.test.ts` | PRÉ-EXISTENTES (Fase 7, mocks mal tipados) | Não — não entram no `npm run build` |
+
+### Branches
+
+Todas as branches antigas (`feat/lms-db-migration`, `fix/criticos-auth-rotas-rbac`, `fix/masquerade-tenant-consistency`, `fix/quick-wins-2026-06-05`, `fix/verificacao-2026-06-03`) já estão em `main` — 0 commits à frente, podem ser deletadas.
+`origin/vercel/react-server-components-cve-*` é obsoleta: `next@15.5.18` já é versão corrigida.
 
 Progress: [░░░░░░░░░░] 0%
 
