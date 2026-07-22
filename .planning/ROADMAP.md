@@ -139,7 +139,7 @@ Plans:
 - [x] 08-03-PLAN.md — Seed product_costs + RPC upsert_product_costs + upload-catalog D-03
 - [x] 08-04-PLAN.md — Views de métrica: product_inventory_metrics (D-10..D-19) + product_abc_curve (D-16)
 - [x] 08-05-PLAN.md — RPCs product_stock_history + inventory_summary
-- [ ] 08-06-PLAN.md — Script de verificação SQL sintético (supabase/tests)
+- [x] 08-06-PLAN.md — Script de verificação SQL sintético: `supabase/tests/08_inventory_metrics_verify.sql` (925 linhas, 36 blocos DO, 91 asserts). ESCRITO, ainda NÃO EXECUTADO contra banco nenhum.
 - [~] 08-07-PLAN.md — OBSOLETO: as 10 migrations já foram aplicadas no banco de prod via MCP (conferido em `list_migrations` 2026-07-22). Resta apenas o EXPLAIN ANALYZE R-02.
 
 ### Phase 9: Role compras + telas /dashboard/compras — ranking produtos, alertas reposição, curva ABC
