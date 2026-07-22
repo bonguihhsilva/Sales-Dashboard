@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Ferramenta Escalável
 status: executing
-stopped_at: Completed 08-05-PLAN.md + Phase 09 implementada; deploy de 07/08/09 em produção
+stopped_at: Fase 08 fechada (8/8, 91 asserts verdes em prod); Fase 09 implementada; 07/08/09 em produção
 last_updated: "2026-07-22T00:00:00.000Z"
-last_activity: 2026-07-22 -- merge ff-only na main + push (44 commits) + deploy prod verificado
+last_activity: 2026-07-22 -- deploy de 44 commits + 08-06 executado em prod (91/91) + R-02
 progress:
   total_phases: 9
   completed_phases: 7
   total_plans: 25
-  completed_plans: 23
-  percent: 92
+  completed_plans: 25
+  percent: 100
 ---
 
 # Project State
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 
 ## Current Position
 
-Phase: 8 (inventário) — 6/8 planos; Phase 9 (role compras) — implementada
+Phase: 8 (inventário) — 8/8 COMPLETA; Phase 9 (role compras) — implementada
 Status: Código de 07/08/09 EM PRODUÇÃO desde 2026-07-22
-Last activity: 2026-07-22 -- merge ff-only + push de 44 commits; deploy verificado
+Last activity: 2026-07-22 -- deploy de 44 commits; 08-06 rodado em prod (91/91); R-02 medido
 
 ### Deploy (2026-07-22)
 
@@ -47,17 +47,30 @@ Migrations: as 10 da Fase 08/09 já estavam aplicadas no banco de prod ANTES do 
 |---|---|---|
 | `SUPABASE_SERVICE_ROLE_KEY` na Vercel | NÃO VERIFICADA — só o dono acessa | Se inválida, telas de Compras e rotas admin renderizam vazio **em silêncio**. App não cai (`f000cc3`). |
 | `SUPABASE_SERVICE_ROLE_KEY` em `.env.local` | CORROMPIDA (60 chars, segs 36/11/11, payload não decodifica) | Dev local: `createAdminClient` falha. Corrigir com `node scripts/fix-service-role.mjs` |
-| 08-06 script SQL de verificação | Em execução | Não — nada em produção depende dele |
-| 08-07 plano formal de push | Obsoleto — migrations já aplicadas via MCP | Não |
+| 08-06 script SQL de verificação | FECHADO — 91/91 asserts passaram contra prod, zero resíduo | Não |
+| 08-07 plano formal de push | FECHADO — push era obsoleto; EXPLAIN R-02 executado | Não |
 | UAT manual (07-05 e2e, 09-UAT) | NUNCA executado com login real | Não bloqueia deploy, mas nenhuma tela foi aberta por um usuário |
 | 12 erros de tipo em `src/__tests__/api-v1-sales.test.ts` | PRÉ-EXISTENTES (Fase 7, mocks mal tipados) | Não — não entram no `npm run build` |
+
+### R-02 — EXPLAIN ANALYZE de `product_inventory_metrics` (2026-07-22, tenant loja-demo)
+
+`Execution Time: 9.809 ms`, `Planning Time: 7.180 ms`. Todos os buffers `shared hit` — zero leitura de disco. Os 4 índices do D-22 aparecem no plano (`idx_stock_snapshots_tenant_product_date`, `stock_snapshots_tenant_date`, `product_costs_pkey`, `products_tenant_id_period_id_product_code_key`).
+
+Passa hoje, mas com dois achados de escala:
+
+1. **Seq scan sem pushdown de tenant.** O CTE `window_sales` varre `sale_items` (438 linhas) e `sales_records` (558) inteiras e só depois filtra por tenant. Irrelevante neste volume; com centenas de milhares de linhas vira o gargalo da tela de Compras. Se for otimizar, é aqui.
+2. **Estatísticas desatualizadas.** O planner estima `rows=1` onde o real é 438, e `rows=2` onde é 1685 — erro de 100-400x. Nessa escala ele acerta o plano mesmo assim; com volume real pode escolher plano ruim. Um `ANALYZE` em `sale_items`, `sales_records` e `stock_snapshots` resolve. NÃO executado: o CLAUDE.md do projeto proíbe manipular o banco diretamente.
+
+### Verificação do 08-06 (2026-07-22)
+
+Script rodado contra o banco de PRODUÇÃO em uma única chamada, envelope `BEGIN`/`ROLLBACK` intacto. **91/91 asserts passaram.** Antes de rodar, o canal MCP foi testado com uma probe (`CREATE TABLE` + `ROLLBACK` → `to_regclass` null) provando que ele honra transação; sem isso os INSERTs sintéticos teriam persistido. Depois, `SELECT` confirmou zero resíduo em `tenants`, `product_costs`, `stock_snapshots`, `sales_records` e `periods`.
 
 ### Branches
 
 Todas as branches antigas (`feat/lms-db-migration`, `fix/criticos-auth-rotas-rbac`, `fix/masquerade-tenant-consistency`, `fix/quick-wins-2026-06-05`, `fix/verificacao-2026-06-03`) já estão em `main` — 0 commits à frente, podem ser deletadas.
 `origin/vercel/react-server-components-cve-*` é obsoleta: `next@15.5.18` já é versão corrigida.
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████████] 100% dos planos — restam apenas os UATs manuais
 
 ## Performance Metrics
 

@@ -139,8 +139,8 @@ Plans:
 - [x] 08-03-PLAN.md — Seed product_costs + RPC upsert_product_costs + upload-catalog D-03
 - [x] 08-04-PLAN.md — Views de métrica: product_inventory_metrics (D-10..D-19) + product_abc_curve (D-16)
 - [x] 08-05-PLAN.md — RPCs product_stock_history + inventory_summary
-- [x] 08-06-PLAN.md — Script de verificação SQL sintético: `supabase/tests/08_inventory_metrics_verify.sql` (925 linhas, 36 blocos DO, 91 asserts). ESCRITO, ainda NÃO EXECUTADO contra banco nenhum.
-- [~] 08-07-PLAN.md — OBSOLETO: as 10 migrations já foram aplicadas no banco de prod via MCP (conferido em `list_migrations` 2026-07-22). Resta apenas o EXPLAIN ANALYZE R-02.
+- [x] 08-06-PLAN.md — Script de verificação SQL sintético: `supabase/tests/08_inventory_metrics_verify.sql` (925 linhas, 36 blocos DO, 91 asserts). EXECUTADO contra o banco de produção em 2026-07-22: **91/91 passaram**, zero resíduo após ROLLBACK (confirmado por SELECT).
+- [x] 08-07-PLAN.md — db push era OBSOLETO (as 10 migrations já estavam aplicadas em prod via MCP). EXPLAIN ANALYZE R-02 EXECUTADO em 2026-07-22: 9.8ms, zero leitura de disco, 4 índices D-22 em uso. Dois achados de escala registrados no STATE.
 
 ### Phase 9: Role compras + telas /dashboard/compras — ranking produtos, alertas reposição, curva ABC
 
@@ -166,7 +166,7 @@ Plans:
 | 05. Portal LMS (CMS) | 1/1 | Complete | - |
 | 06. Conectores & Formatos | 3/3 | Complete    | 2026-06-18 |
 | 07. API pública de ingest | 5/5 | Complete (UAT e2e pendente) | 2026-07-22 |
-| 08. Inventário & métricas | 6/8 | Em progresso (08-06, 08-07) | - |
+| 08. Inventário & métricas | 8/8 | Complete | 2026-07-22 |
 | 09. Role compras & telas | 1/1 | Complete (UAT manual pendente) | 2026-07-22 |
 
 **Deploy:** Fases 07, 08 e 09 em produção desde 2026-07-22 (`f000cc3` em `origin/main`, `https://dashboard.gds-frame.com`). Migrations aplicadas no banco antes do código. Verificado: `GET /api/v1/sales` → 405 (rota existe), `/dashboard/compras` → redirect para login (guard ativo).
