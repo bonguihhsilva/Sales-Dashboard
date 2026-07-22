@@ -2,59 +2,56 @@ import { createClient } from '@supabase/supabase-js'
 
 const FIX_HINT = 'Rode: node scripts/fix-service-role.mjs (entrada oculta, nao expoe a key).'
 
+let warned = false
+
 /**
- * Uma key invalida passa no non-null assertion e so falha na primeira query,
- * como "Invalid API key" generico espalhado por toda tela que le dados.
- * Validar aqui troca isso por um erro unico que diz o que fazer.
+ * Diagnostica a service-role key e loga o problema UMA vez no servidor.
  *
- * Contar segmentos nao basta: uma key corrompida pode ter os 2 pontos e ainda
- * assim ter payload ilegivel. Decodificar o payload e exigir role=service_role
- * pega tanto corrupcao quanto o erro comum de colar a anon key no lugar.
+ * Deliberadamente NAO lanca. createAdminClient() e chamado no DashboardLayout,
+ * entao lancar aqui derruba o layout inteiro e leva junto ate a tela de login —
+ * o usuario fica sem conseguir nem entrar. Com a key ruim, o supabase-js
+ * constroi o client normalmente e falha por query, o que as paginas ja tratam
+ * exibindo faixa de erro. Degradacao graciosa vale mais que crash cedo aqui.
  *
- * Nenhuma mensagem inclui o valor da key — apenas comprimento e o claim role.
+ * O valor da key nunca aparece na mensagem — so comprimento e o claim role.
  */
-function assertServiceRoleKey(key: string | undefined): string {
-  if (!key) {
-    throw new Error(
-      'SUPABASE_SERVICE_ROLE_KEY ausente. Supabase > Settings > API > service_role secret. ' +
-        FIX_HINT
+function checkServiceRoleKey(key: string | undefined): void {
+  if (warned) return
+
+  const problem = (() => {
+    if (!key) return 'ausente'
+    const parts = key.split('.')
+    if (parts.length !== 3) {
+      return `malformada (${key.length} chars, ${parts.length} segmentos — JWT tem 3)`
+    }
+    let role: unknown
+    try {
+      role = (JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8')) as { role?: unknown })
+        .role
+    } catch {
+      return `corrompida (${key.length} chars, payload ilegivel)`
+    }
+    if (role !== 'service_role') {
+      return `tem role="${String(role)}", esperado "service_role" (copie a service_role secret, nao a anon)`
+    }
+    return null
+  })()
+
+  if (problem) {
+    warned = true
+    console.error(
+      `[supabase/admin] SUPABASE_SERVICE_ROLE_KEY ${problem}. ` +
+        `Toda leitura via service-role vai falhar como "Invalid API key". ${FIX_HINT}`
     )
   }
-
-  const parts = key.split('.')
-  if (parts.length !== 3) {
-    throw new Error(
-      `SUPABASE_SERVICE_ROLE_KEY malformada (${key.length} chars, ${parts.length} segmentos — JWT tem 3). ` +
-        FIX_HINT
-    )
-  }
-
-  let role: unknown
-  try {
-    role = (JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8')) as { role?: unknown }).role
-  } catch {
-    throw new Error(
-      `SUPABASE_SERVICE_ROLE_KEY corrompida (${key.length} chars, payload ilegivel). ` +
-        FIX_HINT
-    )
-  }
-
-  if (role !== 'service_role') {
-    throw new Error(
-      `SUPABASE_SERVICE_ROLE_KEY tem role="${String(role)}", esperado "service_role". ` +
-        'Copie a "service_role secret", nao a anon. ' +
-        FIX_HINT
-    )
-  }
-
-  return key
 }
 
 // Service role client — bypasses RLS, use only in server-side code
 export function createAdminClient() {
+  checkServiceRoleKey(process.env.SUPABASE_SERVICE_ROLE_KEY)
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    assertServiceRoleKey(process.env.SUPABASE_SERVICE_ROLE_KEY),
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 }
