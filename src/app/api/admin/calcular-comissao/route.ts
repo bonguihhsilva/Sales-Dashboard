@@ -1,7 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
-import { strictRateLimiter, strictUserRateLimiter, getClientIp } from '@/lib/ratelimit'
+import { strictRateLimiter, enforceUserRateLimit, getClientIp } from '@/lib/ratelimit'
 import { evaluateRules, type RegraComissao } from '@/lib/commission-rules'
 
 export async function POST(req: NextRequest) {
@@ -17,10 +17,8 @@ export async function POST(req: NextRequest) {
 
   // Rate limiter — layer 2: por user.id, pos-auth, fail-closed. Nao forjavel
   // por header e nao se desliga sozinho sob falha de DB.
-  const { success: userRateOk } = await strictUserRateLimiter.limit(user.id)
-  if (!userRateOk) {
-    return NextResponse.json({ error: 'Muitas tentativas' }, { status: 429 })
-  }
+  const rateLimited = await enforceUserRateLimit(user.id)
+  if (rateLimited) return rateLimited
 
   const jwtRole = (user.app_metadata?.role as string | undefined) ?? 'vendedor'
   const { data: profile } = await caller
