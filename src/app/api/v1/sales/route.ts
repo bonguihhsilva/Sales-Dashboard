@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getApiKeyContext } from '@/lib/auth/apiKey'
+import { getApiKeyContext, hasScope } from '@/lib/auth/apiKey'
 import { ensurePeriodForDate } from '@/lib/periods/ensurePeriod'
 import { saleSchema, type SaleInput } from '@/lib/validation/ingest'
 import { apiV1RateLimiter } from '@/lib/ratelimit'
@@ -50,6 +50,13 @@ export async function POST(req: NextRequest) {
         []
       ),
       { status: 401 }
+    )
+  }
+
+  if (!hasScope(ctx, 'sales:write')) {
+    return NextResponse.json(
+      envelope(null, 'API key sem permissão para o escopo sales:write.', 0, 0, []),
+      { status: 403 }
     )
   }
 

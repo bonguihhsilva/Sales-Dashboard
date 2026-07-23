@@ -25,11 +25,12 @@ export async function getApiKeyContext(req: Request): Promise<ApiKeyContext | nu
   const admin = createAdminClient()
   const { data: row } = await admin
     .from('api_keys')
-    .select('id, tenant_id, key_hash, scopes, revoked_at')
+    .select('id, tenant_id, key_hash, scopes, revoked_at, expires_at')
     .eq('key_prefix', keyPrefix)
     .maybeSingle()
 
   if (!row || row.revoked_at) return null
+  if (row.expires_at && new Date(row.expires_at as string).getTime() <= Date.now()) return null
 
   const stored = Buffer.from(row.key_hash, 'hex')
   const provided = Buffer.from(keyHash, 'hex')
@@ -39,4 +40,9 @@ export async function getApiKeyContext(req: Request): Promise<ApiKeyContext | nu
   admin.from('api_keys').update({ last_used_at: new Date().toISOString() }).eq('id', row.id).then(() => {})
 
   return { tenantId: row.tenant_id as string, apiKeyId: row.id as string, scopes: row.scopes as string[] }
+}
+
+// Trata '*' em scopes como acesso irrestrito (D-02: default keys mantem full-access).
+export function hasScope(ctx: ApiKeyContext, scope: string): boolean {
+  return ctx.scopes.includes('*') || ctx.scopes.includes(scope)
 }

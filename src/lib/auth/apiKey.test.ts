@@ -17,7 +17,7 @@ vi.mock('@/lib/supabase/admin', () => ({
   }),
 }))
 
-const { generateApiKey, getApiKeyContext, KEY_PREFIX } = await import('@/lib/auth/apiKey')
+const { generateApiKey, getApiKeyContext, hasScope, KEY_PREFIX } = await import('@/lib/auth/apiKey')
 
 function makeRequest(headers: Record<string, string> = {}): Request {
   return new Request('http://localhost/api/v1/sales', { headers })
@@ -106,5 +106,71 @@ describe('getApiKeyContext', () => {
     }
     const ctx = await getApiKeyContext(makeRequest({ authorization: `Bearer ${rawKey}` }))
     expect(ctx).toEqual({ tenantId: 'tenant-1', apiKeyId: 'key-1', scopes: ['*'] })
+  })
+
+  it('retorna null quando expires_at esta no passado (mesmo tratamento de key revogada)', async () => {
+    const { rawKey, keyHash } = generateApiKey()
+    mockRow = {
+      id: 'key-1',
+      tenant_id: 'tenant-1',
+      key_hash: keyHash,
+      scopes: ['*'],
+      revoked_at: null,
+      expires_at: '2020-01-01T00:00:00Z',
+    }
+    const ctx = await getApiKeyContext(makeRequest({ authorization: `Bearer ${rawKey}` }))
+    expect(ctx).toBeNull()
+  })
+
+  it('retorna contexto valido quando expires_at esta no futuro', async () => {
+    const { rawKey, keyHash } = generateApiKey()
+    const future = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    mockRow = {
+      id: 'key-1',
+      tenant_id: 'tenant-1',
+      key_hash: keyHash,
+      scopes: ['*'],
+      revoked_at: null,
+      expires_at: future,
+    }
+    const ctx = await getApiKeyContext(makeRequest({ authorization: `Bearer ${rawKey}` }))
+    expect(ctx).toEqual({ tenantId: 'tenant-1', apiKeyId: 'key-1', scopes: ['*'] })
+  })
+
+  it('retorna contexto valido quando expires_at e null', async () => {
+    const { rawKey, keyHash } = generateApiKey()
+    mockRow = {
+      id: 'key-1',
+      tenant_id: 'tenant-1',
+      key_hash: keyHash,
+      scopes: ['*'],
+      revoked_at: null,
+      expires_at: null,
+    }
+    const ctx = await getApiKeyContext(makeRequest({ authorization: `Bearer ${rawKey}` }))
+    expect(ctx).toEqual({ tenantId: 'tenant-1', apiKeyId: 'key-1', scopes: ['*'] })
+  })
+})
+
+describe('hasScope', () => {
+  it('retorna true quando scopes contem "*" (wildcard)', () => {
+    const ctx = { tenantId: 't1', apiKeyId: 'k1', scopes: ['*'] }
+    expect(hasScope(ctx, 'sales:write')).toBe(true)
+    expect(hasScope(ctx, 'stock:write')).toBe(true)
+  })
+
+  it('retorna true quando scopes contem o escopo exato', () => {
+    const ctx = { tenantId: 't1', apiKeyId: 'k1', scopes: ['sales:write'] }
+    expect(hasScope(ctx, 'sales:write')).toBe(true)
+  })
+
+  it('retorna false quando scopes nao contem o escopo nem wildcard', () => {
+    const ctx = { tenantId: 't1', apiKeyId: 'k1', scopes: ['stock:write'] }
+    expect(hasScope(ctx, 'sales:write')).toBe(false)
+  })
+
+  it('retorna false quando scopes esta vazio', () => {
+    const ctx = { tenantId: 't1', apiKeyId: 'k1', scopes: [] }
+    expect(hasScope(ctx, 'sales:write')).toBe(false)
   })
 })

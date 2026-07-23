@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getApiKeyContext } from '@/lib/auth/apiKey'
+import { getApiKeyContext, hasScope } from '@/lib/auth/apiKey'
 import { stockItemSchema, type StockItemInput } from '@/lib/validation/ingest'
 import { apiV1RateLimiter } from '@/lib/ratelimit'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -53,6 +53,13 @@ export async function POST(req: NextRequest) {
         []
       ),
       { status: 401 }
+    )
+  }
+
+  if (!hasScope(ctx, 'stock:write')) {
+    return NextResponse.json(
+      envelope(null, 'API key sem permissão para o escopo stock:write.', 0, 0, []),
+      { status: 403 }
     )
   }
 

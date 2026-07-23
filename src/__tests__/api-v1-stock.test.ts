@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { NextRequest } from 'next/server'
 
-vi.mock('@/lib/auth/apiKey', () => ({ getApiKeyContext: vi.fn() }))
+vi.mock('@/lib/auth/apiKey', () => ({
+  getApiKeyContext: vi.fn(),
+  hasScope: (ctx: { scopes: string[] }, scope: string) =>
+    ctx.scopes.includes('*') || ctx.scopes.includes(scope),
+}))
 vi.mock('@/lib/ratelimit', () => ({ apiV1RateLimiter: { limit: vi.fn() } }))
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: vi.fn() }))
 
@@ -57,6 +61,37 @@ describe('POST /api/v1/stock — auth', () => {
     expect(res.status).toBe(401)
     expect(json.success).toBe(false)
     expect(json.error).toBeTruthy()
+  })
+})
+
+describe('POST /api/v1/stock — escopos (Task 3 / C-07)', () => {
+  it('key com scopes ["*"] passa pela checagem de escopo (comportamento default preservado)', async () => {
+    vi.mocked(getApiKeyContext).mockResolvedValue({ tenantId: 'tenant-1', apiKeyId: 'key-1', scopes: ['*'] })
+    const { admin, stockUpsertMock } = makeFakeAdmin()
+    vi.mocked(createAdminClient).mockReturnValue(admin)
+
+    const res = await POST(makeRequest({ items: [{ product_code: 'p1', quantity: 10 }] }))
+
+    expect(res.status).toBe(200)
+    expect(stockUpsertMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('key sem escopo stock:write (scopes ["sales:write"]) e rejeitada com 403', async () => {
+    vi.mocked(getApiKeyContext).mockResolvedValue({
+      tenantId: 'tenant-1',
+      apiKeyId: 'key-1',
+      scopes: ['sales:write'],
+    })
+    const { admin, stockUpsertMock } = makeFakeAdmin()
+    vi.mocked(createAdminClient).mockReturnValue(admin)
+
+    const res = await POST(makeRequest({ items: [{ product_code: 'p1', quantity: 10 }] }))
+    const json = await res.json()
+
+    expect(res.status).toBe(403)
+    expect(json.success).toBe(false)
+    expect(json.error).toBeTruthy()
+    expect(stockUpsertMock).not.toHaveBeenCalled()
   })
 })
 
