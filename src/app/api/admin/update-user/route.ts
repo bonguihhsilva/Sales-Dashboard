@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { getTenantContext } from '@/lib/auth/tenant'
-import { canInvite, isValidRole, setUserRole, canAssignRole } from '@/lib/auth/roles'
+import { canInvite, isValidRole, setUserRole, canAssignRole, isSelfRolePromotion } from '@/lib/auth/roles'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { UserRole } from '@/types'
 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   if (role !== undefined) {
     // C-05: ninguem pode alterar a propria role, mesmo super_admin —
     // evita auto-promocao e evita que um admin se tranque fora sem querer.
-    if (userId === user.id) {
+    if (isSelfRolePromotion(user.id, userId, role)) {
       return NextResponse.json({ error: 'Não é possível alterar a própria role' }, { status: 403 })
     }
     if (!isValidRole(role)) {

@@ -42,6 +42,18 @@ export function canAssignRole(
   return !!allowed && allowed.includes(targetRole)
 }
 
+// C-05: ninguem pode alterar a propria role, mesmo super_admin — evita
+// auto-promocao e evita que um admin se tranque fora sem querer. So bloqueia
+// quando o body realmente contem uma role (editar outros campos do proprio
+// usuario continua permitido). Funcao pura — nao consulta banco nem sessao.
+export function isSelfRolePromotion(
+  callerId: string,
+  targetUserId: string,
+  roleInBody: string | undefined,
+): boolean {
+  return targetUserId === callerId && roleInBody !== undefined
+}
+
 // D-04: toda mutacao de role deve atualizar app_metadata (fonte de verdade
 // do middleware) E profiles.role (fonte de verdade das queries de UI).
 // `admin` deve ser um SupabaseClient criado com a service role key.

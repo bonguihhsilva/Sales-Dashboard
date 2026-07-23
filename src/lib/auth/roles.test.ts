@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { canAssignRole } from '@/lib/auth/roles'
+import { canAssignRole, isSelfRolePromotion } from '@/lib/auth/roles'
 
 describe('canAssignRole', () => {
   it('gerente pode atribuir vendedor', () => {
@@ -56,5 +56,19 @@ describe('canAssignRole', () => {
 
   it('role indefinida nao pode atribuir nada', () => {
     expect(canAssignRole(undefined, 'vendedor')).toBe(false)
+  })
+})
+
+describe('isSelfRolePromotion', () => {
+  it('bloqueia quando o mesmo usuario tenta alterar a propria role', () => {
+    expect(isSelfRolePromotion('user-1', 'user-1', 'adm')).toBe(true)
+  })
+
+  it('permite quando o mesmo usuario edita outros campos (role ausente do body)', () => {
+    expect(isSelfRolePromotion('user-1', 'user-1', undefined)).toBe(false)
+  })
+
+  it('permite quando o caller altera a role de outro usuario', () => {
+    expect(isSelfRolePromotion('user-1', 'user-2', 'adm')).toBe(false)
   })
 })
