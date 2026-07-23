@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getTenantContext } from '@/lib/auth/tenant'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { strictRateLimiter } from '@/lib/ratelimit'
+import { strictRateLimiter, getClientIp } from '@/lib/ratelimit'
 import * as XLSX from 'xlsx'
 
 const MAX_SIZE = 10 * 1024 * 1024 // 10MB — mirrors parse-upload limit
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for') ?? 'anonymous'
+  const ip = getClientIp(req)
   const { success } = await strictRateLimiter.limit(ip)
   if (!success) return NextResponse.json({ error: 'Muitas tentativas' }, { status: 429 })
 

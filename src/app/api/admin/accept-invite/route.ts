@@ -1,11 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { isValidRole } from '@/lib/auth/roles'
-import { strictRateLimiter } from '@/lib/ratelimit'
+import { strictRateLimiter, getClientIp } from '@/lib/ratelimit'
 
 export async function POST(req: NextRequest) {
   // Rate limiter
-  const ip = req.headers.get('x-forwarded-for') ?? 'anonymous'
+  const ip = getClientIp(req)
   const { success } = await strictRateLimiter.limit(ip)
   if (!success) return NextResponse.json({ error: 'Muitas tentativas' }, { status: 429 })
   const body = await req.json()
