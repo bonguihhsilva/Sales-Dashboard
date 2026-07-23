@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getTenantContext } from '@/lib/auth/tenant'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { strictRateLimiter, getClientIp } from '@/lib/ratelimit'
+import { strictRateLimiter, strictUserRateLimiter, getClientIp } from '@/lib/ratelimit'
 import * as XLSX from 'xlsx'
 
 const MAX_SIZE = 10 * 1024 * 1024 // 10MB — mirrors parse-upload limit
@@ -13,6 +13,14 @@ export async function POST(req: NextRequest) {
 
   const { user, profile } = await getTenantContext()
   if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+
+  // Rate limiter — layer 2: por user.id, pos-auth, fail-closed. Nao forjavel
+  // por header e nao se desliga sozinho sob falha de DB.
+  const { success: userRateOk } = await strictUserRateLimiter.limit(user.id)
+  if (!userRateOk) {
+    return NextResponse.json({ error: 'Muitas tentativas' }, { status: 429 })
+  }
+
   if (!['adm', 'gerente', 'super_admin'].includes(profile?.role || '')) {
     return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
   }
