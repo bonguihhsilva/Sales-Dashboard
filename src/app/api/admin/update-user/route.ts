@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { getTenantContext } from '@/lib/auth/tenant'
-import { canInvite, isValidRole, setUserRole, ASSIGNABLE_ROLES } from '@/lib/auth/roles'
+import { canInvite, isValidRole, setUserRole, canAssignRole } from '@/lib/auth/roles'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { UserRole } from '@/types'
 
@@ -32,6 +32,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'userId obrigatorio' }, { status: 400 })
   }
   if (role !== undefined) {
+    // C-05: ninguem pode alterar a propria role, mesmo super_admin —
+    // evita auto-promocao e evita que um admin se tranque fora sem querer.
+    if (userId === user.id) {
+      return NextResponse.json({ error: 'Não é possível alterar a própria role' }, { status: 403 })
+    }
     if (!isValidRole(role)) {
       return NextResponse.json({ error: 'Role invalido' }, { status: 400 })
     }
@@ -39,8 +44,9 @@ export async function POST(req: NextRequest) {
     if (role === 'super_admin' && profile.role !== 'super_admin') {
       return NextResponse.json({ error: 'Acesso negado: Apenas super administradores podem atribuir esta role.' }, { status: 403 })
     }
-    // Usuários normais só podem gerenciar papéis atribuíveis
-    if (profile.role !== 'super_admin' && !ASSIGNABLE_ROLES.includes(role as UserRole)) {
+    // Hierarquia de atribuicao: gerente so atribui vendedor, adm atribui
+    // vendedor/gerente, super_admin atribui qualquer role (ja coberto acima).
+    if (!canAssignRole(profile.role, role as UserRole)) {
       return NextResponse.json({ error: 'Acesso negado: Esta role não é atribuível via interface.' }, { status: 403 })
     }
   }
