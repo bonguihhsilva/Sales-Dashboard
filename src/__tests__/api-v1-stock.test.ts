@@ -1,10 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { NextRequest } from 'next/server'
 
-vi.mock('@/lib/auth/apiKey', () => ({
+vi.mock('@/lib/auth/apiKey', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/auth/apiKey')>()),
   getApiKeyContext: vi.fn(),
-  hasScope: (ctx: { scopes: string[] }, scope: string) =>
-    ctx.scopes.includes('*') || ctx.scopes.includes(scope),
 }))
 vi.mock('@/lib/ratelimit', () => ({ apiV1RateLimiter: { limit: vi.fn() } }))
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: vi.fn() }))
