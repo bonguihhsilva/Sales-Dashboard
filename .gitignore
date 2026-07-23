@@ -35,3 +35,6 @@ next-env.d.ts
 
 # supabase cli (link metadata com project refs)
 supabase/.temp/
+
+# scratch/dev scripts — never commit ad-hoc scripts here
+scratch/
