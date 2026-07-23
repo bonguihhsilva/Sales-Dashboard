@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { getTenantContext } from '@/lib/auth/tenant'
-import { canInvite, isValidRole, ASSIGNABLE_ROLES } from '@/lib/auth/roles'
+import { canInvite, isValidRole, canAssignRole } from '@/lib/auth/roles'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { UserRole } from '@/types'
 import { strictRateLimiter } from '@/lib/ratelimit'
@@ -38,8 +38,10 @@ export async function POST(req: NextRequest) {
   if (role === 'super_admin' && profile.role !== 'super_admin') {
     return NextResponse.json({ error: 'Acesso negado: Apenas super administradores podem convidar usuários com esta role.' }, { status: 403 })
   }
-  // Admins/gerentes comuns só podem convidar roles que estão em ASSIGNABLE_ROLES
-  if (profile.role !== 'super_admin' && !ASSIGNABLE_ROLES.includes(role as UserRole)) {
+  // Hierarquia de atribuicao (C-05): mesma regra de update-user/route.ts —
+  // gerente so convida vendedor, adm convida vendedor/gerente, super_admin
+  // ja foi tratado no guard acima.
+  if (!canAssignRole(profile.role, role as UserRole)) {
     return NextResponse.json({ error: 'Acesso negado: Esta role não é atribuível via convites.' }, { status: 403 })
   }
   if (!loja) {
