@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { strictRateLimiter, enforceUserRateLimit, getClientIp } from '@/lib/ratelimit'
 import { evaluateRules, type RegraComissao } from '@/lib/commission-rules'
+import { filterUnapproved } from '@/lib/commission-approval'
 
 export async function POST(req: NextRequest) {
   // Rate limiter — layer 1: por IP (real, extraido de x-forwarded-for), pre-auth,
@@ -155,10 +156,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Nenhum vendedor com conta cadastrada' }, { status: 400 })
   }
 
+  // Comissões já aprovadas são imutáveis (C-04) — nunca reenviadas ao upsert.
+  // O trigger protect_approved_commission no banco é a garantia de último
+  // recurso; este filtro é o caminho normal, silencioso, da rota.
+  const rowsToUpsert = filterUnapproved(rows, approvedMap)
+  const skipped_approved = rows.length - rowsToUpsert.length
+
+  if (!rowsToUpsert.length) {
+    return NextResponse.json({ success: true, count: 0, skipped_approved })
+  }
+
   const { error } = await admin
     .from('comissoes_calculadas')
-    .upsert(rows, { onConflict: 'tenant_id,vendedor_id,periodo_id' })
+    .upsert(rowsToUpsert, { onConflict: 'tenant_id,vendedor_id,periodo_id' })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-  return NextResponse.json({ success: true, count: rows.length })
+  return NextResponse.json({ success: true, count: rowsToUpsert.length, skipped_approved })
 }
