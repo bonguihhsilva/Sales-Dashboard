@@ -4,19 +4,27 @@ import { getTenantContext } from '@/lib/auth/tenant'
 import { canInvite, isValidRole, assertRoleAssignable } from '@/lib/auth/roles'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { UserRole } from '@/types'
-import { strictRateLimiter } from '@/lib/ratelimit'
+import { strictRateLimiter, strictUserRateLimiter, getClientIp } from '@/lib/ratelimit'
 
 export async function POST(req: NextRequest) {
-  // Rate limiter
-  const ip = req.headers.get('x-forwarded-for') ?? 'anonymous'
+  // Rate limiter — layer 1: por IP (real, extraido de x-forwarded-for), pre-auth,
+  // fail-open. Unica barreira contra flood nao autenticado.
+  const ip = getClientIp(req)
   const { success } = await strictRateLimiter.limit(ip)
   if (!success) return NextResponse.json({ error: 'Muitas tentativas' }, { status: 429 })
 
   // 1. Verificar caller autenticado e contexto de tenant
   const { user, profile } = await getTenantContext()
-  
+
   if (!user) {
     return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+  }
+
+  // Rate limiter — layer 2: por user.id, pos-auth, fail-closed. Nao forjavel
+  // por header e nao se desliga sozinho sob falha de DB.
+  const { success: userRateOk } = await strictUserRateLimiter.limit(user.id)
+  if (!userRateOk) {
+    return NextResponse.json({ error: 'Muitas tentativas' }, { status: 429 })
   }
 
   // 2. Verificar caller pode criar convites (D-02) — via perfil
