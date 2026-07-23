@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { canAssignRole, isSelfRolePromotion } from '@/lib/auth/roles'
+import { canAssignRole, isSelfRolePromotion, assertRoleAssignable } from '@/lib/auth/roles'
+
+const testMessages = {
+  superAdminOnly: 'super-admin-only-message',
+  notAssignable: 'not-assignable-message',
+}
 
 describe('canAssignRole', () => {
   it('gerente pode atribuir vendedor', () => {
@@ -56,6 +61,32 @@ describe('canAssignRole', () => {
 
   it('role indefinida nao pode atribuir nada', () => {
     expect(canAssignRole(undefined, 'vendedor')).toBe(false)
+  })
+})
+
+describe('assertRoleAssignable', () => {
+  it('retorna a mensagem super_admin-especifica quando o alvo e super_admin e o caller nao e', () => {
+    expect(assertRoleAssignable('adm', 'super_admin', testMessages)).toBe(testMessages.superAdminOnly)
+  })
+
+  it('retorna a mensagem super_admin-especifica mesmo quando o caller e indefinido', () => {
+    expect(assertRoleAssignable(undefined, 'super_admin', testMessages)).toBe(testMessages.superAdminOnly)
+  })
+
+  it('retorna a mensagem generica de hierarquia quando o alvo nao e super_admin mas viola a hierarquia', () => {
+    expect(assertRoleAssignable('gerente', 'adm', testMessages)).toBe(testMessages.notAssignable)
+  })
+
+  it('retorna null quando gerente atribui vendedor (permitido)', () => {
+    expect(assertRoleAssignable('gerente', 'vendedor', testMessages)).toBeNull()
+  })
+
+  it('retorna null quando adm atribui gerente (permitido)', () => {
+    expect(assertRoleAssignable('adm', 'gerente', testMessages)).toBeNull()
+  })
+
+  it('retorna null quando super_admin atribui super_admin (permitido)', () => {
+    expect(assertRoleAssignable('super_admin', 'super_admin', testMessages)).toBeNull()
   })
 })
 

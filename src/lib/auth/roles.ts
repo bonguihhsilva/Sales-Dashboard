@@ -42,6 +42,33 @@ export function canAssignRole(
   return !!allowed && allowed.includes(targetRole)
 }
 
+// Mensagens de erro que assertRoleAssignable pode retornar — cada rota
+// (update-user, invite) informa seu proprio texto porque o contexto
+// (edicao vs convite) muda a redacao da mensagem exibida ao usuario.
+export interface RoleAssignmentMessages {
+  superAdminOnly: string
+  notAssignable: string
+}
+
+// Guarda compartilhada de atribuicao de role (C-05), usada por update-user
+// e invite: primeiro barra atribuir/convidar super_admin quando o caller
+// nao e super_admin (mensagem especifica), depois aplica a hierarquia geral
+// via canAssignRole (mensagem generica). Retorna null quando a atribuicao e
+// permitida. Funcao pura — nao consulta banco nem sessao.
+export function assertRoleAssignable(
+  callerRole: string | undefined,
+  targetRole: UserRole,
+  messages: RoleAssignmentMessages,
+): string | null {
+  if (targetRole === 'super_admin' && callerRole !== 'super_admin') {
+    return messages.superAdminOnly
+  }
+  if (!canAssignRole(callerRole, targetRole)) {
+    return messages.notAssignable
+  }
+  return null
+}
+
 // C-05: ninguem pode alterar a propria role, mesmo super_admin — evita
 // auto-promocao e evita que um admin se tranque fora sem querer. So bloqueia
 // quando o body realmente contem uma role (editar outros campos do proprio

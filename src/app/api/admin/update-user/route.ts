@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { getTenantContext } from '@/lib/auth/tenant'
-import { canInvite, isValidRole, setUserRole, canAssignRole, isSelfRolePromotion } from '@/lib/auth/roles'
+import { canInvite, isValidRole, setUserRole, assertRoleAssignable, isSelfRolePromotion } from '@/lib/auth/roles'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { UserRole } from '@/types'
 
@@ -40,14 +40,14 @@ export async function POST(req: NextRequest) {
     if (!isValidRole(role)) {
       return NextResponse.json({ error: 'Role invalido' }, { status: 400 })
     }
-    // Apenas super_admin pode atribuir a role super_admin
-    if (role === 'super_admin' && profile.role !== 'super_admin') {
-      return NextResponse.json({ error: 'Acesso negado: Apenas super administradores podem atribuir esta role.' }, { status: 403 })
-    }
-    // Hierarquia de atribuicao: gerente so atribui vendedor, adm atribui
-    // vendedor/gerente, super_admin atribui qualquer role (ja coberto acima).
-    if (!canAssignRole(profile.role, role as UserRole)) {
-      return NextResponse.json({ error: 'Acesso negado: Esta role não é atribuível via interface.' }, { status: 403 })
+    // Hierarquia de atribuicao (C-05): gerente so atribui vendedor, adm
+    // atribui vendedor/gerente, super_admin atribui qualquer role.
+    const denialMessage = assertRoleAssignable(profile.role, role as UserRole, {
+      superAdminOnly: 'Acesso negado: Apenas super administradores podem atribuir esta role.',
+      notAssignable: 'Acesso negado: Esta role não é atribuível via interface.',
+    })
+    if (denialMessage) {
+      return NextResponse.json({ error: denialMessage }, { status: 403 })
     }
   }
 
