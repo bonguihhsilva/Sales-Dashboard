@@ -96,7 +96,6 @@ export async function POST(req: NextRequest) {
     .filter(s => vendorToProfileId.has(s.vendor_id as string))
     .map(s => {
       const vendedor_id = vendorToProfileId.get(s.vendor_id as string)!
-      const prevApproval = approvedMap.get(vendedor_id)
 
       // Regras do gerente têm precedência sobre goals.commission_pct
       const ruleEval = evaluateRules(regras, {
@@ -147,8 +146,13 @@ export async function POST(req: NextRequest) {
           bonus3: Math.round(Number(s.bonus3) * 100) / 100,
         },
         calculado_em: new Date().toISOString(),
-        aprovado: prevApproval ? prevApproval.aprovado : false,
-        aprovado_por: prevApproval ? prevApproval.aprovado_por : null,
+        // Linhas cujo vendedor já está em approvedMap são removidas por
+        // filterUnapproved antes do upsert (C-04) — toda linha que chega
+        // até aqui é necessariamente não aprovada. Sempre false/null: se
+        // uma comissão precisar ser reaprovada, isso deve ser um ato
+        // deliberado de admin via /aprovar, nunca um carry-over do cálculo.
+        aprovado: false,
+        aprovado_por: null,
       }
     })
 
