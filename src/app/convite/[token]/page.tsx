@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent } from '@/components/ui/card'
 import { AlertCircle } from 'lucide-react'
 import { ConviteForm } from './ConviteForm'

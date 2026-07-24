@@ -1,7 +1,5 @@
 'use client'
 
-import { fmtK } from '@/lib/utils'
-
 // ── KPI Card ──────────────────────────────────────────────────────────────
 interface KpiProps {
   label: string

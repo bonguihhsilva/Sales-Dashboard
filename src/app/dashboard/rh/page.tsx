@@ -62,12 +62,12 @@ export default async function RHPage() {
 
       <div className="flex-1 glass-card rounded-2xl p-6 border border-white/5">
         <RHClient
-          profiles={(profiles ?? []).map((p: any) => ({ ...p, active: p.ativo }))}
+          profiles={(profiles ?? []).map((p) => ({ ...p, active: p.ativo }))}
           freeDays={mapName(freeDaysRaw) as Parameters<typeof RHClient>[0]['freeDays']}
           absences={mapName(absencesRaw) as Parameters<typeof RHClient>[0]['absences']}
           vacations={mapName(vacationsRaw) as Parameters<typeof RHClient>[0]['vacations']}
           permissions={mapName(permissionsRaw) as Parameters<typeof RHClient>[0]['permissions']}
-          delays={mapName(delaysRaw) as any}
+          delays={mapName(delaysRaw) as Parameters<typeof RHClient>[0]['delays']}
         />
       </div>
     </div>

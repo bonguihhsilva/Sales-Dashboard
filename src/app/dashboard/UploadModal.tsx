@@ -116,8 +116,9 @@ export default function UploadModal({ periods, tenantId }: { periods: Period[], 
         period_id: existing?.id,
         is_new: !existing,
       })
-    } catch (err: any) {
-      setMessage(`⚠ Erro ao processar o arquivo: ${err.message}`)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro desconhecido'
+      setMessage(`⚠ Erro ao processar o arquivo: ${message}`)
     }
     setDetecting(false)
   }

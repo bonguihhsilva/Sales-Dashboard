@@ -27,7 +27,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (error) throw error
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Erro desconhecido'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

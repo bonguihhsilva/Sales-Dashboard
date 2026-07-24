@@ -15,6 +15,14 @@ interface Slide {
   videoUrl?: string | null
 }
 
+interface Licao {
+  id: string
+  titulo?: string | null
+  url_midia?: string | null
+  conteudo_texto?: string | null
+  slides?: Slide[] | null
+}
+
 // Renderiza **negrito** inline dentro de um texto
 function renderInline(text: string) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g)
@@ -81,7 +89,7 @@ export default function LicaoClient({
   moduloId,
   jaConcluida
 }: {
-  licao: any,
+  licao: Licao,
   trilhaId: string,
   moduloId: string,
   jaConcluida: boolean
@@ -90,7 +98,7 @@ export default function LicaoClient({
   const [loading, setLoading] = useState(false)
   const [index, setIndex] = useState(0)
   const [dir, setDir] = useState<1 | -1>(1)
-  const [maxReached, setMaxReached] = useState(0)
+  const [, setMaxReached] = useState(0)
   const touchX = useRef<number | null>(null)
 
   // Monta os slides: slides JSONB > fallback dividindo conteudo_texto
@@ -153,8 +161,9 @@ export default function LicaoClient({
       await markLicaoComplete(licao.id, moduloId)
       router.push(`/vendedor/treinamentos/${trilhaId}/${moduloId}`)
       router.refresh()
-    } catch (err: any) {
-      toast.error('Erro', { description: err.message })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro desconhecido'
+      toast.error('Erro', { description: message })
       setLoading(false)
     }
   }

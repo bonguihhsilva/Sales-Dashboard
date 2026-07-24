@@ -373,7 +373,7 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
 
       {!hasCalculated && rows.length > 0 && (
         <p style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '10px' }}>
-          Valores acima são uma prévia baseada em vendor_summary. Clique em "Calcular Período" para registrar e habilitar aprovações.
+          Valores acima são uma prévia baseada em vendor_summary. Clique em &quot;Calcular Período&quot; para registrar e habilitar aprovações.
         </p>
       )}
     </div>

@@ -27,22 +27,21 @@ export default async function UsersPage({
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 
-  let listResult: any = { data: { users: [] } }
+  let authUsers: Array<{ id: string; last_sign_in_at?: string | null }> = []
   if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
     try {
-      listResult = await admin.auth.admin.listUsers({ perPage: 1000 })
-    } catch (err) {
+      const listResult = await admin.auth.admin.listUsers({ perPage: 1000 })
+      authUsers = listResult.data.users
+    } catch {
       // silently ignore fetch failed when running without valid Service Role Key
     }
   }
 
   const { data: profiles } = await admin.from('profiles').select('*').eq('tenant_id', tenantId).order('name')
-  
-  const authUsers = listResult?.data?.users ?? []
 
   const users: UserRow[] = (profiles ?? []).map((p) => ({
     ...(p as Profile),
-    last_sign_in_at: authUsers.find((u: any) => u.id === p.id)?.last_sign_in_at ?? null,
+    last_sign_in_at: authUsers.find((u) => u.id === p.id)?.last_sign_in_at ?? null,
   }))
 
   // Filtros em memoria (lista pequena — 3 lojas)

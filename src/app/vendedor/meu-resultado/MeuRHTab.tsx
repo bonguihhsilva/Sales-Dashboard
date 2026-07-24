@@ -4,12 +4,19 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import type { HRFreeDay, HRAbsence, HRVacation, HRPermission } from '@/types'
 
+export interface HRDelay {
+  id: string
+  delay_date: string
+  delay_minutes: number
+  status: 'pending' | 'justified' | 'approved' | 'rejected'
+}
+
 interface Props {
   freeDays: HRFreeDay[]
   absences: HRAbsence[]
   vacations: HRVacation[]
   permissions: HRPermission[]
-  delays?: any[]
+  delays?: HRDelay[]
 }
 
 const thStyle = {
@@ -74,7 +81,7 @@ function fmtDate(dateStr: string) {
 export default function MeuRHTab({ freeDays, absences, vacations, permissions, delays = [] }: Props) {
   const [showModal, setShowModal] = useState(false)
   const [showDelayModal, setShowDelayModal] = useState(false)
-  const [selectedDelay, setSelectedDelay] = useState<any>(null)
+  const [selectedDelay, setSelectedDelay] = useState<HRDelay | null>(null)
   const [delayJustification, setDelayJustification] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({

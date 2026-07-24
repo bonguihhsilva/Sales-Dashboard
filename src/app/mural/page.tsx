@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import MuralClient from './MuralClient'
-import type { Period } from '@/types'
 import { PageHeader } from '@/components/ui'
 
 export default async function MuralPage({
@@ -20,7 +19,7 @@ export default async function MuralPage({
   // Decide if we should show monetary values based on the role
   const showValues = jwtRole === 'super_admin' || jwtRole === 'adm' || jwtRole === 'gerente'
 
-  let profile: any = null
+  let profile: { tenant_id: string | null } | null = null
   if (!user) {
     redirect('/login')
   } else {

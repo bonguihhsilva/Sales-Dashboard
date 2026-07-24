@@ -4,11 +4,12 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { fmtCurrency, fmtK, metaLevel, bonusAmount } from '@/lib/utils'
-import { KpiCard, StorePill, ProgressBar, SectionTitle, LogoutButton, PageHeader } from '@/components/ui'
-import AnaliseTab from './AnaliseTab'
+import { KpiCard, StorePill, ProgressBar, SectionTitle, PageHeader } from '@/components/ui'
+import AnaliseTab, { type ClientItem } from './AnaliseTab'
 import CarteiraClient from '@/app/dashboard/carteira/CarteiraClient'
+import Link from 'next/link'
 
-import type { Period, HRFreeDay, HRAbsence, HRVacation, HRPermission } from '@/types'
+import type { Period } from '@/types'
 import type { CarteiraClient as Client } from '@/lib/carteira/types'
 
 export default async function MeuResultadoPage({
@@ -27,7 +28,21 @@ export default async function MeuResultadoPage({
   const jwtRole = (user?.app_metadata?.role as string | undefined) ?? 'vendedor'
   if (jwtRole !== 'vendedor' && jwtRole !== 'super_admin') redirect('/dashboard')
 
-  let profile: any = null
+  let profile: {
+    id: string
+    vendor_id: string | null
+    name: string | null
+    tenant_id: string | null
+    role: string
+    store: string | null
+  } = {
+    id: '',
+    vendor_id: null,
+    name: null,
+    tenant_id: null,
+    role: 'vendedor',
+    store: null,
+  }
   if (user) {
     const { data: dbProfile } = await supabase
       .from('profiles').select('*').eq('id', user.id).single()
@@ -209,11 +224,11 @@ export default async function MeuResultadoPage({
               <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2563eb' }}>Mural da Empresa</div>
             </div>
           </a>
-          <a 
-            href="/vendedor/treinamentos" 
-            style={{ 
-              display: 'flex', alignItems: 'center', gap: '8px', 
-              background: 'var(--surface)', border: '1px solid var(--border)', 
+          <Link
+            href="/vendedor/treinamentos"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              background: 'var(--surface)', border: '1px solid var(--border)',
               padding: '6px 12px', borderRadius: '6px', textDecoration: 'none', color: 'var(--text)',
               transition: 'all 0.2s'
             }}
@@ -223,7 +238,7 @@ export default async function MeuResultadoPage({
               <div style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Treinamentos</div>
               <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--meta3, #f5a742)' }}>Lvl {gamificacao?.nivel || 1} • {gamificacao?.xp_total || 0} XP</div>
             </div>
-          </a>
+          </Link>
         </div>}
         />
       </div>
@@ -364,7 +379,7 @@ export default async function MeuResultadoPage({
             totalItems={Number(currentSummary.total_items)}
             avgTicket={Number(currentSummary.avg_ticket)}
             color={col}
-            clientList={(clientsData ?? []) as any[]}
+            clientList={(clientsData ?? []) as ClientItem[]}
           />
         )}
 

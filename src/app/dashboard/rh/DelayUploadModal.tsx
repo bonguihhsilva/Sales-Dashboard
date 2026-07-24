@@ -11,6 +11,15 @@ interface Profile {
   active: boolean
 }
 
+type SheetRow = Record<string, string | number>
+
+interface DelayInsert {
+  user_id: string
+  delay_date: string
+  delay_minutes: number
+  status: string
+}
+
 interface DelayUploadModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -21,7 +30,7 @@ interface DelayUploadModalProps {
 export default function DelayUploadModal({ open, onOpenChange, onSuccess, profiles }: DelayUploadModalProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [parsedData, setParsedData] = useState<any[]>([])
+  const [parsedData, setParsedData] = useState<SheetRow[]>([])
   const [columns, setColumns] = useState<string[]>([])
   const [mapping, setMapping] = useState<{ emailOrName: string; date: string; minutes: string }>({
     emailOrName: '',
@@ -45,7 +54,7 @@ export default function DelayUploadModal({ open, onOpenChange, onSuccess, profil
         const wb = xlsx.read(bstr, { type: 'binary' })
         const wsname = wb.SheetNames[0]
         const ws = wb.Sheets[wsname]
-        const data = xlsx.utils.sheet_to_json(ws, { defval: '' }) as any[]
+        const data = xlsx.utils.sheet_to_json(ws, { defval: '' }) as SheetRow[]
         
         if (data.length > 0) {
           setParsedData(data)
@@ -62,8 +71,9 @@ export default function DelayUploadModal({ open, onOpenChange, onSuccess, profil
         } else {
           setError('O arquivo está vazio.')
         }
-      } catch (err: any) {
-        setError('Erro ao ler arquivo: ' + err.message)
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Erro desconhecido'
+        setError('Erro ao ler arquivo: ' + message)
       } finally {
         setLoading(false)
       }
@@ -81,7 +91,7 @@ export default function DelayUploadModal({ open, onOpenChange, onSuccess, profil
     setError('')
 
     try {
-      const inserts: any[] = []
+      const inserts: DelayInsert[] = []
       
       for (const row of parsedData) {
         const identifier = row[mapping.emailOrName]?.toString().trim()
@@ -107,7 +117,7 @@ export default function DelayUploadModal({ open, onOpenChange, onSuccess, profil
         }
         
         // Parse minutes
-        let delayMinutes = parseInt(minutesRaw, 10)
+        let delayMinutes = parseInt(String(minutesRaw), 10)
         if (isNaN(delayMinutes)) delayMinutes = 0
 
         if (delayMinutes <= 0) continue
@@ -132,8 +142,8 @@ export default function DelayUploadModal({ open, onOpenChange, onSuccess, profil
       setColumns([])
       if (fileInputRef.current) fileInputRef.current.value = ''
       onOpenChange(false)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro desconhecido')
     } finally {
       setLoading(false)
     }

@@ -51,8 +51,9 @@ export default function QuizClient({ questoes, trilhaId, moduloId }: Props) {
       try {
         const res = await submitQuiz(moduloId, respostas)
         setResultado(res)
-      } catch (err: any) {
-        setErro(err.message ?? 'Erro ao enviar prova.')
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Erro ao enviar prova.'
+        setErro(message)
       }
     })
   }

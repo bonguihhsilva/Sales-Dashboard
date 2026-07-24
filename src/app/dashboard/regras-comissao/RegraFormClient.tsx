@@ -6,14 +6,26 @@ import { createClient } from '@/lib/supabase/client'
 import { SectionTitle } from '@/components/ui'
 import { toast } from 'sonner'
 
+type Condicao = {
+  tipo: 'atingimento_meta' | 'volume_venda'
+  meta?: 'meta1' | 'meta2' | 'meta3'
+  comparador: '>=' | '>' | '==' | '<='
+  valor?: number | string
+}
+
+type Acao = {
+  tipo: 'comissao_percentual' | 'bonus_fixo'
+  valor: number | string
+}
+
 type Regra = {
   id?: string
   nome: string
   descricao: string
   ativo: boolean
   prioridade: number
-  condicoes: any[]
-  acao: any
+  condicoes: Condicao[]
+  acao: Acao
   tenant_id?: string
 }
 
@@ -27,8 +39,8 @@ export default function RegraFormClient({ regraInicial, tenantId }: { regraInici
   const [ativo, setAtivo] = useState(regraInicial?.ativo ?? true)
   const [prioridade, setPrioridade] = useState(regraInicial?.prioridade || 1)
   
-  const [condicoes, setCondicoes] = useState<any[]>(regraInicial?.condicoes || [])
-  const [acao, setAcao] = useState<any>(regraInicial?.acao || { tipo: 'comissao_percentual', valor: 0 })
+  const [condicoes, setCondicoes] = useState<Condicao[]>(regraInicial?.condicoes || [])
+  const [acao, setAcao] = useState<Acao>(regraInicial?.acao || { tipo: 'comissao_percentual', valor: 0 })
 
   const addCondicao = () => {
     setCondicoes([...condicoes, { tipo: 'atingimento_meta', meta: 'meta1', comparador: '>=' }])
@@ -38,7 +50,7 @@ export default function RegraFormClient({ regraInicial, tenantId }: { regraInici
     setCondicoes(condicoes.filter((_, i) => i !== index))
   }
 
-  const updateCondicao = (index: number, key: string, value: any) => {
+  const updateCondicao = (index: number, key: keyof Condicao, value: string | number) => {
     const newCondicoes = [...condicoes]
     newCondicoes[index] = { ...newCondicoes[index], [key]: value }
     setCondicoes(newCondicoes)
@@ -76,8 +88,9 @@ export default function RegraFormClient({ regraInicial, tenantId }: { regraInici
 
       router.push('/dashboard/regras-comissao')
       router.refresh()
-    } catch (err: any) {
-      toast.error('Erro ao salvar regra', { description: err.message })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro desconhecido'
+      toast.error('Erro ao salvar regra', { description: message })
     } finally {
       setLoading(false)
     }
@@ -166,7 +179,7 @@ export default function RegraFormClient({ regraInicial, tenantId }: { regraInici
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <div>
             <label className={labelClass}>Tipo de Ação</label>
-            <select className={inputClass} value={acao.tipo} onChange={e => setAcao({ ...acao, tipo: e.target.value })}>
+            <select className={inputClass} value={acao.tipo} onChange={e => setAcao({ ...acao, tipo: e.target.value as Acao['tipo'] })}>
               <option value="comissao_percentual">Comissão Percentual (%)</option>
               <option value="bonus_fixo">Bônus Fixo ($)</option>
             </select>

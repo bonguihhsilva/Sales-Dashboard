@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-  const rows = (data ?? []).map((row: any) => ({
+  const rows = (data ?? []).map((row: Record<string, unknown> & { profiles?: { name?: string } | null }) => ({
     ...row,
     user_name: row.profiles?.name ?? '',
     profiles: undefined,

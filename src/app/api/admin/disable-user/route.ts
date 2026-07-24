@@ -1,4 +1,3 @@
-import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { getTenantContext } from '@/lib/auth/tenant'
 import { canInvite } from '@/lib/auth/roles'

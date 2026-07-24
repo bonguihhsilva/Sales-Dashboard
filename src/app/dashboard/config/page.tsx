@@ -1,7 +1,6 @@
 import { getTenantContext } from '@/lib/auth/tenant'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import ConfigIndexClient from './ConfigIndexClient'
 
 export const dynamic = 'force-dynamic'

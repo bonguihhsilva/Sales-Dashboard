@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function SuperAdminPage() {
   const supabase = await createClient()
-  let { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
   // if (!user) redirect('/login')
 
@@ -25,14 +25,16 @@ export default async function SuperAdminPage() {
   // Get user counts
   const { data: profiles } = await adminDb.from('profiles').select('tenant_id')
   
-  const userCounts = (profiles || []).reduce((acc: Record<string, number>, p: any) => {
+  const userCounts = (profiles || []).reduce((acc: Record<string, number>, p: { tenant_id: string | null }) => {
     if (p.tenant_id) {
       acc[p.tenant_id] = (acc[p.tenant_id] || 0) + 1
     }
     return acc
   }, {})
 
-  const tenants = (tenantsData || []).map((t: any) => ({
+  type TenantWithoutCount = Omit<Parameters<typeof SuperAdminClient>[0]['tenants'][number], 'user_count'>
+
+  const tenants = (tenantsData || []).map((t: TenantWithoutCount) => ({
     ...t,
     user_count: userCounts[t.id] || 0
   }))
@@ -62,7 +64,7 @@ export default async function SuperAdminPage() {
         />
         <div style={{ marginTop: '1.5rem' }}>
           <ApiKeysManager
-            tenants={(tenantsData || []).map((t: any) => ({ id: t.id, nome: t.nome }))}
+            tenants={(tenantsData || []).map((t: { id: string; nome: string }) => ({ id: t.id, nome: t.nome }))}
             keys={apiKeys || []}
           />
         </div>

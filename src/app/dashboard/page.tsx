@@ -1,20 +1,17 @@
 export const dynamic = 'force-dynamic'
 
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getTenantContext } from '@/lib/auth/tenant'
 import { redirect } from 'next/navigation'
 import { fmtCurrency, fmtK, metaLevel, bonusAmount } from '@/lib/utils'
-import { KpiCard, StorePill, ProgressBar, BonusBadge, SectionTitle, LogoutButton, PageHeader } from '@/components/ui'
-import type { VendorSummary, Period } from '@/types'
-import UploadModal from './UploadModal'
+import { KpiCard, StorePill, ProgressBar, BonusBadge, SectionTitle, PageHeader } from '@/components/ui'
+import type { Period } from '@/types'
 import PeriodSelector from './PeriodSelector'
 import StoreSelector from './StoreSelector'
 import CarteiraClient from './carteira/CarteiraClient'
 import type { CarteiraClient as Client } from '@/lib/carteira/types'
 import EvolucaoTab from './EvolucaoTab'
 
-import ExportButton from './ExportButton'
 import Link from 'next/link'
 
 export default async function DashboardPage({
@@ -22,7 +19,7 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<{ period?: string; store?: string; tab?: string }>
 }) {
-  const { user, profile } = await getTenantContext()
+  const { profile } = await getTenantContext()
   const adminDb = createAdminClient()
 
   if (profile.role === 'vendedor') redirect('/vendedor/meu-resultado')

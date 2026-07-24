@@ -124,8 +124,9 @@ export async function POST(req: NextRequest) {
       detected,
       detected_system: detectedSystem,
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Parse upload error:', error)
-    return NextResponse.json({ error: error.message || 'Falha ao processar arquivo' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Falha ao processar arquivo'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

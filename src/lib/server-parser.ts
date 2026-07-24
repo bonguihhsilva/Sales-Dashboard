@@ -1,8 +1,13 @@
 import mammoth from 'mammoth'
-// Use require for pdf-parse because it has no default export
-const pdfParse = require('pdf-parse')
 import * as XLSX from 'xlsx'
 import { parseSalesHtml, SaleTransaction } from './parser'
+
+// pdf-parse v2's package.json exports a class-based ESM/CJS API (`PDFParse`), not a default
+// callable; this call site still invokes it as a v1-style function (`pdfParse(buffer, opts)`).
+// Converting to a static import would require rewriting parseSalesPdf() to the v2 class API
+// and re-verifying PDF parsing end-to-end — real restructuring outside the scope of this lint pass.
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- see justification above
+const pdfParse = require('pdf-parse')
 
 export async function parseUploadBuffer(buffer: Buffer, filename: string): Promise<SaleTransaction[]> {
   const ext = filename.split('.').pop()?.toLowerCase()
@@ -37,7 +42,7 @@ function parseSalesXlsx(buffer: Buffer): SaleTransaction[] {
   const wb = XLSX.read(buffer, { type: 'buffer', dense: true, sheetRows: 20000 })
   const ws = wb.Sheets[wb.SheetNames[0]]
   // Read as array of arrays
-  const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][]
+  const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as unknown[][]
   
   const transactions: SaleTransaction[] = []
 

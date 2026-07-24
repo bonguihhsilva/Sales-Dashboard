@@ -30,6 +30,10 @@ interface QuestaoProva {
   indice_correta: number; explicacao: string | null
 }
 
+// payload shape varies per modal `type` (Trilha | Modulo | Aula | Prova | QuestaoProva | partial
+// id-only bags); a discriminated union keyed on `type` would require restructuring every
+// modal.payload.* access site below (~30 call sites).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- see justification above
 type ModalState = { isOpen: boolean; type: string; payload?: any }
 
 const inputStyle: React.CSSProperties = {
@@ -68,14 +72,15 @@ export default function AdminLmsClient({
 
   const activeTrilha = initialTrilhas.find(t => t.id === activeTrilhaId) ?? null
 
-  const handleAction = async (actionFn: () => Promise<any>, successCallback?: () => void) => {
+  const handleAction = async (actionFn: () => Promise<{ error?: string } | void>, successCallback?: () => void) => {
     setLoading(true)
     try {
       const res = await actionFn()
       if (res && res.error) throw new Error(res.error)
       if (successCallback) successCallback()
-    } catch (e: any) {
-      toast.error('Erro', { description: e.message || 'Ocorreu um erro' })
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Ocorreu um erro'
+      toast.error('Erro', { description: message })
     }
     setLoading(false)
     setModal({ isOpen: false, type: '' })

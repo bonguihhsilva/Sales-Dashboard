@@ -10,7 +10,7 @@ interface SaleItem {
   total: number
 }
 
-interface ClientItem {
+export interface ClientItem {
   client_id: string
   client_name: string
   total_spent: number
@@ -38,9 +38,6 @@ interface Props {
   items?: SaleItem[]
   clientList?: ClientItem[]
 }
-
-const MOCK_ITEMS: SaleItem[] = []
-const MOCK_CLIENTS: ClientItem[] = []
 
 export default function AnaliseTab({
   sold, meta1, meta2, meta3, bonus1, bonus2, bonus3,

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { PageHeader } from '@/components/ui'
-import MeuRHTab from '../meu-resultado/MeuRHTab'
+import MeuRHTab, { type HRDelay } from '../meu-resultado/MeuRHTab'
 import type { HRFreeDay, HRAbsence, HRVacation, HRPermission } from '@/types'
 
 export const dynamic = 'force-dynamic'
@@ -55,7 +55,7 @@ export default async function VendedorRHPage() {
         absences={mockAbsences as HRAbsence[]}
         vacations={mockVacations as HRVacation[]}
         permissions={mockPermissions as HRPermission[]}
-        delays={mockDelays as any[]}
+        delays={mockDelays as HRDelay[]}
       />
     </div>
   )

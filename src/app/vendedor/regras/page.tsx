@@ -1,7 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
-import { SectionTitle, PageHeader } from '@/components/ui'
+import { PageHeader } from '@/components/ui'
 
 export const dynamic = 'force-dynamic'
+
+type Regra = {
+  id: string
+  nome: string
+  descricao: string
+  acao: { tipo?: 'comissao_percentual' | 'bonus_fixo'; valor?: number }
+  prioridade: number
+}
 
 export default async function VendedorRegrasPage() {
   const supabase = await createClient()
@@ -71,7 +79,7 @@ export default async function VendedorRegrasPage() {
 
         {/* Cards */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {(regras as any[]).map((regra, i) => {
+          {(regras as Regra[]).map((regra, i) => {
             const tipo = regra.acao?.tipo || 'bonus_fixo'
             const col = COLORS[tipo] || COLORS['bonus_fixo']
             const icon = ICONS[tipo] || '⭐'

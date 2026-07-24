@@ -15,7 +15,7 @@ export default async function EditarRegraPage({ params }: { params: Promise<{ id
     redirect('/dashboard')
   }
 
-  let finalTenant = profile.tenant_id
+  const finalTenant = profile.tenant_id
 
   const { id } = await params
   const adminDb = createAdminClient()

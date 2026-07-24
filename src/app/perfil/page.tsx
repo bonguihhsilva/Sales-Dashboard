@@ -15,7 +15,18 @@ export default async function PerfilPage() {
   const userId = user?.id
   if (!userId) redirect('/login')
 
-  let profile: any = null
+  let profile: {
+    id?: string
+    vendor_id?: string | null
+    name?: string | null
+    tenant_id?: string | null
+    role?: string | null
+    store?: string | null
+    telefone_corporativo?: string | null
+    telefone_pessoal?: string | null
+    data_nascimento?: string | null
+    data_admissao?: string | null
+  } | null = null
   if (user) {
     const { data: dbProfile } = await supabase
       .from('profiles').select('*').eq('id', user.id).single()

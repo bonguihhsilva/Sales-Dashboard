@@ -65,15 +65,12 @@ export default async function VendorDetailPage({
   const { data: dbStores } = await supabase.from('stores').select('*').eq('tenant_id', profile?.tenant_id)
   const stores = (dbStores || []).map(s => ({ key: s.name, label: s.name, color: s.color }))
   const storeObj = stores.find(s => s.key === summary.store)
-  const col = storeObj?.color || 'var(--accent)'
-
   const activePeriodLabel = (periods as Period[])?.find(p => p.id === activePeriod)?.label ?? ''
 
   // Ranking position
   const { data: allSummaries } = await adminDb
     .from('vendor_summary').select('vendor_id, total_sold, store').eq('period_id', activePeriod).eq('tenant_id', tenantId).order('total_sold', { ascending: false })
   const rankAll   = (allSummaries ?? []).findIndex(s => s.vendor_id === vendor_id) + 1
-  const rankStore = (allSummaries ?? []).filter(s => s.store === summary.store).findIndex(s => s.vendor_id === vendor_id) + 1
 
   const pctRef = lvl === 0
     ? `da 1ª meta (${fmtK(m1)})`

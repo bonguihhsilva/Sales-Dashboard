@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { SectionTitle } from '@/components/ui'
-import { fmtCurrency } from '@/lib/utils'
 
 type Store = {
   id: string
@@ -32,11 +31,11 @@ type Regra = {
 
 interface Props {
   stores: Store[]
-  regras: any[]
+  regras: Regra[]
   tenantId: string
 }
 
-export default function ConfigComissaoClient({ stores, regras, tenantId }: Props) {
+export default function ConfigComissaoClient({ stores, regras }: Props) {
   const router = useRouter()
   const [activeStoreId, setActiveStoreId] = useState<string>(stores[0]?.id || '')
   const [loading, setLoading] = useState(false)
@@ -143,8 +142,8 @@ export default function ConfigComissaoClient({ stores, regras, tenantId }: Props
       })
 
       router.refresh()
-    } catch (err: any) {
-      setErrorMsg(err.message)
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Erro desconhecido')
     } finally {
       setLoading(false)
     }
@@ -217,7 +216,7 @@ export default function ConfigComissaoClient({ stores, regras, tenantId }: Props
                   id="tipo-calculo"
                   className="w-full bg-background border border-white/10 rounded-xl px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary transition-colors text-sm mt-1.5"
                   value={tipoCalculo}
-                  onChange={e => setTipoCalculo(e.target.value as any)}
+                  onChange={e => setTipoCalculo(e.target.value as 'auto' | 'manual')}
                 >
                   <option value="auto">Automático (Baseado em histórico)</option>
                   <option value="manual">Manual (Valores fixados abaixo)</option>

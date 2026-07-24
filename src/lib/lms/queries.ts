@@ -196,9 +196,9 @@ export async function getTrilha(
   const modulosRawList = modulosRaw ?? []
   const moduloIds = modulosRawList.map(m => m.id)
 
-  let aulaCountMap = new Map<string, number>()
-  let questaoCountMap = new Map<string, number>()
-  let progressoMap = new Map<string, boolean>()
+  const aulaCountMap = new Map<string, number>()
+  const questaoCountMap = new Map<string, number>()
+  const progressoMap = new Map<string, boolean>()
 
   if (moduloIds.length > 0) {
     const [aulasResult, provasResult, progressoResult] = await Promise.all([

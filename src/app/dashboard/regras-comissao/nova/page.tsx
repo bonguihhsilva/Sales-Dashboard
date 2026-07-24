@@ -14,7 +14,7 @@ export default async function NovaRegraPage() {
     redirect('/dashboard')
   }
 
-  let finalTenant = profile.tenant_id
+  const finalTenant = profile.tenant_id
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>

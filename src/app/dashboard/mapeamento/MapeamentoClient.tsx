@@ -217,7 +217,7 @@ export default function MapeamentoClient({
               ⚠ Vendedores não registrados
             </h2>
             <p className="text-xs font-mono text-muted-foreground mt-1">
-              Estes IDs aparecem nas vendas importadas mas não têm metas cadastradas. Clique em "Registrar" para adicionar.
+              Estes IDs aparecem nas vendas importadas mas não têm metas cadastradas. Clique em &quot;Registrar&quot; para adicionar.
             </p>
           </div>
           <div className="glass-card rounded-2xl p-6 border border-white/5">

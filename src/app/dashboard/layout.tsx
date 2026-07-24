@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getTenantContext } from '@/lib/auth/tenant'
 import { Sidebar } from '@/components/ui/Sidebar'
@@ -10,7 +9,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const role = profile.role
   const userName = profile.name || user.email?.split('@')[0] || 'Usuário'
 
-  let tenants: any[] = []
+  let tenants: Array<{ id: string; nome: string }> = []
   if (role === 'super_admin') {
     const adminDb = createAdminClient()
     const { data } = await adminDb.from('tenants').select('id, nome').order('nome')

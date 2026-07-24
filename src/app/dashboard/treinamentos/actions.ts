@@ -12,7 +12,7 @@ async function checkAuth() {
     throw new Error('Acesso negado')
   }
 
-  let finalTenantId = profile.tenant_id ?? profile.original_tenant_id
+  const finalTenantId = profile.tenant_id ?? profile.original_tenant_id
   if (!finalTenantId) {
      throw new Error('Ação negada: Como Super Administrador, selecione uma organização (tenant) ativa no painel antes de gerenciar os treinamentos.')
   }
@@ -77,9 +77,10 @@ export async function createTrilhaAction(data: {
     if (error) throw new Error(error.message)
     revalidatePath('/dashboard/treinamentos')
     return { success: true }
-  } catch (e: any) {
+  } catch (e) {
     console.error('Error in createTrilhaAction:', e)
-    return { success: false, error: e.message }
+    const message = e instanceof Error ? e.message : 'Erro desconhecido'
+    return { success: false, error: message }
   }
 }
 

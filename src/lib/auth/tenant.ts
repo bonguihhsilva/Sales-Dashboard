@@ -1,6 +1,5 @@
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 
 export async function getTenantContext() {

@@ -6,7 +6,7 @@ import { LogoutButton } from '@/components/ui'
 import { TenantSwitcher } from './TenantSwitcher'
 import { useState } from 'react'
 
-export function Sidebar({ role, name, tenants = [], activeTenantId }: { role: string, name: string, tenants?: any[], activeTenantId?: string | null }) {
+export function Sidebar({ role, name, tenants = [], activeTenantId }: { role: string, name: string, tenants?: Array<{ id: string; nome: string }>, activeTenantId?: string | null }) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
 

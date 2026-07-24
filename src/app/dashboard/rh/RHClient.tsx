@@ -4,13 +4,22 @@ import { useState } from 'react'
 import type { HRFreeDay, HRAbsence, HRVacation, HRPermission } from '@/types'
 import DelayUploadModal from './DelayUploadModal'
 
+export interface HRDelay {
+  id: string
+  delay_date: string
+  delay_minutes: number
+  status: 'pending' | 'justified' | 'approved' | 'rejected'
+  justification?: string | null
+  user_name: string
+}
+
 interface Props {
   profiles: Array<{ id: string; name: string; role: string; active: boolean }>
   freeDays: HRFreeDay[]
   absences: HRAbsence[]
   vacations: HRVacation[]
   permissions: HRPermission[]
-  delays: any[]
+  delays: HRDelay[]
 }
 
 // ── Badge helpers ──────────────────────────────────────────────────────────────
@@ -745,7 +754,7 @@ function AtrasosTab({
   delays,
 }: {
   profiles: Props['profiles']
-  delays: any[]
+  delays: HRDelay[]
 }) {
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)

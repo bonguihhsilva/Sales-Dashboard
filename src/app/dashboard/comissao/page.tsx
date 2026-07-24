@@ -1,7 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getTenantContext } from '@/lib/auth/tenant'
-import { redirect } from 'next/navigation'
-import type { Period } from '@/types'
+import type { Period, Store } from '@/types'
 import PeriodSelector from '../PeriodSelector'
 import ComissaoClient, { type VendorRow } from './ComissaoClient'
 import ExportButton from '../ExportButton'
@@ -39,7 +38,6 @@ export default async function ComissaoPage({
 
   const params = await searchParams
   const activePeriod = params.period ? parseInt(params.period) : (periods?.[0]?.id ?? 1)
-  const activePeriodLabel = (periods as Period[])?.find(p => p.id === activePeriod)?.label ?? ''
 
   const { data: summaries } = await adminDb
     .from('vendor_summary')
@@ -100,7 +98,7 @@ export default async function ComissaoPage({
     .eq('tenant_id', profile?.tenant_id)
     .order('name')
 
-  const stores = (dbStores || []).map(s => ({ key: s.name, label: s.name, color: s.color }))
+  const stores = (dbStores || []) as Store[]
 
   return (
     <div className="min-h-full bg-background flex flex-col p-margin-page">
@@ -124,7 +122,7 @@ export default async function ComissaoPage({
           vendorRows={vendorRows}
           periodId={activePeriod}
           role={effectiveRole}
-          stores={stores as any}
+          stores={stores}
         />
       </div>
     </div>

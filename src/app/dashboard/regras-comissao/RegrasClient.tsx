@@ -12,8 +12,8 @@ type Regra = {
   descricao: string | null
   ativo: boolean
   prioridade: number
-  condicoes: any
-  acao: any
+  condicoes: unknown
+  acao: { tipo?: 'comissao_percentual' | 'bonus_fixo'; valor?: number } | null
 }
 
 export default function RegrasClient({ regras: initialRegras }: { regras: Regra[] }) {
@@ -33,8 +33,9 @@ export default function RegrasClient({ regras: initialRegras }: { regras: Regra[
       if (error) throw error
       setRegras(regras.map(r => r.id === id ? { ...r, ativo: !atual } : r))
       router.refresh()
-    } catch (err: any) {
-      toast.error('Erro', { description: err.message })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro desconhecido'
+      toast.error('Erro', { description: message })
     } finally {
       setLoading(false)
     }
@@ -52,8 +53,9 @@ export default function RegrasClient({ regras: initialRegras }: { regras: Regra[
       if (error) throw error
       setRegras(regras.filter(r => r.id !== id))
       router.refresh()
-    } catch (err: any) {
-      toast.error('Erro', { description: err.message })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro desconhecido'
+      toast.error('Erro', { description: message })
     } finally {
       setLoading(false)
     }
@@ -106,7 +108,7 @@ export default function RegrasClient({ regras: initialRegras }: { regras: Regra[
                   </div>
                   <div className="text-xs">
                     <strong className="text-muted-foreground mr-2 uppercase tracking-widest font-mono">Ação:</strong>
-                    <span className="text-on-surface-variant">{regra.acao?.tipo === 'comissao_percentual' ? `${regra.acao.valor}% sobre vendas` : (regra.acao?.tipo === 'bonus_fixo' ? `Bônus de $${regra.acao.valor}` : 'Personalizada')}</span>
+                    <span className="text-on-surface-variant">{regra.acao?.tipo === 'comissao_percentual' ? `${regra.acao?.valor}% sobre vendas` : (regra.acao?.tipo === 'bonus_fixo' ? `Bônus de $${regra.acao?.valor}` : 'Personalizada')}</span>
                   </div>
                 </div>
               </div>

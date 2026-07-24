@@ -27,7 +27,6 @@ function makeRequest(body: unknown): NextRequest {
   }) as unknown as NextRequest
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function makeFakeAdmin(opts: { updateError?: { message: string } | null } = {}) {
   const { updateError = null } = opts
   const eqMock = vi.fn(async () => ({ error: updateError }))

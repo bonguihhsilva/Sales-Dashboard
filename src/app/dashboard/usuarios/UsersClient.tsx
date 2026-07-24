@@ -49,7 +49,6 @@ import {
   SelectItem,
 } from '@/components/ui/select'
 import { ASSIGNABLE_ROLES } from '@/lib/auth/roles'
-import type { Store } from '@/types'
 import type { UserRow } from './page'
 
 // ── Helpers ────────────────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { applySystemPrefix, SYSTEM_PREFIXES } from '@/lib/connectors/base'
+import { applySystemPrefix } from '@/lib/connectors/base'
 import { PegasusConnector } from '@/lib/connectors/pegasus'
 import { ISRPConnector } from '@/lib/connectors/isrp'
 import { getConnector } from '@/lib/connectors/registry'

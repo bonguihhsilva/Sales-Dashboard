@@ -6,6 +6,8 @@ import MetasClient from './MetasClient'
 
 export const dynamic = 'force-dynamic'
 
+type MetasClientProps = Parameters<typeof MetasClient>[0]
+
 export default async function MetasPage() {
   // getTenantContext resolve o tenant respeitando masquerade do super_admin (cookie active_tenant_id)
   const { profile } = await getTenantContext()
@@ -15,9 +17,9 @@ export default async function MetasPage() {
   }
 
   const tenantId = profile.tenant_id
-  let periods: any[] = []
-  let goals: any[] = []
-  let stores: any[] = []
+  let periods: MetasClientProps['periods'] = []
+  let goals: MetasClientProps['goals'] = []
+  let stores: MetasClientProps['stores'] = []
 
   // tenantId null = super_admin sem tenant selecionado → listas vazias (escolher via switcher)
   if (tenantId) {
