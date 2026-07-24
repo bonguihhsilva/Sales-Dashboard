@@ -6,12 +6,17 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     # `next build` prerenders /login, which constructs a Supabase client at
     # build time. That client only validates that URL/key strings are
@@ -40,7 +45,7 @@ jobs:
         run: npm run build
 
       - name: Run tests
-        run: npx vitest run
+        run: npm test
 
       - name: Lint
         run: npm run lint
@@ -50,5 +55,12 @@ jobs:
       # would otherwise generate constant CI noise without an actionable fix
       # being available; they're still visible in `npm audit` output locally
       # and get triaged separately rather than blocking every PR.
+      #
+      # --omit=dev: scopes the audit to production dependencies only.
+      # devDependencies (eslint, vitest, typescript, etc.) never ship in the
+      # deployed app, so a high-severity advisory in a build-time-only tool
+      # carries much lower risk than one in a runtime dependency and doesn't
+      # justify blocking every PR. Run a full `npm audit` (no --omit) locally
+      # to triage dev-tooling advisories separately.
       - name: Audit dependencies (high/critical only)
         run: npm audit --omit=dev --audit-level=high
