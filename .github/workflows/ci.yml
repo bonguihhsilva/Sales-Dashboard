@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    # `next build` prerenders /login, which constructs a Supabase client at
+    # build time. That client only validates that URL/key strings are
+    # non-empty — it never makes a network call during the build — so these
+    # placeholders satisfy the constructor without needing real project
+    # credentials or GitHub secrets. Do not replace with actual Supabase
+    # values; this workflow performs verification only, not deploys.
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key-for-ci-build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests
+        run: npx vitest run
+
+      - name: Lint
+        run: npm run lint
+
+      # --audit-level=high: fails the build only on high/critical advisories.
+      # Low/moderate advisories are common in transitive dev tooling and
+      # would otherwise generate constant CI noise without an actionable fix
+      # being available; they're still visible in `npm audit` output locally
+      # and get triaged separately rather than blocking every PR.
+      - name: Audit dependencies (high/critical only)
+        run: npm audit --omit=dev --audit-level=high
