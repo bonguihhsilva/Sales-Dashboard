@@ -127,6 +127,9 @@ export interface Store {
   color: string
 }
 
+// Shared helper for Supabase rows joined with `profiles!user_id(name)`
+export type WithProfileName<T> = T & { profiles?: { name?: string } | null }
+
 // HR types (from main branch features)
 export type HRFreeDayStatus = 'available' | 'used' | 'expired' | 'deducted';
 export type HRAbsenceType   = 'deduct_free_day' | 'justified' | 'no_balance';

@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServerClient } from '@/lib/supabase/server'
+import type { WithProfileName } from '@/types'
 
 export async function GET(req: NextRequest) {
   const caller = await createServerClient()
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-  const rows = (data ?? []).map((row: Record<string, unknown> & { profiles?: { name?: string } | null }) => ({
+  const rows = (data ?? []).map((row: WithProfileName<Record<string, unknown>>) => ({
     ...row,
     user_name: row.profiles?.name ?? '',
     profiles: undefined,

@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { DataTable } from '@/components/ui/data-table'
 import { createTenant, toggleTenantStatus } from './actions'
 
-type TenantRow = {
+export type TenantRow = {
   id: string
   nome: string
   slug: string

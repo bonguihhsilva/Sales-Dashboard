@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { PageHeader } from '@/components/ui'
-import SuperAdminClient from './SuperAdminClient'
+import SuperAdminClient, { type TenantRow } from './SuperAdminClient'
 import ApiKeysManager from './ApiKeysManager'
 
 export const dynamic = 'force-dynamic'
@@ -32,7 +32,7 @@ export default async function SuperAdminPage() {
     return acc
   }, {})
 
-  type TenantWithoutCount = Omit<Parameters<typeof SuperAdminClient>[0]['tenants'][number], 'user_count'>
+  type TenantWithoutCount = Omit<TenantRow, 'user_count'>
 
   const tenants = (tenantsData || []).map((t: TenantWithoutCount) => ({
     ...t,
