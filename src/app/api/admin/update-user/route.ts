@@ -1,15 +1,21 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { getTenantContext } from '@/lib/auth/tenant'
 import { canInvite, isValidRole, setUserRole, assertRoleAssignable, isSelfRolePromotion } from '@/lib/auth/roles'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { UserRole } from '@/types'
 
-import { sanitizeString } from '@/lib/sanitize'
+// A-05: valida em vez de transformar — name/store nunca sao reescritos com
+// entidades HTML (o antigo sanitizeString corrompia nomes com apostrofo,
+// ex: "O'Brien" -> "O&#x27;Brien"). React ja escapa na renderizacao, entao
+// nao ha XSS a prevenir aqui — so garantir tamanho razoavel.
+const nameSchema = z.string().trim().min(1).max(200)
+const storeSchema = z.string().trim().min(1).max(120)
 
 export async function POST(req: NextRequest) {
   const { user, profile } = await getTenantContext()
-  
+
   if (!user) {
     return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
   }
@@ -20,12 +26,29 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json()
   const userId = body.userId
-  const name = body.name ? sanitizeString(body.name) : undefined
-  const role = body.role ? sanitizeString(body.role) : undefined
-  const store = body.store ? sanitizeString(body.store) : undefined
+
+  let name: string | undefined
+  if (body.name) {
+    const parsed = nameSchema.safeParse(body.name)
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Nome invalido (1-200 caracteres)' }, { status: 400 })
+    }
+    name = parsed.data
+  }
+
+  let store: string | undefined
+  if (body.store) {
+    const parsed = storeSchema.safeParse(body.store)
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Loja invalida (1-120 caracteres)' }, { status: 400 })
+    }
+    store = parsed.data
+  }
+
+  const role = body.role ? body.role : undefined
   const ativo = body.ativo
   const vendor_id = body.vendor_id !== undefined
-    ? (body.vendor_id ? sanitizeString(body.vendor_id) : null)
+    ? (body.vendor_id ? body.vendor_id : null)
     : undefined
 
   if (!userId) {

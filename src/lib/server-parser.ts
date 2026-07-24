@@ -3,7 +3,6 @@ import mammoth from 'mammoth'
 const pdfParse = require('pdf-parse')
 import * as XLSX from 'xlsx'
 import { parseSalesHtml, SaleTransaction } from './parser'
-import { sanitizeString } from './sanitize'
 
 export async function parseUploadBuffer(buffer: Buffer, filename: string): Promise<SaleTransaction[]> {
   const ext = filename.split('.').pop()?.toLowerCase()
@@ -25,14 +24,13 @@ export async function parseUploadBuffer(buffer: Buffer, filename: string): Promi
     throw new Error(`Formato não suportado: ${ext}`)
   }
 
-  // Sanitiza contra Stored XSS nos campos de texto
-  return results.map(t => ({
-    ...t,
-    vendor_id: sanitizeString(t.vendor_id),
-    client_id: sanitizeString(t.client_id),
-    client_name: sanitizeString(t.client_name),
-    order_ref: sanitizeString(t.order_ref),
-  }))
+  // A-05: os valores extraidos do arquivo (nomes/ids de cliente e vendedor)
+  // sao identificadores estruturais de um upload externo — nao ha HTML a
+  // escapar aqui (React ja escapa na renderizacao), e nao ha uma regra de
+  // "invalido" que faca sentido nesta camada (cada parser ja aplica seus
+  // proprios criterios de linha valida, ex: parseSalesXlsx descarta linhas
+  // sem vendor_id). Retorna os valores como extraidos, sem transforma-los.
+  return results
 }
 
 function parseSalesXlsx(buffer: Buffer): SaleTransaction[] {
