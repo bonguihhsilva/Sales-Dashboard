@@ -165,7 +165,7 @@ export default async function MeuResultadoPage({
   const { data: dbStores } = await supabase.from('stores').select('*').eq('tenant_id', profile.tenant_id)
   const stores = (dbStores || []).map(s => ({ key: s.name, label: s.name, color: s.color }))
   const storeObj = stores.find(s => s.key === currentSummary.store)
-  const col = storeObj?.color || 'var(--accent)'
+  const col = storeObj?.color || 'var(--ring)'
   const META_COL = ['var(--muted)','var(--meta1)','var(--meta2)','var(--meta3)'][lvl]
 
   const pctBase  = lvl === 0 ? m1 : lvl === 1 ? m1 : lvl === 2 ? m2 : m3
@@ -198,7 +198,7 @@ export default async function MeuResultadoPage({
               <a key={p.id}
                 href={`/vendedor/meu-resultado?period=${p.id}&tab=${activeTab}`}
                 style={{
-                  padding: '4px 10px', borderRadius: '6px', fontSize: '0.68rem', fontFamily: 'DM Mono, monospace',
+                  padding: '4px 10px', borderRadius: '6px', fontSize: '0.68rem', fontFamily: 'var(--font-jetbrains), monospace',
                   textDecoration: 'none', background: activePeriod === p.id ? 'var(--surface2)' : 'transparent',
                   border: '1px solid', borderColor: activePeriod === p.id ? 'var(--border)' : 'transparent',
                   color: activePeriod === p.id ? 'var(--text)' : 'var(--muted)',
@@ -209,19 +209,19 @@ export default async function MeuResultadoPage({
             ))}
           </div>
           <div style={{ height: '24px', width: '1px', background: 'var(--border)', margin: '0 5px' }}></div>
-          <a 
-            href="/mural" 
-            style={{ 
-              display: 'flex', alignItems: 'center', gap: '8px', 
-              background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', 
-              padding: '6px 12px', borderRadius: '6px', textDecoration: 'none', color: '#2563eb',
+          <a
+            href="/mural"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)',
+              padding: '6px 12px', borderRadius: '6px', textDecoration: 'none', color: '#3b82f6',
               transition: 'all 0.2s'
             }}
           >
-            <div style={{ fontSize: '1rem' }}>📣</div>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>campaign</span>
             <div style={{ textAlign: 'left' }}>
-              <div style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Acessar</div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2563eb' }}>Mural da Empresa</div>
+              <div style={{ fontSize: '0.6rem', fontFamily: 'var(--font-jetbrains), monospace', color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Acessar</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#3b82f6' }}>Mural da Empresa</div>
             </div>
           </a>
           <Link
@@ -233,9 +233,9 @@ export default async function MeuResultadoPage({
               transition: 'all 0.2s'
             }}
           >
-            <div style={{ fontSize: '1rem' }}>🎓</div>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>school</span>
             <div style={{ textAlign: 'left' }}>
-              <div style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Treinamentos</div>
+              <div style={{ fontSize: '0.6rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Treinamentos</div>
               <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--meta3, #f5a742)' }}>Lvl {gamificacao?.nivel || 1} • {gamificacao?.xp_total || 0} XP</div>
             </div>
           </Link>
@@ -293,9 +293,9 @@ export default async function MeuResultadoPage({
               <ProgressBar sold={sold} meta1={m1} meta2={m2} meta3={m3} metaLevel={lvl} />
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '8px' }}>
                 <span style={{ fontSize: '1.1rem', fontWeight: 800, color: META_COL }}>{pctLabel}%</span>
-                <span style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>{pctRef}</span>
+                <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)' }}>{pctRef}</span>
               </div>
-              <div style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '4px' }}>{remainMsg}</div>
+              <div style={{ fontSize: '0.68rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', marginTop: '4px' }}>{remainMsg}</div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -304,55 +304,55 @@ export default async function MeuResultadoPage({
                 background: ['rgba(107,111,122,0.1)','rgba(200,245,66,0.08)','rgba(66,217,245,0.08)','rgba(245,167,66,0.08)'][lvl],
                 borderColor: ['rgba(107,111,122,0.3)','rgba(200,245,66,0.3)','rgba(66,217,245,0.3)','rgba(245,167,66,0.3)'][lvl],
               }}>
-                <div style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px', color: META_COL }}>Bônus</div>
+                <div style={{ fontSize: '0.62rem', fontFamily: 'var(--font-jetbrains), monospace', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px', color: META_COL }}>Bônus</div>
                 <div style={{ fontSize: '2rem', fontWeight: 800, color: META_COL }}>{b > 0 ? `+$${b}` : '—'}</div>
-                <div style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', marginTop: '5px', opacity: 0.75, color: META_COL }}>
+                <div style={{ fontSize: '0.68rem', fontFamily: 'var(--font-jetbrains), monospace', marginTop: '5px', opacity: 0.75, color: META_COL }}>
                   {['Ainda não atingiu a 1ª meta','1ª meta atingida!','2ª meta atingida!','3ª meta atingida! 🏆'][lvl]}
                 </div>
               </div>
               <div style={{ background: 'var(--surface2)', borderRadius: '10px', padding: '1.25rem' }}>
-                <div style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Itens Vendidos</div>
+                <div style={{ fontSize: '0.62rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Itens Vendidos</div>
                 <div style={{ fontSize: '2rem', fontWeight: 800 }}>{Number(currentSummary.total_items).toLocaleString()}</div>
-                <div style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '4px' }}>{currentSummary.total_orders} notas emitidas</div>
+                <div style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', marginTop: '4px' }}>{currentSummary.total_orders} notas emitidas</div>
               </div>
             </div>
 
             {/* Commission detail card */}
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '1.25rem', marginTop: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                <span style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                   Comissão do Período
                 </span>
                 {comissaoCalc?.aprovado ? (
-                  <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', padding: '3px 9px', borderRadius: '4px', background: '#22c55e22', color: '#22c55e' }}>aprovada</span>
+                  <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', padding: '3px 9px', borderRadius: '4px', background: '#22c55e22', color: '#22c55e' }}>aprovada</span>
                 ) : comissaoCalc ? (
-                  <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', padding: '3px 9px', borderRadius: '4px', background: '#f5a74222', color: '#f5a742' }}>pendente de aprovação</span>
+                  <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', padding: '3px 9px', borderRadius: '4px', background: '#f5a74222', color: '#f5a742' }}>pendente de aprovação</span>
                 ) : (
-                  <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', padding: '3px 9px', borderRadius: '4px', background: 'var(--surface2)', color: 'var(--muted)' }}>não calculada</span>
+                  <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', padding: '3px 9px', borderRadius: '4px', background: 'var(--surface2)', color: 'var(--muted)' }}>não calculada</span>
                 )}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
                 <div>
-                  <div style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginBottom: '4px' }}>Base</div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 700, fontFamily: 'DM Mono, monospace' }}>
+                  <div style={{ fontSize: '0.62rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', marginBottom: '4px' }}>Base</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, fontFamily: 'var(--font-jetbrains), monospace' }}>
                     {fmtCurrency(comissaoCalc ? Number(comissaoCalc.comissao_base) : sold * Number(currentSummary.commission_pct))}
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginBottom: '4px' }}>Bônus</div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 700, fontFamily: 'DM Mono, monospace', color: b > 0 ? 'var(--meta1)' : 'var(--muted)' }}>
+                  <div style={{ fontSize: '0.62rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', marginBottom: '4px' }}>Bônus</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, fontFamily: 'var(--font-jetbrains), monospace', color: b > 0 ? 'var(--meta1)' : 'var(--muted)' }}>
                     {b > 0 ? fmtCurrency(comissaoCalc ? Number(comissaoCalc.bonus_total) : b) : '—'}
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginBottom: '4px' }}>Total</div>
+                  <div style={{ fontSize: '0.62rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', marginBottom: '4px' }}>Total</div>
                   <div style={{ fontSize: '1.4rem', fontWeight: 800, color: comissaoCalc?.aprovado ? '#22c55e' : META_COL }}>
                     {fmtCurrency(comissaoCalc ? Number(comissaoCalc.total) : commission)}
                   </div>
                 </div>
               </div>
               {!comissaoCalc && (
-                <div style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '10px', opacity: 0.7 }}>
+                <div style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', marginTop: '10px', opacity: 0.7 }}>
                   Prévia — comissão oficial será calculada e aprovada pelo gerente
                 </div>
               )}
@@ -387,7 +387,7 @@ export default async function MeuResultadoPage({
         {activeTab === 'evolucao' && (
           <div>
             {(!evolution || evolution.length === 0) ? (
-              <div style={{ textAlign: 'center', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', padding: '3rem' }}>
+              <div style={{ textAlign: 'center', color: 'var(--muted)', fontFamily: 'var(--font-jetbrains), monospace', padding: '3rem' }}>
                 Ainda não há histórico de meses anteriores.
               </div>
             ) : (
@@ -396,27 +396,27 @@ export default async function MeuResultadoPage({
                   <thead>
                     <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
                       {['Período','Total Vendido','1ª Meta','3ª Meta','Meta Atingida','Bônus','Clientes'].map(h => (
-                        <th key={h} style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '12px 14px', textAlign: h === 'Período' ? 'left' : 'right' }}>{h}</th>
+                        <th key={h} style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.7rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '12px 14px', textAlign: h === 'Período' ? 'left' : 'right' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {evolution.map((d: { year: number; month: number; period_label: string; total_sold: number; meta1: number; meta3: number; meta_level: number; bonus_earned: number; unique_clients: number }) => {
                       const eLvl = d.meta_level
-                      const eCol = ['#6b6f7a','#c8f542','#42d9f5','#f5a742'][eLvl]
+                      const eCol = ['#958da1','#22c55e','#eab308','#ef4444'][eLvl]
                       return (
                         <tr key={`${d.year}-${d.month}`} style={{ borderBottom: '1px solid var(--border)' }}>
                           <td style={{ padding: '8px 10px', fontWeight: 600 }}>{d.period_label}</td>
-                          <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: eCol }}>{fmtCurrency(Number(d.total_sold))}</td>
-                          <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>{fmtK(Number(d.meta1))}</td>
-                          <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>{fmtK(Number(d.meta3))}</td>
+                          <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', fontWeight: 700, color: eCol }}>{fmtCurrency(Number(d.total_sold))}</td>
+                          <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)' }}>{fmtK(Number(d.meta1))}</td>
+                          <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)' }}>{fmtK(Number(d.meta3))}</td>
                           <td style={{ padding: '8px 10px', textAlign: 'right' }}>
-                            <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px', background: eCol + '22', color: eCol }}>
+                            <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px', background: eCol + '22', color: eCol }}>
                               {eLvl > 0 ? `${eLvl}ª meta` : '—'}
                             </span>
                           </td>
-                          <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', color: eCol }}>{Number(d.bonus_earned) > 0 ? `+$${Number(d.bonus_earned)}` : '—'}</td>
-                          <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>{Number(d.unique_clients).toLocaleString()}</td>
+                          <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', color: eCol }}>{Number(d.bonus_earned) > 0 ? `+$${Number(d.bonus_earned)}` : '—'}</td>
+                          <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)' }}>{Number(d.unique_clients).toLocaleString()}</td>
                         </tr>
                       )
                     })}

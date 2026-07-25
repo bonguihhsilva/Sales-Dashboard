@@ -10,7 +10,7 @@ import { findCategoryGaps, CATEGORY_UNIVERSE, type CategoryMix } from '@/lib/car
 
 type Filter = 'all' | Segment
 
-const CAT_COLORS = ['#2563eb', '#10b981', '#f5a742', '#8b5cf6', '#06b6d4', '#f43f5e']
+const CAT_COLORS = ['#3b82f6', '#10b981', '#f5a742', '#8b5cf6', '#06b6d4', '#f43f5e']
 
 export default function CarteiraClient({ clients, color, periodId }: { clients: Client[]; color: string; periodId: number }) {
   const [search, setSearch] = useState('')
@@ -69,7 +69,7 @@ export default function CarteiraClient({ clients, color, periodId }: { clients: 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: '10px', marginBottom: '1rem' }}>
         {kpis.map(k => (
           <div key={k.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '1rem 1.25rem' }}>
-            <div style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '5px' }}>{k.label}</div>
+            <div style={{ fontSize: '0.62rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '5px' }}>{k.label}</div>
             <div style={{ fontSize: '1.2rem', fontWeight: 800, color: k.color || 'var(--text)' }}>{k.value}</div>
           </div>
         ))}
@@ -79,10 +79,10 @@ export default function CarteiraClient({ clients, color, periodId }: { clients: 
       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
         {pills.map(p => {
           const on  = filter === p.key
-          const col = p.key === 'all' ? 'var(--accent)' : SEGMENT_COLORS[p.key as Segment]
+          const col = p.key === 'all' ? '#3b82f6' : SEGMENT_COLORS[p.key as Segment]
           return (
             <button key={p.key} onClick={() => setFilter(p.key)} style={{
-              fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', padding: '4px 11px', borderRadius: '20px',
+              fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.7rem', padding: '4px 11px', borderRadius: '20px',
               cursor: 'pointer', border: `1px solid ${on ? col : 'var(--border)'}`,
               background: on ? `${col}22` : 'transparent', color: on ? col : 'var(--muted)',
             }}>
@@ -95,7 +95,7 @@ export default function CarteiraClient({ clients, color, periodId }: { clients: 
           placeholder="Buscar cliente..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ marginLeft: 'auto', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', padding: '6px 10px', width: '200px', outline: 'none' }}
+          style={{ marginLeft: 'auto', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.7rem', padding: '6px 10px', width: '200px', outline: 'none' }}
         />
       </div>
 
@@ -105,7 +105,7 @@ export default function CarteiraClient({ clients, color, periodId }: { clients: 
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)' }}>
               {['#', 'Cliente', 'Segmento', 'Total', 'Ticket méd.', 'Tend.', 'Última compra'].map((h, i) => (
-                <th key={h} style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '6px 10px', textAlign: i >= 3 && i <= 5 ? 'right' : 'left', whiteSpace: 'nowrap' }}>{h}</th>
+                <th key={h} style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '6px 10px', textAlign: i >= 3 && i <= 5 ? 'right' : 'left', whiteSpace: 'nowrap' }}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -120,28 +120,28 @@ export default function CarteiraClient({ clients, color, periodId }: { clients: 
                   onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface2)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
-                  <td style={{ padding: '7px 10px', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: 'var(--muted)' }}>{i + 1}</td>
+                  <td style={{ padding: '7px 10px', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.65rem', color: 'var(--muted)' }}>{i + 1}</td>
                   <td style={{ padding: '7px 10px', fontWeight: 500, fontSize: '0.78rem' }}>{c.client_name}</td>
                   <td style={{ padding: '7px 10px' }}>
-                    <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', padding: '2px 7px', borderRadius: '5px', background: `${SEGMENT_COLORS[c.segment]}22`, color: SEGMENT_COLORS[c.segment] }}>{SEGMENT_LABELS[c.segment]}</span>
+                    <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.6rem', padding: '2px 7px', borderRadius: '5px', background: `${SEGMENT_COLORS[c.segment]}22`, color: SEGMENT_COLORS[c.segment] }}>{SEGMENT_LABELS[c.segment]}</span>
                   </td>
-                  <td style={{ padding: '7px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontWeight: 600, color: 'var(--accent)' }}>{fmtCurrency(Number(c.total_spent))}</td>
-                  <td style={{ padding: '7px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem' }}>{fmtCurrency(Number(c.avg_ticket))}</td>
-                  <td style={{ padding: '7px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem',
+                  <td style={{ padding: '7px 10px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', fontWeight: 600, color: 'var(--text)' }}>{fmtCurrency(Number(c.total_spent))}</td>
+                  <td style={{ padding: '7px 10px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.75rem' }}>{fmtCurrency(Number(c.avg_ticket))}</td>
+                  <td style={{ padding: '7px 10px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.75rem',
                     color: c.trendPct == null ? 'var(--muted)' : c.trendPct > 2 ? '#10b981' : c.trendPct < -2 ? '#f43f5e' : 'var(--muted)' }}>
                     {c.trendPct == null ? (c.segment === 'novo' ? 'novo' : '—')
                       : `${c.trendPct > 0 ? '▲' : c.trendPct < 0 ? '▼' : ''} ${Math.abs(Math.round(c.trendPct))}%`}
                   </td>
                   <td style={{ padding: '7px 10px' }}>
                     <span style={{ display: 'inline-block', width: '7px', height: '7px', borderRadius: '50%', background: recencyColor(daysAgo), marginRight: '6px', verticalAlign: 'middle' }} />
-                    <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.7rem' }}>{c.last_purchase}</span>
-                    <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: 'var(--muted)', marginLeft: '4px' }}>({recencyLabel(daysAgo)})</span>
+                    <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.7rem' }}>{c.last_purchase}</span>
+                    <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.6rem', color: 'var(--muted)', marginLeft: '4px' }}>({recencyLabel(daysAgo)})</span>
                   </td>
                 </tr>
               )
             })}
             {filtered.length === 0 && (
-              <tr><td colSpan={7} style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>Nenhum cliente encontrado</td></tr>
+              <tr><td colSpan={7} style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)', fontFamily: 'var(--font-jetbrains), monospace' }}>Nenhum cliente encontrado</td></tr>
             )}
           </tbody>
         </table>
@@ -162,22 +162,26 @@ export default function CarteiraClient({ clients, color, periodId }: { clients: 
           <div onClick={e => e.stopPropagation()} style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '360px', background: 'var(--bg)', borderLeft: '1px solid var(--border)', overflowY: 'auto', zIndex: 9999 }}>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
               <div style={{ fontSize: '0.95rem', fontWeight: 800 }}>{selected.client_name}</div>
-              <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.62rem', color: 'var(--muted)', marginTop: '3px' }}>
+              <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.62rem', color: 'var(--muted)', marginTop: '3px' }}>
                 {selected.vendor_name ?? selected.vendor_id} · {selected.total_orders} compras
               </div>
               <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
-                <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', padding: '2px 7px', borderRadius: '5px', background: `${SEGMENT_COLORS[selected.segment]}22`, color: SEGMENT_COLORS[selected.segment] }}>{SEGMENT_LABELS[selected.segment]}</span>
-                <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', padding: '2px 7px', borderRadius: '5px', background: '#2563eb22', color: '#5b9bff' }}>R{selected.rfm.r} F{selected.rfm.f} M{selected.rfm.m}</span>
+                <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.6rem', padding: '2px 7px', borderRadius: '5px', background: `${SEGMENT_COLORS[selected.segment]}22`, color: SEGMENT_COLORS[selected.segment] }}>{SEGMENT_LABELS[selected.segment]}</span>
+                <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.6rem', padding: '2px 7px', borderRadius: '5px', background: '#3b82f622', color: '#93c5fd' }}>R{selected.rfm.r} F{selected.rfm.f} M{selected.rfm.m}</span>
               </div>
             </div>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <button onClick={() => setHistoryTab('ultima')} style={{ padding: '9px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#fff', fontWeight: 600, cursor: 'pointer' }}>🧾 Abrir última nota</button>
-              <button onClick={() => setHistoryTab('todas')} style={{ padding: '9px', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontWeight: 600, cursor: 'pointer' }}>📜 Abrir histórico do cliente</button>
+              <button onClick={() => setHistoryTab('ultima')} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '9px', borderRadius: '8px', border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 600, cursor: 'pointer' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>receipt_long</span> Abrir última nota
+              </button>
+              <button onClick={() => setHistoryTab('todas')} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '9px', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontWeight: 600, cursor: 'pointer' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>history</span> Abrir histórico do cliente
+              </button>
             </div>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
-              <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '10px' }}>Mix por categoria</div>
-              {loadingMix ? <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', color: 'var(--muted)' }}>Carregando…</div>
-              : mix.length === 0 ? <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', color: 'var(--muted)' }}>Nenhum item registrado neste período.</div>
+              <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '10px' }}>Mix por categoria</div>
+              {loadingMix ? <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.7rem', color: 'var(--muted)' }}>Carregando…</div>
+              : mix.length === 0 ? <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.7rem', color: 'var(--muted)' }}>Nenhum item registrado neste período.</div>
               : (<>
                 <div style={{ display: 'flex', height: '14px', borderRadius: '4px', overflow: 'hidden', marginBottom: '10px' }}>
                   {mix.map((m, i) => <div key={m.category} style={{ width: `${m.pct}%`, background: CAT_COLORS[i % CAT_COLORS.length] }} />)}
@@ -185,13 +189,13 @@ export default function CarteiraClient({ clients, color, periodId }: { clients: 
                 {mix.map((m, i) => (
                   <div key={m.category} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', marginBottom: '5px' }}>
                     <span><span style={{ display: 'inline-block', width: '7px', height: '7px', borderRadius: '50%', background: CAT_COLORS[i % CAT_COLORS.length], marginRight: '6px' }} />{m.category}</span>
-                    <span style={{ fontFamily: 'DM Mono, monospace' }}>{m.pct}%</span>
+                    <span style={{ fontFamily: 'var(--font-jetbrains), monospace' }}>{m.pct}%</span>
                   </div>
                 ))}
               </>)}
             </div>
             <div style={{ padding: '14px 16px' }}>
-              <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '10px' }}>Oportunidades (lacunas)</div>
+              <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '10px' }}>Oportunidades (lacunas)</div>
               {findCategoryGaps(mix.map(m => m.category), CATEGORY_UNIVERSE).map(g => (
                 <div key={g} style={{ fontSize: '0.72rem', padding: '6px 9px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', marginBottom: '6px' }}>{g} — nunca comprou</div>
               ))}
