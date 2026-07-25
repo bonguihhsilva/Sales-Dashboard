@@ -56,8 +56,29 @@
   "overrides": {
     "postcss": "$postcss",
     "sharp": "^0.35.0",
-    "brace-expansion": "^5.0.8",
+    "glob": {
+      "minimatch": {
+        "brace-expansion": "^5.0.8"
+      }
+    },
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": {
+        "brace-expansion": "^5.0.8"
+      }
+    },
+    "@ts-morph/common": {
+      "minimatch": {
+        "brace-expansion": "^5.0.8"
+      }
+    },
     "fast-uri": "^4.1.1",
     "body-parser": "^2.3.0"
+  },
+  "overridesNotes": {
+    "postcss": "resolves next's bundled pinned postcss@8.4.31 (XSS/path-traversal-class advisories) -- pins to root devDependency version via $postcss",
+    "sharp": "resolves next's optional sharp@^0.34.3 dependency (libvips CVEs) -- sharp itself unused directly in src/",
+    "glob / @typescript-eslint/typescript-estree / @ts-morph/common -> minimatch -> brace-expansion": "GHSA-3jxr-9vmj-r5cp (ReDoS) + GHSA-mh99-v99m-4gvg (unbounded-expansion OOM) affect every brace-expansion release <=5.0.7 across all major lines; only 5.0.8 fixes both. Scoped (not global) so the override does NOT reach minimatch@3.1.5 (used by eslint/eslint-plugin-*/@eslint/config-array/@eslint/eslintrc), which expects brace-expansion's old callable-function API and breaks under v5's named-export shape. That eslint/minimatch@3.1.5 chain keeps its natural ^1.1.7 resolution (currently 1.1.13-1.1.16), which fixes the ReDoS advisory but NOT the OOM advisory (no 1.x release ever received that fix). Accepted residual risk: devDependency-only, brace patterns come from developer-authored config (eslint.config.js ignores / our own glob calls), never attacker-controlled input, and this path is outside the `npm audit --omit=dev` CI gate.",
+    "fast-uri": "resolves GHSA-v2hh-gcrm-f6hx + GHSA-4c8g-83qw-93j6 (host-confusion / IDN canonicalization, both high) in fast-uri <=3.1.3, pulled in via ajv@8.20.0 (three copies: @modelcontextprotocol/sdk's ajv from the shadcn/mcp-sdk chain, ajv-formats, schema-utils). Left as a global override (not scoped) because all three ajv copies are the identical version (8.20.0) with the identical `require('fast-uri')` usage pattern -- no consumer in the tree wants a pre-3.x API, so there is no conflicting-API risk like brace-expansion's. Verified: fast-uri v4's CJS export shape (parse/serialize/resolve/resolveComponent/equal/normalize as direct properties, mutable `.code`) is unchanged from v3 per upstream release notes (v4.0.0-4.1.1 list only TS type cleanup + normalization bugfixes, no runtime API changes), and a live ajv-formats `uri` format + `$ref` resolution smoke test against the actual installed fast-uri@4.1.1 passed. ajv's own declared range (^3.0.1) not being satisfied by 4.x is a semver-major bump beyond ajv's tested range, so treat this as medium-confidence, not proven -- revisit if ajv/mcp-sdk is upgraded.",
+    "body-parser": "resolves body-parser <2.2.0 DoS/other advisories pulled in transitively"
   }
 }
