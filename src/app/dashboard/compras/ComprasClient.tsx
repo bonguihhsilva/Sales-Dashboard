@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { updateProductCost } from './actions'
+import { KpiCard } from '@/components/ui'
 import type { InventoryMetric, AbcRow, RankingRow, InventorySummary, MovementClass } from './types'
 
 const TABS = [
@@ -170,23 +171,23 @@ function VisaoGeral({
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Kpi label="Valor em estoque" value={money(summary?.total_stock_value)} hint="a custo vigente" />
-        <Kpi label="SKUs" value={summary ? String(summary.total_skus) : '—'} hint={`${summary?.skus_sem_custo ?? 0} sem custo`} />
-        <Kpi label="Em ruptura" value={summary ? String(summary.skus_em_quebra) : '—'} hint="estoque zerado hoje" tone={summary && summary.skus_em_quebra > 0 ? 'error' : undefined} />
-        <Kpi label="Parados" value={summary ? String(summary.skus_parados) : '—'} hint="sem giro, capital preso" tone={summary && summary.skus_parados > 0 ? 'warn' : undefined} />
+        <KpiCard label="Valor em estoque" value={money(summary?.total_stock_value)} sub="a custo vigente" />
+        <KpiCard label="SKUs" value={summary ? String(summary.total_skus) : '—'} sub={`${summary?.skus_sem_custo ?? 0} sem custo`} />
+        <KpiCard label="Em ruptura" value={summary ? String(summary.skus_em_quebra) : '—'} sub="estoque zerado hoje" valueClassName={summary && summary.skus_em_quebra > 0 ? 'text-error' : ''} />
+        <KpiCard label="Parados" value={summary ? String(summary.skus_parados) : '—'} sub="sem giro, capital preso" valueClassName={summary && summary.skus_parados > 0 ? 'text-meta2' : ''} />
       </div>
 
       <Card title="Alertas de reposição" subtitle="Ruptura agora ou cobertura abaixo de 7 dias. Decisão: o que comprar esta semana.">
         {alertas.length === 0 ? (
           <Empty>Nenhum item em risco de ruptura.</Empty>
         ) : (
-          <Table head={['Produto', 'Estoque', 'Venda/dia', 'Cobertura', 'Situação']}>
+          <Table head={['Produto', { label: 'Estoque', align: 'right' }, { label: 'Venda/dia', align: 'right' }, { label: 'Cobertura', align: 'right' }, 'Situação']}>
             {alertas.map(m => (
-              <tr key={m.product_code} className="border-t border-white/5">
-                <Td><strong>{m.product_name ?? m.product_code}</strong><div className="text-on-surface-variant text-label-sm">{m.product_code}</div></Td>
-                <Td>{m.current_qty === null ? '—' : num(m.current_qty, 0)}</Td>
-                <Td>{num(m.ads, 2)}</Td>
-                <Td>{m.dos === null ? '—' : `${num(m.dos)} dias`}</Td>
+              <tr key={m.product_code} className="hover:bg-white/[0.03] transition-colors">
+                <Td><strong>{m.product_name ?? m.product_code}</strong><div className="text-on-surface-variant font-mono text-[0.6875rem]">{m.product_code}</div></Td>
+                <Td className="text-right font-mono">{m.current_qty === null ? '—' : num(m.current_qty, 0)}</Td>
+                <Td className="text-right font-mono">{num(m.ads, 2)}</Td>
+                <Td className="text-right font-mono">{m.dos === null ? '—' : `${num(m.dos)} dias`}</Td>
                 <Td>
                   {m.is_stockout_now ? (
                     <Badge className="bg-error/20 text-error">Sem estoque</Badge>
@@ -204,14 +205,14 @@ function VisaoGeral({
         {fastMovers.length === 0 ? (
           <Empty>Nenhum item classificado como alta rotatividade.</Empty>
         ) : (
-          <Table head={['Produto', 'Estoque', 'Venda/dia', 'Cobertura', 'Giro anual']}>
+          <Table head={['Produto', { label: 'Estoque', align: 'right' }, { label: 'Venda/dia', align: 'right' }, { label: 'Cobertura', align: 'right' }, { label: 'Giro anual', align: 'right' }]}>
             {fastMovers.slice(0, 10).map(m => (
-              <tr key={m.product_code} className="border-t border-white/5">
+              <tr key={m.product_code} className="hover:bg-white/[0.03] transition-colors">
                 <Td><strong>{m.product_name ?? m.product_code}</strong></Td>
-                <Td>{num(m.current_qty, 0)}</Td>
-                <Td>{num(m.ads, 2)}</Td>
-                <Td>{m.dos === null ? '—' : `${num(m.dos)} d`}</Td>
-                <Td>{num(m.turnover_annualized, 1)}</Td>
+                <Td className="text-right font-mono">{num(m.current_qty, 0)}</Td>
+                <Td className="text-right font-mono">{num(m.ads, 2)}</Td>
+                <Td className="text-right font-mono">{m.dos === null ? '—' : `${num(m.dos)} d`}</Td>
+                <Td className="text-right font-mono">{num(m.turnover_annualized, 1)}</Td>
               </tr>
             ))}
           </Table>
@@ -251,14 +252,14 @@ function Ranking({
       {rows.length === 0 ? (
         <Empty>Sem vendas na janela para os filtros atuais.</Empty>
       ) : (
-        <Table head={['#', 'Produto', 'Qtd vendida', 'Receita', 'Lucro']}>
+        <Table head={['#', 'Produto', { label: 'Qtd vendida', align: 'right' }, { label: 'Receita', align: 'right' }, { label: 'Lucro', align: 'right' }]}>
           {rows.map((r, i) => (
-            <tr key={r.product_code} className="border-t border-white/5">
-              <Td>{i + 1}</Td>
-              <Td><strong>{r.product_name ?? r.product_code}</strong><div className="text-on-surface-variant text-label-sm">{r.product_code}</div></Td>
-              <Td>{num(r.qty_sold, 0)}</Td>
-              <Td>{money(r.revenue)}</Td>
-              <Td>{money(r.profit)}</Td>
+            <tr key={r.product_code} className="hover:bg-white/[0.03] transition-colors">
+              <Td className="font-mono text-on-surface-variant">{i + 1}</Td>
+              <Td><strong>{r.product_name ?? r.product_code}</strong><div className="text-on-surface-variant font-mono text-[0.6875rem]">{r.product_code}</div></Td>
+              <Td className="text-right font-mono">{num(r.qty_sold, 0)}</Td>
+              <Td className="text-right font-mono font-bold">{money(r.revenue)}</Td>
+              <Td className="text-right font-mono font-bold">{money(r.profit)}</Td>
             </tr>
           ))}
         </Table>
@@ -297,17 +298,17 @@ function Estoque({
       {filtered.length === 0 ? (
         <Empty>Nenhum produto encontrado.</Empty>
       ) : (
-        <Table head={['Produto', 'Qtd', 'Custo', 'Valor', 'Giro', 'Cobertura', 'ABC', 'Classe', 'Snapshot']}>
+        <Table head={['Produto', { label: 'Qtd', align: 'right' }, { label: 'Custo', align: 'right' }, { label: 'Valor', align: 'right' }, { label: 'Giro', align: 'right' }, { label: 'Cobertura', align: 'right' }, 'ABC', 'Classe', 'Snapshot']}>
           {filtered.map(m => {
             const a = abcByCode.get(m.product_code)
             return (
-              <tr key={m.product_code} className="border-t border-white/5">
-                <Td><strong>{m.product_name ?? m.product_code}</strong><div className="text-on-surface-variant text-label-sm">{m.product_code}</div></Td>
-                <Td>{m.current_qty === null ? <Unknown /> : num(m.current_qty, 0)}</Td>
-                <Td>{m.has_cost ? money(m.unit_cost) : <Unknown />}</Td>
-                <Td>{money(m.stock_value)}</Td>
-                <Td>{num(m.turnover_annualized, 1)}</Td>
-                <Td>{m.dos === null ? '—' : `${num(m.dos)} d`}</Td>
+              <tr key={m.product_code} className="hover:bg-white/[0.03] transition-colors">
+                <Td><strong>{m.product_name ?? m.product_code}</strong><div className="text-on-surface-variant font-mono text-[0.6875rem]">{m.product_code}</div></Td>
+                <Td className="text-right font-mono">{m.current_qty === null ? <Unknown /> : num(m.current_qty, 0)}</Td>
+                <Td className="text-right font-mono">{m.has_cost ? money(m.unit_cost) : <Unknown />}</Td>
+                <Td className="text-right font-mono font-bold">{money(m.stock_value)}</Td>
+                <Td className="text-right font-mono">{num(m.turnover_annualized, 1)}</Td>
+                <Td className="text-right font-mono">{m.dos === null ? '—' : `${num(m.dos)} d`}</Td>
                 <Td>{a ? <Badge className="bg-surface-variant text-on-surface-variant">{a.abc_class}</Badge> : '—'}</Td>
                 <Td>{m.movement_class ? <Badge className={MOVE_STYLE[m.movement_class]}>{MOVE_LABEL[m.movement_class]}</Badge> : '—'}</Td>
                 <Td><StockStatusCell m={m} /></Td>
@@ -329,7 +330,7 @@ function StockStatusCell({ m }: { m: InventoryMetric }) {
         {m.snapshot_staleness_days}d atrás
       </Badge>
     )
-  return <span className="text-on-surface-variant text-label-sm">{m.last_snapshot_date}</span>
+  return <span className="text-on-surface-variant font-mono text-[0.6875rem]">{m.last_snapshot_date}</span>
 }
 
 // ── Curva ABC ──────────────────────────────────────────────────────────────
@@ -349,11 +350,11 @@ function CurvaAbc({ abc, metrics }: { abc: AbcRow[]; metrics: InventoryMetric[] 
           const rows = abc.filter(r => r.abc_class === g)
           const sum = rows.reduce((s, r) => s + Math.max(r.abc_metric, 0), 0)
           return (
-            <Kpi
+            <KpiCard
               key={g}
               label={`Classe ${g}`}
               value={`${rows.length} SKUs`}
-              hint={total > 0 ? `${((sum / total) * 100).toFixed(0)}% do lucro` : '—'}
+              sub={total > 0 ? `${((sum / total) * 100).toFixed(0)}% do lucro` : '—'}
             />
           )
         })}
@@ -363,17 +364,17 @@ function CurvaAbc({ abc, metrics }: { abc: AbcRow[]; metrics: InventoryMetric[] 
         {abc.length === 0 ? (
           <Empty>Sem vendas na janela para classificar.</Empty>
         ) : (
-          <Table head={['#', 'Produto', 'Classe', 'Métrica', 'Acumulado', 'Base']}>
+          <Table head={['#', 'Produto', 'Classe', { label: 'Métrica', align: 'right' }, { label: 'Acumulado', align: 'right' }, 'Base']}>
             {abc.map(r => (
-              <tr key={r.product_code} className="border-t border-white/5">
-                <Td>{r.abc_rank}</Td>
+              <tr key={r.product_code} className="hover:bg-white/[0.03] transition-colors">
+                <Td className="font-mono text-on-surface-variant">{r.abc_rank}</Td>
                 <Td><strong>{nameByCode.get(r.product_code) ?? r.product_code}</strong></Td>
                 <Td><Badge className="bg-surface-variant text-on-surface-variant">{r.abc_class}</Badge></Td>
-                <Td>{money(r.abc_metric)}</Td>
-                <Td>{pct(r.cum_pct)}</Td>
+                <Td className="text-right font-mono font-bold">{money(r.abc_metric)}</Td>
+                <Td className="text-right font-mono">{pct(r.cum_pct)}</Td>
                 <Td>
                   {r.abc_basis === 'profit' ? (
-                    <span className="text-on-surface-variant text-label-sm">lucro</span>
+                    <span className="text-on-surface-variant font-mono text-[0.6875rem]">lucro</span>
                   ) : (
                     <Badge className="bg-tertiary-container text-on-tertiary-container">receita*</Badge>
                   )}
@@ -423,7 +424,7 @@ function Precos({
             Somente leitura — seu perfil não pode editar custo.
           </p>
         )}
-        <Table head={['Produto', 'Custo vigente', 'Valor em estoque', 'Giro', '']}>
+        <Table head={['Produto', { label: 'Custo vigente', align: 'right' }, { label: 'Valor em estoque', align: 'right' }, { label: 'Giro', align: 'right' }, '']}>
           {filtered.map(m => (
             <CostRow key={m.product_code} m={m} canEdit={canEdit} />
           ))}
@@ -434,13 +435,13 @@ function Precos({
         {parados.length === 0 ? (
           <Empty>Nenhum item parado.</Empty>
         ) : (
-          <Table head={['Produto', 'Qtd', 'Capital parado', 'Cobertura', 'Classe']}>
+          <Table head={['Produto', { label: 'Qtd', align: 'right' }, { label: 'Capital parado', align: 'right' }, { label: 'Cobertura', align: 'right' }, 'Classe']}>
             {parados.map(m => (
-              <tr key={m.product_code} className="border-t border-white/5">
+              <tr key={m.product_code} className="hover:bg-white/[0.03] transition-colors">
                 <Td><strong>{m.product_name ?? m.product_code}</strong></Td>
-                <Td>{num(m.current_qty, 0)}</Td>
-                <Td className="font-bold">{money(m.stock_value)}</Td>
-                <Td>{m.dos === null ? 'sem giro' : `${num(m.dos)} d`}</Td>
+                <Td className="text-right font-mono">{num(m.current_qty, 0)}</Td>
+                <Td className="text-right font-mono font-bold">{money(m.stock_value)}</Td>
+                <Td className="text-right font-mono">{m.dos === null ? 'sem giro' : `${num(m.dos)} d`}</Td>
                 <Td>{m.movement_class && <Badge className={MOVE_STYLE[m.movement_class]}>{MOVE_LABEL[m.movement_class]}</Badge>}</Td>
               </tr>
             ))}
@@ -467,30 +468,30 @@ function CostRow({ m, canEdit }: { m: InventoryMetric; canEdit: boolean }) {
   }
 
   return (
-    <tr className="border-t border-white/5">
-      <Td><strong>{m.product_name ?? m.product_code}</strong><div className="text-on-surface-variant text-label-sm">{m.product_code}</div></Td>
-      <Td>
+    <tr className="hover:bg-white/[0.03] transition-colors">
+      <Td><strong>{m.product_name ?? m.product_code}</strong><div className="text-on-surface-variant font-mono text-[0.6875rem]">{m.product_code}</div></Td>
+      <Td className="text-right">
         <input
           value={value}
           onChange={e => setValue(e.target.value)}
           disabled={!canEdit || pending}
           placeholder="sem custo"
-          className="bg-surface-variant text-on-surface rounded px-2 py-1 w-28 border border-white/10 disabled:opacity-50"
+          className="bg-surface-variant text-on-surface font-mono text-right rounded-lg px-2 py-1 w-28 border border-white/10 disabled:opacity-50"
         />
       </Td>
-      <Td>{money(m.stock_value)}</Td>
-      <Td>{num(m.turnover_annualized, 1)}</Td>
+      <Td className="text-right font-mono font-bold">{money(m.stock_value)}</Td>
+      <Td className="text-right font-mono">{num(m.turnover_annualized, 1)}</Td>
       <Td>
         {canEdit && dirty && (
           <button
             onClick={save}
             disabled={pending}
-            className="px-3 py-1 rounded bg-primary-container text-on-primary-container text-label-sm disabled:opacity-50"
+            className="px-3 py-1 rounded-lg bg-primary-container text-on-primary-container font-mono text-[0.6875rem] font-medium disabled:opacity-50"
           >
             {pending ? '...' : 'Salvar'}
           </button>
         )}
-        {msg && <span className="ml-2 text-label-sm text-on-surface-variant">{msg}</span>}
+        {msg && <span className="ml-2 font-mono text-[0.6875rem] text-on-surface-variant">{msg}</span>}
       </Td>
     </tr>
   )
@@ -498,24 +499,13 @@ function CostRow({ m, canEdit }: { m: InventoryMetric; canEdit: boolean }) {
 
 // ── Primitivos ─────────────────────────────────────────────────────────────
 
-function Kpi({ label, value, hint, tone }: { label: string; value: string; hint?: string; tone?: 'error' | 'warn' }) {
-  const toneCls = tone === 'error' ? 'text-error' : tone === 'warn' ? 'text-on-tertiary-container' : 'text-on-surface'
-  return (
-    <div className="rounded-xl bg-surface-container p-4 border border-white/5">
-      <div className="text-label-sm text-on-surface-variant">{label}</div>
-      <div className={`text-title-lg font-bold mt-1 ${toneCls}`}>{value}</div>
-      {hint && <div className="text-label-sm text-on-surface-variant mt-1">{hint}</div>}
-    </div>
-  )
-}
-
 function Card({ title, subtitle, action, children }: { title: string; subtitle?: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="rounded-xl bg-surface-container border border-white/5 p-5">
+    <section className="glass-card rounded-xl p-card-padding">
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
           <h3 className="text-title-md font-bold text-on-surface">{title}</h3>
-          {subtitle && <p className="text-label-sm text-on-surface-variant mt-1">{subtitle}</p>}
+          {subtitle && <p className="text-sm text-on-surface-variant mt-1">{subtitle}</p>}
         </div>
         {action}
       </div>
@@ -524,27 +514,41 @@ function Card({ title, subtitle, action, children }: { title: string; subtitle?:
   )
 }
 
-function Table({ head, children }: { head: string[]; children: React.ReactNode }) {
+type HeadCol = string | { label: string; align?: 'left' | 'right' }
+
+function Table({ head, children }: { head: HeadCol[]; children: React.ReactNode }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-body-sm text-on-surface">
-        <thead>
-          <tr className="text-left text-on-surface-variant text-label-sm">
-            {head.map((h, i) => <th key={i} className="pb-2 pr-4 font-normal whitespace-nowrap">{h}</th>)}
+    <div className="-mx-5 -mb-5 mt-1 overflow-x-auto rounded-b-xl">
+      <table className="w-full text-sm text-on-surface border-collapse">
+        <thead className="bg-surface-container-high/50 border-y border-white/5">
+          <tr>
+            {head.map((col, i) => {
+              const label = typeof col === 'string' ? col : col.label
+              const align = typeof col === 'string' ? 'left' : (col.align ?? 'left')
+              return (
+                <th
+                  key={i}
+                  scope="col"
+                  className={`font-mono text-[0.6875rem] uppercase tracking-wider py-3 px-4 text-on-surface-variant font-semibold whitespace-nowrap ${align === 'right' ? 'text-right' : 'text-left'}`}
+                >
+                  {label}
+                </th>
+              )
+            })}
           </tr>
         </thead>
-        <tbody>{children}</tbody>
+        <tbody className="divide-y divide-white/5">{children}</tbody>
       </table>
     </div>
   )
 }
 
 function Td({ children, className = '' }: { children?: React.ReactNode; className?: string }) {
-  return <td className={`py-3 pr-4 align-top whitespace-nowrap ${className}`}>{children}</td>
+  return <td className={`py-3 px-4 align-top whitespace-nowrap ${className}`}>{children}</td>
 }
 
 function Badge({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <span className={`inline-block px-2 py-0.5 rounded text-label-sm ${className}`}>{children}</span>
+  return <span className={`inline-block px-2 py-0.5 rounded font-mono text-[0.6875rem] font-medium whitespace-nowrap ${className}`}>{children}</span>
 }
 
 function Unknown() {
