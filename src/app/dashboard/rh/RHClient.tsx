@@ -75,6 +75,8 @@ const PERMISSION_TYPE_LABELS: Record<string, string> = {
   medical_certificate: 'Atestado médico',
   appointment:         'Consulta médica',
   document:            'Gestão de documentos',
+  day_off:             'Dia livre',
+  vacation:            'Férias',
 }
 
 const PERMISSION_STATUS_LABELS: Record<string, string> = {
@@ -600,8 +602,9 @@ function PermissoesTab({
 }) {
   const [showModal, setShowModal] = useState(false)
   const [userId, setUserId] = useState('')
-  const [permType, setPermType] = useState<'medical_certificate' | 'appointment' | 'document'>('appointment')
+  const [permType, setPermType] = useState<'medical_certificate' | 'appointment' | 'document' | 'day_off' | 'vacation'>('appointment')
   const [requestedDate, setRequestedDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -613,7 +616,13 @@ function PermissoesTab({
       await fetch('/api/admin/hr/permissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, type: permType, requested_date: requestedDate, notes }),
+        body: JSON.stringify({
+          user_id: userId,
+          type: permType,
+          requested_date: requestedDate,
+          end_date: permType === 'vacation' ? endDate : undefined,
+          notes,
+        }),
       })
       window.location.reload()
     } finally {
@@ -649,6 +658,7 @@ function PermissoesTab({
               <th className={TH_STYLE}>Funcionário</th>
               <th className={TH_STYLE}>Tipo</th>
               <th className={TH_STYLE}>Data solicitada</th>
+              <th className={TH_STYLE}>Até</th>
               <th className={TH_STYLE}>Status</th>
               <th className={TH_STYLE}>Obs.</th>
               <th className={TH_STYLE}>Ações</th>
@@ -662,6 +672,7 @@ function PermissoesTab({
                   {PERMISSION_TYPE_LABELS[p.type] ?? p.type}
                 </td>
                 <td className={`${TD_STYLE} font-mono`}>{fmtDate(p.requested_date)}</td>
+                <td className={`${TD_STYLE} font-mono`}>{p.end_date ? fmtDate(p.end_date) : '—'}</td>
                 <td className={TD_STYLE}>
                   <span className={BADGES[p.status] ?? BADGES.none}>
                     {PERMISSION_STATUS_LABELS[p.status] ?? p.status}
@@ -692,7 +703,7 @@ function PermissoesTab({
             ))}
             {permissions.length === 0 && (
               <tr>
-                <td colSpan={6} className={`${TD_STYLE} text-center text-muted-foreground p-8`}>
+                <td colSpan={7} className={`${TD_STYLE} text-center text-muted-foreground p-8`}>
                   Nenhuma permissão registrada
                 </td>
               </tr>
@@ -721,12 +732,20 @@ function PermissoesTab({
                   <option value="appointment">Consulta médica</option>
                   <option value="medical_certificate">Atestado médico</option>
                   <option value="document">Gestão de documentos</option>
+                  <option value="day_off">Dia livre</option>
+                  <option value="vacation">Férias</option>
                 </select>
               </div>
               <div>
-                <label className={LABEL_STYLE}>Data</label>
+                <label className={LABEL_STYLE}>{permType === 'vacation' ? 'Início' : 'Data'}</label>
                 <input type="date" value={requestedDate} onChange={e => setRequestedDate(e.target.value)} required className={INPUT_STYLE} />
               </div>
+              {permType === 'vacation' && (
+                <div>
+                  <label className={LABEL_STYLE}>Até</label>
+                  <input type="date" value={endDate} min={requestedDate || undefined} onChange={e => setEndDate(e.target.value)} required className={INPUT_STYLE} />
+                </div>
+              )}
               <div>
                 <label className={LABEL_STYLE}>Observações</label>
                 <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} className={`${INPUT_STYLE} resize-y`} />

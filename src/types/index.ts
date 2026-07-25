@@ -133,7 +133,7 @@ export type WithProfileName<T> = T & { profiles?: { name?: string } | null }
 // HR types (from main branch features)
 export type HRFreeDayStatus = 'available' | 'used' | 'expired' | 'deducted';
 export type HRAbsenceType   = 'deduct_free_day' | 'justified' | 'no_balance';
-export type HRPermissionType   = 'medical_certificate' | 'appointment' | 'document';
+export type HRPermissionType   = 'medical_certificate' | 'appointment' | 'document' | 'day_off' | 'vacation';
 export type HRPermissionStatus = 'pending' | 'approved' | 'denied';
 
 export interface HRFreeDay {
@@ -177,6 +177,7 @@ export interface HRPermission {
   user_id: string;
   type: HRPermissionType;
   requested_date: string;
+  end_date: string | null;
   status: HRPermissionStatus;
   requested_by: string | null;
   reviewed_by: string | null;

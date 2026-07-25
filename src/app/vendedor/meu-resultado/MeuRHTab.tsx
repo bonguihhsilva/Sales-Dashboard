@@ -87,8 +87,14 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions, d
   const [form, setForm] = useState({
     type: 'medical_certificate',
     requested_date: '',
+    end_date: '',
     notes: '',
   })
+
+  function openRequestModal(type: typeof form.type) {
+    setForm({ type, requested_date: '', end_date: '', notes: '' })
+    setShowModal(true)
+  }
 
   const today = new Date().toISOString().slice(0, 10)
 
@@ -129,6 +135,8 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions, d
   function permissionTypeLabel(type: HRPermission['type']) {
     if (type === 'medical_certificate') return 'Atestado médico'
     if (type === 'appointment') return 'Consulta médica'
+    if (type === 'day_off') return 'Dia livre'
+    if (type === 'vacation') return 'Férias'
     return 'Gestão de documentos'
   }
 
@@ -139,11 +147,14 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions, d
       const res = await fetch('/api/vendor/hr/permissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          end_date: form.type === 'vacation' ? form.end_date : undefined,
+        }),
       })
       if (!res.ok) throw new Error('Falha ao enviar')
       setShowModal(false)
-      setForm({ type: 'medical_certificate', requested_date: '', notes: '' })
+      setForm({ type: 'medical_certificate', requested_date: '', end_date: '', notes: '' })
       window.location.reload()
     } catch {
       toast.error('Erro ao enviar solicitação. Tente novamente.')
@@ -178,19 +189,37 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions, d
     <div>
       {/* Section 1 — Dias Livres */}
       <div style={{ marginBottom: '2rem' }}>
-        <h3
-          style={{
-            fontSize: '0.9rem',
-            fontWeight: 700,
-            fontFamily: 'Syne, sans-serif',
-            marginBottom: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
-          🗓 Dias Livres
-        </h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+          <h3
+            style={{
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              fontFamily: 'Syne, sans-serif',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              margin: 0,
+            }}
+          >
+            🗓 Dias Livres
+          </h3>
+          <button
+            onClick={() => openRequestModal('day_off')}
+            style={{
+              background: '#2563eb',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '6px 14px',
+              fontSize: '0.75rem',
+              fontFamily: 'DM Mono, monospace',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            + Solicitar dia livre
+          </button>
+        </div>
 
         {/* Summary cards */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '1rem', flexWrap: 'wrap' }}>
@@ -275,19 +304,37 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions, d
 
       {/* Section 2 — Férias */}
       <div style={{ marginBottom: '2rem' }}>
-        <h3
-          style={{
-            fontSize: '0.9rem',
-            fontWeight: 700,
-            fontFamily: 'Syne, sans-serif',
-            marginBottom: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
-          🌴 Férias
-        </h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+          <h3
+            style={{
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              fontFamily: 'Syne, sans-serif',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              margin: 0,
+            }}
+          >
+            🌴 Férias
+          </h3>
+          <button
+            onClick={() => openRequestModal('vacation')}
+            style={{
+              background: '#2563eb',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '6px 14px',
+              fontSize: '0.75rem',
+              fontFamily: 'DM Mono, monospace',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            + Solicitar férias
+          </button>
+        </div>
 
         {vacations.length === 0 ? (
           <p style={{ color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.8rem' }}>
@@ -412,7 +459,7 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions, d
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface2)' }}>
-                  {['Tipo', 'Data solicitada', 'Status', 'Obs.'].map((h) => (
+                  {['Tipo', 'Data solicitada', 'Até', 'Status', 'Obs.'].map((h) => (
                     <th key={h} style={thStyle}>{h}</th>
                   ))}
                 </tr>
@@ -422,6 +469,7 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions, d
                   <tr key={p.id}>
                     <td style={tdStyle}>{permissionTypeLabel(p.type)}</td>
                     <td style={tdStyle}>{fmtDate(p.requested_date)}</td>
+                    <td style={tdStyle}>{p.end_date ? fmtDate(p.end_date) : '—'}</td>
                     <td style={tdStyle}>{permissionStatusBadge(p.status)}</td>
                     <td style={tdStyle}>{p.notes ?? '—'}</td>
                   </tr>
@@ -534,7 +582,7 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions, d
                 marginTop: 0,
               }}
             >
-              Solicitar Permissão
+              {form.type === 'day_off' ? 'Solicitar Dia Livre' : form.type === 'vacation' ? 'Solicitar Férias' : 'Solicitar Permissão'}
             </h3>
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: '1rem' }}>
@@ -548,11 +596,13 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions, d
                   <option value="medical_certificate">Atestado médico</option>
                   <option value="appointment">Consulta médica</option>
                   <option value="document">Gestão de documentos</option>
+                  <option value="day_off">Dia livre</option>
+                  <option value="vacation">Férias</option>
                 </select>
               </div>
 
               <div style={{ marginBottom: '1rem' }}>
-                <label style={labelStyle}>Data</label>
+                <label style={labelStyle}>{form.type === 'vacation' ? 'Início' : 'Data'}</label>
                 <input
                   type="date"
                   style={inputStyle}
@@ -561,6 +611,20 @@ export default function MeuRHTab({ freeDays, absences, vacations, permissions, d
                   required
                 />
               </div>
+
+              {form.type === 'vacation' && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={labelStyle}>Até</label>
+                  <input
+                    type="date"
+                    style={inputStyle}
+                    value={form.end_date}
+                    min={form.requested_date || undefined}
+                    onChange={(e) => setForm((f) => ({ ...f, end_date: e.target.value }))}
+                    required
+                  />
+                </div>
+              )}
 
               <div style={{ marginBottom: '1.5rem' }}>
                 <label style={labelStyle}>Observações (opcional)</label>

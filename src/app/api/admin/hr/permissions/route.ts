@@ -64,8 +64,9 @@ export async function POST(req: NextRequest) {
 
   const body: {
     user_id: string
-    type: 'medical_certificate' | 'appointment' | 'document'
+    type: 'medical_certificate' | 'appointment' | 'document' | 'day_off' | 'vacation'
     requested_date: string
+    end_date?: string
     notes?: string
   } = await req.json()
 
@@ -75,12 +76,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Funcionário não pertence à sua organização' }, { status: 403 })
   }
 
+  if (body.type === 'vacation' && (!body.end_date || body.end_date < body.requested_date)) {
+    return NextResponse.json({ error: 'end_date inválido para férias' }, { status: 400 })
+  }
+
   const { data: permission, error } = await admin
     .from('hr_permissions')
     .insert({
       user_id: body.user_id,
       type: body.type,
       requested_date: body.requested_date,
+      end_date: body.type === 'vacation' ? body.end_date : null,
       notes: body.notes ?? null,
       status: 'approved',
       requested_by: user.id,
