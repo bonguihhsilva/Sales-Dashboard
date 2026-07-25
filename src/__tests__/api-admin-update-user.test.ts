@@ -9,6 +9,14 @@ import type { NextRequest } from 'next/server'
 
 vi.mock('@/lib/auth/tenant', () => ({ getTenantContext: vi.fn() }))
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: vi.fn() }))
+// Rate limiting (C-06) tem sua propria cobertura de unit tests — aqui so
+// garantimos que as duas camadas deixam a requisicao passar, para que estes
+// testes continuem exercitando exclusivamente a validacao de name/store.
+vi.mock('@/lib/ratelimit', () => ({
+  strictRateLimiter: { limit: vi.fn(async () => ({ success: true })) },
+  enforceUserRateLimit: vi.fn(async () => null),
+  getClientIp: vi.fn(() => '127.0.0.1'),
+}))
 
 const { getTenantContext } = await import('@/lib/auth/tenant')
 const { createAdminClient } = await import('@/lib/supabase/admin')

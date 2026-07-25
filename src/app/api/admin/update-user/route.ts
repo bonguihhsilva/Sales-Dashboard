@@ -4,6 +4,7 @@ import { getTenantContext } from '@/lib/auth/tenant'
 import { canInvite, isValidRole, setUserRole, assertRoleAssignable, isSelfRolePromotion } from '@/lib/auth/roles'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { UserRole } from '@/types'
+import { strictRateLimiter, enforceUserRateLimit, getClientIp } from '@/lib/ratelimit'
 
 // A-05: valida em vez de transformar — name/store nunca sao reescritos com
 // entidades HTML (o antigo sanitizeString corrompia nomes com apostrofo,
@@ -13,11 +14,23 @@ const nameSchema = z.string().trim().min(1).max(200)
 const storeSchema = z.string().trim().min(1).max(120)
 
 export async function POST(req: NextRequest) {
+  // Rate limiter — layer 1: por IP (real, extraido de x-forwarded-for), pre-auth,
+  // fail-open. Unica barreira contra flood nao autenticado.
+  const ip = getClientIp(req)
+  const { success } = await strictRateLimiter.limit(ip)
+  if (!success) return NextResponse.json({ error: 'Muitas tentativas' }, { status: 429 })
+
   const { user, profile } = await getTenantContext()
 
   if (!user) {
     return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
   }
+
+  // Rate limiter — layer 2: por user.id, pos-auth, fail-closed. Nao forjavel
+  // por header e nao se desliga sozinho sob falha de DB.
+  const rateLimited = await enforceUserRateLimit(user.id)
+  if (rateLimited) return rateLimited
+
   const callerRole = profile.role
   if (!canInvite(callerRole)) {
     return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
