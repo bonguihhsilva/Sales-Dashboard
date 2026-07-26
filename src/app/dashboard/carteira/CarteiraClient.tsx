@@ -12,6 +12,22 @@ type Filter = 'all' | Segment
 
 const CAT_COLORS = ['#3b82f6', '#10b981', '#f5a742', '#8b5cf6', '#06b6d4', '#f43f5e']
 
+// ── Shared UI primitives (mirrors app/vendedor/meu-resultado/MeuRHTab.tsx) ──
+const TH_STYLE = 'font-mono text-[0.65rem] uppercase tracking-wider py-3 px-4 text-muted-foreground font-semibold whitespace-nowrap border-b border-white/5'
+const TD_STYLE = 'py-3 px-4 text-sm border-b border-white/5'
+const SEG_BADGE = 'px-2.5 py-0.5 rounded-full text-[11px] font-mono inline-block whitespace-nowrap'
+const BTN_PRIMARY = 'bg-primary hover:bg-primary/90 text-primary-foreground border-none rounded-lg px-3.5 py-2 font-bold text-xs transition-colors disabled:opacity-50 cursor-pointer font-display-lg flex items-center justify-center gap-1.5'
+const BTN_GHOST = 'bg-transparent hover:bg-white/5 text-muted-foreground border border-white/10 rounded-lg px-3.5 py-2 font-bold text-xs transition-colors cursor-pointer font-display-lg flex items-center justify-center gap-1.5'
+
+function MetricTile({ label, value, color }: { label: string; value: string; color?: string }) {
+  return (
+    <div className="rounded-xl px-5 py-3 min-w-[130px] text-center bg-surface-container-highest/40">
+      <div className="text-xl font-bold font-mono" style={color ? { color } : undefined}>{value}</div>
+      <div className="text-[0.62rem] font-mono uppercase tracking-wider mt-0.5 opacity-80 text-muted-foreground">{label}</div>
+    </div>
+  )
+}
+
 export default function CarteiraClient({ clients, color, periodId }: { clients: Client[]; color: string; periodId: number }) {
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<Filter>('all')
@@ -64,28 +80,33 @@ export default function CarteiraClient({ clients, color, periodId }: { clients: 
   ]
 
   return (
-    <div>
+    <div className="glass-card rounded-2xl p-6 border border-white/5">
+      <div className="flex items-center justify-between gap-4 mb-4">
+        <h2 className="text-base font-bold font-display-lg flex items-center gap-2">
+          <span className="material-symbols-outlined text-[20px] text-muted-foreground">diversity_3</span>
+          Carteira de Clientes
+        </h2>
+      </div>
+
       {/* KPIs macro */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: '10px', marginBottom: '1rem' }}>
+      <div className="flex gap-2.5 flex-wrap mb-4">
         {kpis.map(k => (
-          <div key={k.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '1rem 1.25rem' }}>
-            <div style={{ fontSize: '0.62rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '5px' }}>{k.label}</div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: k.color || 'var(--text)' }}>{k.value}</div>
-          </div>
+          <MetricTile key={k.label} label={k.label} value={k.value} color={k.color} />
         ))}
       </div>
 
-      {/* Pills de segmento */}
-      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+      {/* Pills de segmento + busca */}
+      <div className="flex items-center gap-1.5 flex-wrap mb-4">
         {pills.map(p => {
           const on  = filter === p.key
           const col = p.key === 'all' ? '#3b82f6' : SEGMENT_COLORS[p.key as Segment]
           return (
-            <button key={p.key} onClick={() => setFilter(p.key)} style={{
-              fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.7rem', padding: '4px 11px', borderRadius: '20px',
-              cursor: 'pointer', border: `1px solid ${on ? col : 'var(--border)'}`,
-              background: on ? `${col}22` : 'transparent', color: on ? col : 'var(--muted)',
-            }}>
+            <button
+              key={p.key}
+              onClick={() => setFilter(p.key)}
+              className={`font-mono text-[11px] px-3 py-1.5 rounded-full border transition-colors cursor-pointer whitespace-nowrap ${on ? '' : 'border-white/10 text-muted-foreground hover:bg-white/5'}`}
+              style={on ? { borderColor: col, background: `${col}22`, color: col } : undefined}
+            >
               {p.label} · {p.count}
             </button>
           )
@@ -95,53 +116,51 @@ export default function CarteiraClient({ clients, color, periodId }: { clients: 
           placeholder="Buscar cliente..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ marginLeft: 'auto', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.7rem', padding: '6px 10px', width: '200px', outline: 'none' }}
+          className="ml-auto bg-surface border border-white/10 rounded-lg text-sm font-mono text-on-surface placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors px-3 py-2 w-[200px]"
         />
       </div>
 
       {/* Lista */}
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid var(--border)' }}>
+      <div className="overflow-x-auto rounded-xl border border-white/5 bg-surface-container-high/20">
+        <table className="w-full text-sm text-left border-collapse">
+          <thead className="bg-surface-container-high/50 border-b border-white/5">
+            <tr>
               {['#', 'Cliente', 'Segmento', 'Total', 'Ticket méd.', 'Tend.', 'Última compra'].map((h, i) => (
-                <th key={h} style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '6px 10px', textAlign: i >= 3 && i <= 5 ? 'right' : 'left', whiteSpace: 'nowrap' }}>{h}</th>
+                <th key={h} className={`${TH_STYLE} ${i >= 3 && i <= 5 ? 'text-right' : 'text-left'}`}>{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-border">
             {filtered.map((c, i) => {
               const daysAgo = Number(c.days_since_last)
+              const trendClass = c.trendPct == null ? 'text-muted-foreground' : c.trendPct > 2 ? 'text-emerald-500' : c.trendPct < -2 ? 'text-rose-500' : 'text-muted-foreground'
               return (
                 <tr
                   key={`${c.client_id}-${c.vendor_id}`}
                   onClick={() => setSelected(c)}
-                  style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface2)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  className="hover:bg-secondary/10 transition-colors cursor-pointer"
                 >
-                  <td style={{ padding: '7px 10px', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.65rem', color: 'var(--muted)' }}>{i + 1}</td>
-                  <td style={{ padding: '7px 10px', fontWeight: 500, fontSize: '0.78rem' }}>{c.client_name}</td>
-                  <td style={{ padding: '7px 10px' }}>
-                    <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.6rem', padding: '2px 7px', borderRadius: '5px', background: `${SEGMENT_COLORS[c.segment]}22`, color: SEGMENT_COLORS[c.segment] }}>{SEGMENT_LABELS[c.segment]}</span>
+                  <td className={`${TD_STYLE} font-mono text-xs text-muted-foreground`}>{i + 1}</td>
+                  <td className={`${TD_STYLE} font-medium`}>{c.client_name}</td>
+                  <td className={TD_STYLE}>
+                    <span className={SEG_BADGE} style={{ background: `${SEGMENT_COLORS[c.segment]}22`, color: SEGMENT_COLORS[c.segment] }}>{SEGMENT_LABELS[c.segment]}</span>
                   </td>
-                  <td style={{ padding: '7px 10px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', fontWeight: 600, color: 'var(--text)' }}>{fmtCurrency(Number(c.total_spent))}</td>
-                  <td style={{ padding: '7px 10px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.75rem' }}>{fmtCurrency(Number(c.avg_ticket))}</td>
-                  <td style={{ padding: '7px 10px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.75rem',
-                    color: c.trendPct == null ? 'var(--muted)' : c.trendPct > 2 ? '#10b981' : c.trendPct < -2 ? '#f43f5e' : 'var(--muted)' }}>
+                  <td className={`${TD_STYLE} text-right font-mono font-semibold`}>{fmtCurrency(Number(c.total_spent))}</td>
+                  <td className={`${TD_STYLE} text-right font-mono text-sm`}>{fmtCurrency(Number(c.avg_ticket))}</td>
+                  <td className={`${TD_STYLE} text-right font-mono text-sm ${trendClass}`}>
                     {c.trendPct == null ? (c.segment === 'novo' ? 'novo' : '—')
                       : `${c.trendPct > 0 ? '▲' : c.trendPct < 0 ? '▼' : ''} ${Math.abs(Math.round(c.trendPct))}%`}
                   </td>
-                  <td style={{ padding: '7px 10px' }}>
-                    <span style={{ display: 'inline-block', width: '7px', height: '7px', borderRadius: '50%', background: recencyColor(daysAgo), marginRight: '6px', verticalAlign: 'middle' }} />
-                    <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.7rem' }}>{c.last_purchase}</span>
-                    <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.6rem', color: 'var(--muted)', marginLeft: '4px' }}>({recencyLabel(daysAgo)})</span>
+                  <td className={TD_STYLE}>
+                    <span className="inline-block w-[7px] h-[7px] rounded-full mr-1.5 align-middle" style={{ background: recencyColor(daysAgo) }} />
+                    <span className="font-mono text-xs">{c.last_purchase}</span>
+                    <span className="font-mono text-[11px] text-muted-foreground ml-1">({recencyLabel(daysAgo)})</span>
                   </td>
                 </tr>
               )
             })}
             {filtered.length === 0 && (
-              <tr><td colSpan={7} style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)', fontFamily: 'var(--font-jetbrains), monospace' }}>Nenhum cliente encontrado</td></tr>
+              <tr><td colSpan={7} className="py-8 px-4 text-center text-muted-foreground font-mono text-sm">Nenhum cliente encontrado</td></tr>
             )}
           </tbody>
         </table>
@@ -158,46 +177,46 @@ export default function CarteiraClient({ clients, color, periodId }: { clients: 
       )}
 
       {selected && (
-        <div onClick={() => setSelected(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9998 }}>
-          <div onClick={e => e.stopPropagation()} style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '360px', background: 'var(--bg)', borderLeft: '1px solid var(--border)', overflowY: 'auto', zIndex: 9999 }}>
-            <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
-              <div style={{ fontSize: '0.95rem', fontWeight: 800 }}>{selected.client_name}</div>
-              <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.62rem', color: 'var(--muted)', marginTop: '3px' }}>
+        <div onClick={() => setSelected(null)} className="fixed inset-0 bg-black/50 z-[9998]">
+          <div onClick={e => e.stopPropagation()} className="fixed top-0 right-0 bottom-0 w-[360px] bg-background border-l border-white/10 overflow-y-auto z-[9999]">
+            <div className="p-4 border-b border-white/5">
+              <div className="text-base font-bold font-display-lg">{selected.client_name}</div>
+              <div className="font-mono text-[11px] text-muted-foreground mt-1">
                 {selected.vendor_name ?? selected.vendor_id} · {selected.total_orders} compras
               </div>
-              <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
-                <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.6rem', padding: '2px 7px', borderRadius: '5px', background: `${SEGMENT_COLORS[selected.segment]}22`, color: SEGMENT_COLORS[selected.segment] }}>{SEGMENT_LABELS[selected.segment]}</span>
-                <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.6rem', padding: '2px 7px', borderRadius: '5px', background: '#3b82f622', color: '#93c5fd' }}>R{selected.rfm.r} F{selected.rfm.f} M{selected.rfm.m}</span>
+              <div className="flex gap-1.5 mt-2">
+                <span className={SEG_BADGE} style={{ background: `${SEGMENT_COLORS[selected.segment]}22`, color: SEGMENT_COLORS[selected.segment] }}>{SEGMENT_LABELS[selected.segment]}</span>
+                <span className={`${SEG_BADGE} bg-primary/20 text-primary`}>R{selected.rfm.r} F{selected.rfm.f} M{selected.rfm.m}</span>
               </div>
             </div>
-            <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <button onClick={() => setHistoryTab('ultima')} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '9px', borderRadius: '8px', border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 600, cursor: 'pointer' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>receipt_long</span> Abrir última nota
+            <div className="p-4 border-b border-white/5 flex flex-col gap-2">
+              <button onClick={() => setHistoryTab('ultima')} className={BTN_PRIMARY}>
+                <span className="material-symbols-outlined text-[16px]">receipt_long</span> Abrir última nota
               </button>
-              <button onClick={() => setHistoryTab('todas')} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '9px', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontWeight: 600, cursor: 'pointer' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>history</span> Abrir histórico do cliente
+              <button onClick={() => setHistoryTab('todas')} className={BTN_GHOST}>
+                <span className="material-symbols-outlined text-[16px]">history</span> Abrir histórico do cliente
               </button>
             </div>
-            <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
-              <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '10px' }}>Mix por categoria</div>
-              {loadingMix ? <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.7rem', color: 'var(--muted)' }}>Carregando…</div>
-              : mix.length === 0 ? <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.7rem', color: 'var(--muted)' }}>Nenhum item registrado neste período.</div>
+            <div className="p-4 border-b border-white/5">
+              <div className="font-mono text-[11px] text-muted-foreground uppercase mb-2.5">Mix por categoria</div>
+              {loadingMix ? <div className="font-mono text-xs text-muted-foreground">Carregando…</div>
+              : mix.length === 0 ? <div className="font-mono text-xs text-muted-foreground">Nenhum item registrado neste período.</div>
               : (<>
-                <div style={{ display: 'flex', height: '14px', borderRadius: '4px', overflow: 'hidden', marginBottom: '10px' }}>
+                <div className="flex h-3.5 rounded overflow-hidden mb-2.5">
                   {mix.map((m, i) => <div key={m.category} style={{ width: `${m.pct}%`, background: CAT_COLORS[i % CAT_COLORS.length] }} />)}
                 </div>
                 {mix.map((m, i) => (
-                  <div key={m.category} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', marginBottom: '5px' }}>
-                    <span><span style={{ display: 'inline-block', width: '7px', height: '7px', borderRadius: '50%', background: CAT_COLORS[i % CAT_COLORS.length], marginRight: '6px' }} />{m.category}</span>
-                    <span style={{ fontFamily: 'var(--font-jetbrains), monospace' }}>{m.pct}%</span>
+                  <div key={m.category} className="flex justify-between text-xs mb-1.5">
+                    <span><span className="inline-block w-[7px] h-[7px] rounded-full mr-1.5" style={{ background: CAT_COLORS[i % CAT_COLORS.length] }} />{m.category}</span>
+                    <span className="font-mono">{m.pct}%</span>
                   </div>
                 ))}
               </>)}
             </div>
-            <div style={{ padding: '14px 16px' }}>
-              <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '10px' }}>Oportunidades (lacunas)</div>
+            <div className="p-4">
+              <div className="font-mono text-[11px] text-muted-foreground uppercase mb-2.5">Oportunidades (lacunas)</div>
               {findCategoryGaps(mix.map(m => m.category), CATEGORY_UNIVERSE).map(g => (
-                <div key={g} style={{ fontSize: '0.72rem', padding: '6px 9px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', marginBottom: '6px' }}>{g} — nunca comprou</div>
+                <div key={g} className="text-xs px-2.5 py-1.5 bg-surface border border-white/5 rounded-lg mb-1.5">{g} — nunca comprou</div>
               ))}
             </div>
           </div>
