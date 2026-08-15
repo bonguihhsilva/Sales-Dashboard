@@ -42,7 +42,7 @@ const inputStyle: React.CSSProperties = {
   color: C.text, fontFamily: 'inherit',
 }
 const labelStyle: React.CSSProperties = {
-  display: 'block', fontSize: '0.625rem', fontFamily: 'DM Mono, monospace',
+  display: 'block', fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace',
   textTransform: 'uppercase', letterSpacing: '0.06em', color: C.muted, marginBottom: 4,
 }
 
@@ -90,13 +90,13 @@ export default function AdminLmsClient({
     display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
     padding: '0.5rem 1rem', background: C.gold, color: C.bg, fontWeight: 800,
     borderRadius: '0.5rem', border: 'none', fontSize: '0.8125rem', cursor: 'pointer',
-    fontFamily: 'Syne, sans-serif',
+    fontFamily: 'var(--font-hanken), sans-serif',
   }
   const btnGhost: React.CSSProperties = {
     display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
     padding: '0.5rem 1rem', background: 'transparent', color: C.text, fontWeight: 700,
     borderRadius: '0.5rem', border: `1px solid ${C.border}`, fontSize: '0.8125rem', cursor: 'pointer',
-    fontFamily: 'Syne, sans-serif',
+    fontFamily: 'var(--font-hanken), sans-serif',
   }
   const iconBtn: React.CSSProperties = {
     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -112,7 +112,7 @@ export default function AdminLmsClient({
       minHeight: 'calc(100vh - 5rem)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h2 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1rem', color: C.text }}>Trilhas</h2>
+        <h2 style={{ fontFamily: 'var(--font-hanken), sans-serif', fontWeight: 800, fontSize: '1rem', color: C.text }}>Trilhas</h2>
         <button style={iconBtn} onClick={() => setModal({ isOpen: true, type: 'createTrilha' })} aria-label="Nova trilha">
           <Plus size={16} />
         </button>
@@ -135,7 +135,7 @@ export default function AdminLmsClient({
                 {t.icon && <span>{t.icon}</span>}
                 {t.titulo}
               </span>
-              <span style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.muted, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace', color: C.muted, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: t.ativa ? C.green : C.red }} />
                 {t.ativa ? 'Ativa' : 'Inativa'}
                 {t.is_global && <span style={{ color: C.blue }}>· Global</span>}
@@ -172,7 +172,7 @@ export default function AdminLmsClient({
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             {activeTrilha.icon && <span style={{ fontSize: '1.75rem' }}>{activeTrilha.icon}</span>}
             <div>
-              <h1 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.375rem', color: C.text, margin: 0 }}>{activeTrilha.titulo}</h1>
+              <h1 style={{ fontFamily: 'var(--font-hanken), sans-serif', fontWeight: 800, fontSize: '1.375rem', color: C.text, margin: 0 }}>{activeTrilha.titulo}</h1>
               <p style={{ color: C.muted, fontSize: '0.8125rem', marginTop: 4 }}>{activeTrilha.descricao || 'Sem descrição'}</p>
             </div>
           </div>
@@ -189,7 +189,7 @@ export default function AdminLmsClient({
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-          <h2 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.9375rem', color: C.text, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <h2 style={{ fontFamily: 'var(--font-hanken), sans-serif', fontWeight: 700, fontSize: '0.9375rem', color: C.text, display: 'flex', alignItems: 'center', gap: 8 }}>
             <Layers size={16} color={C.gold} /> Módulos
           </h2>
           <button style={btnPrimary} onClick={() => setModal({ isOpen: true, type: 'createModulo', payload: { trilha_id: activeTrilha.id } })}>
@@ -211,7 +211,7 @@ export default function AdminLmsClient({
                 >
                   <div>
                     <h3 style={{ fontWeight: 700, color: C.text, fontSize: '0.9375rem', margin: 0 }}>{m.titulo}</h3>
-                    <p style={{ fontSize: '0.6875rem', color: C.muted, fontFamily: 'DM Mono, monospace', marginTop: 3 }}>
+                    <p style={{ fontSize: '0.6875rem', color: C.muted, fontFamily: 'var(--font-jetbrains), monospace', marginTop: 3 }}>
                       {aulas.length} aulas · +{m.xp_reward} XP · aprovação ≥{m.aprovacao_minima}% {prova ? '· tem prova' : ''}
                     </p>
                   </div>
@@ -230,7 +230,7 @@ export default function AdminLmsClient({
                 {isExpanded && (
                   <div style={{ padding: '1.25rem', borderTop: `1px solid ${C.border}`, background: C.bg }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem' }}>
-                      <h4 style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: C.muted, fontWeight: 700 }}>Aulas</h4>
+                      <h4 style={{ fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: C.muted, fontWeight: 700 }}>Aulas</h4>
                       <button style={{ ...btnGhost, padding: '0.3rem 0.625rem', fontSize: '0.6875rem' }} onClick={() => setModal({ isOpen: true, type: 'createAula', payload: { modulo_id: m.id } })}>
                         <Plus size={12} /> Adicionar aula
                       </button>
@@ -245,7 +245,7 @@ export default function AdminLmsClient({
                               <div style={{ padding: 6, background: C.goldBg, color: C.gold, borderRadius: '0.375rem', display: 'flex' }}>{icon}</div>
                               <div>
                                 <div style={{ fontWeight: 600, color: C.text, fontSize: '0.8125rem' }}>{a.titulo}</div>
-                                <div style={{ fontSize: '0.625rem', color: C.muted, fontFamily: 'DM Mono, monospace' }}>
+                                <div style={{ fontSize: '0.625rem', color: C.muted, fontFamily: 'var(--font-jetbrains), monospace' }}>
                                   #{a.ordem} · {a.tipo_conteudo.toUpperCase()}
                                 </div>
                               </div>
@@ -264,7 +264,7 @@ export default function AdminLmsClient({
 
                     <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '1.25rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem' }}>
-                        <h4 style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: C.muted, fontWeight: 700 }}>Prova do módulo</h4>
+                        <h4 style={{ fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: C.muted, fontWeight: 700 }}>Prova do módulo</h4>
                         {!prova && (
                           <button style={{ ...btnGhost, padding: '0.3rem 0.625rem', fontSize: '0.6875rem' }} onClick={() => setModal({ isOpen: true, type: 'createProva', payload: { modulo_id: m.id } })}>
                             <Plus size={12} /> Adicionar prova
@@ -277,7 +277,7 @@ export default function AdminLmsClient({
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem' }}>
                             <div>
                               <div style={{ fontWeight: 700, color: C.gold, fontSize: '0.8125rem' }}>{prova.titulo}</div>
-                              <div style={{ fontSize: '0.6875rem', color: C.muted, fontFamily: 'DM Mono, monospace' }}>Nota mínima: {prova.nota_minima}%</div>
+                              <div style={{ fontSize: '0.6875rem', color: C.muted, fontFamily: 'var(--font-jetbrains), monospace' }}>Nota mínima: {prova.nota_minima}%</div>
                             </div>
                             <div style={{ display: 'flex', gap: '0.5rem' }}>
                               <button style={{ ...btnGhost, padding: '0.3rem 0.625rem', fontSize: '0.6875rem' }} onClick={() => setModal({ isOpen: true, type: 'createQuestaoProva', payload: { prova_id: prova.id } })}>+ Questão</button>
@@ -323,7 +323,7 @@ export default function AdminLmsClient({
       boxShadow: '0 20px 60px -20px rgba(0,0,0,0.6)', width: '100%', maxWidth: '28rem',
       padding: '1.5rem', overflowY: 'auto', maxHeight: '90vh',
     }
-    const modalTitle: React.CSSProperties = { fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.0625rem', color: C.text, marginBottom: '1.25rem' }
+    const modalTitle: React.CSSProperties = { fontFamily: 'var(--font-hanken), sans-serif', fontWeight: 800, fontSize: '1.0625rem', color: C.text, marginBottom: '1.25rem' }
     const formGap: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: '0.875rem' }
     const footer: React.CSSProperties = { display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }
 
@@ -352,7 +352,7 @@ export default function AdminLmsClient({
                 <Field label="Descrição"><textarea name="descricao" rows={3} style={inputStyle} /></Field>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                   <Field label="Ícone (emoji)"><input name="icon" placeholder="🎯" style={inputStyle} /></Field>
-                  <Field label="Cor (hex)"><input name="cor" placeholder="#C9933A" style={inputStyle} /></Field>
+                  <Field label="Cor (hex)"><input name="cor" placeholder="#C9A24B" style={inputStyle} /></Field>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                   <Field label="Ordem"><input name="ordem" type="number" defaultValue={0} style={inputStyle} /></Field>

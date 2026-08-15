@@ -45,7 +45,7 @@ export default async function TrilhaPage({
               <span style={{ fontSize: '2rem' }}>{trilha.icon}</span>
             )}
             <div style={{
-              fontSize: '0.6875rem', fontFamily: 'DM Mono, monospace',
+              fontSize: '0.6875rem', fontFamily: 'var(--font-jetbrains), monospace',
               textTransform: 'uppercase', letterSpacing: '0.08em',
               color: C.amber, fontWeight: 700,
             }}>
@@ -53,7 +53,7 @@ export default async function TrilhaPage({
             </div>
           </div>
           <div style={{
-            fontSize: '0.6875rem', fontFamily: 'DM Mono, monospace',
+            fontSize: '0.6875rem', fontFamily: 'var(--font-jetbrains), monospace',
             color: aprovados === trilha.modulos.length && trilha.modulos.length > 0
               ? C.green : C.muted,
           }}>
@@ -64,7 +64,7 @@ export default async function TrilhaPage({
         {trilha.modulos.length === 0 ? (
           <div style={{
             textAlign: 'center', padding: '3rem 2rem',
-            color: C.muted, fontFamily: 'DM Mono, monospace', fontSize: '0.875rem',
+            color: C.muted, fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.875rem',
           }}>
             Esta trilha ainda não tem módulos.
           </div>
@@ -93,7 +93,7 @@ export default async function TrilhaPage({
                       background: modulo.aprovado ? 'rgba(34,197,94,0.10)' : 'rgba(255,255,255,0.04)',
                       border: `1px solid ${modulo.aprovado ? 'rgba(34,197,94,0.3)' : C.border}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontFamily: 'DM Mono, monospace', fontSize: '0.65rem',
+                      fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.65rem',
                       color: modulo.aprovado ? C.green : C.muted, fontWeight: 700,
                       flexShrink: 0,
                     }}>
@@ -102,7 +102,7 @@ export default async function TrilhaPage({
 
                     <div>
                       <div style={{
-                        fontFamily: 'Syne, sans-serif', fontSize: '0.875rem',
+                        fontFamily: 'var(--font-hanken), sans-serif', fontSize: '0.875rem',
                         fontWeight: 700, color: C.text,
                       }}>
                         {modulo.titulo}
@@ -117,15 +117,15 @@ export default async function TrilhaPage({
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexShrink: 0 }}>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.muted }}>
+                      <div style={{ fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace', color: C.muted }}>
                         {modulo.aulaCount} aulas
                       </div>
                       {modulo.questaoCount > 0 && (
-                        <div style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.muted, marginTop: 1 }}>
+                        <div style={{ fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace', color: C.muted, marginTop: 1 }}>
                           {modulo.questaoCount} questões
                         </div>
                       )}
-                      <div style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.amber, marginTop: 1 }}>
+                      <div style={{ fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace', color: C.amber, marginTop: 1 }}>
                         +{modulo.xp_reward} XP
                       </div>
                     </div>

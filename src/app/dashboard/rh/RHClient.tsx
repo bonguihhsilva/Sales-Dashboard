@@ -114,7 +114,7 @@ export default function RHClient({ profiles, freeDays, absences, vacations, perm
             style={{
               padding: '8px 20px', borderRadius: '6px 6px 0 0', fontSize: '0.8rem', fontWeight: 600,
               border: '1px solid transparent', borderBottom: 'none', cursor: 'pointer',
-              transition: 'all 0.15s', fontFamily: 'Syne, sans-serif',
+              transition: 'all 0.15s', fontFamily: 'var(--font-hanken), sans-serif',
               background:   activeTab === t.key ? 'var(--surface)' : 'transparent',
               borderColor:  activeTab === t.key ? 'var(--border)'  : 'transparent',
               color:        activeTab === t.key ? 'var(--text)'    : 'var(--muted)',
@@ -367,7 +367,7 @@ function FaltasTab({
   return (
     <div className="glass-card rounded-2xl p-6 border border-white/5">
       <div className="flex items-center justify-between mb-4">
-        <h2 style={{ fontSize: '1rem', fontWeight: 700, fontFamily: 'Syne, sans-serif' }}>Faltas</h2>
+        <h2 style={{ fontSize: '1rem', fontWeight: 700, fontFamily: 'var(--font-hanken), sans-serif' }}>Faltas</h2>
         <button onClick={() => setShowModal(true)} className={BTN_PRIMARY}>+ Registrar falta</button>
       </div>
 
@@ -506,7 +506,7 @@ function FeriasTab({
   return (
     <div className="glass-card rounded-2xl p-6 border border-white/5">
       <div className="flex items-center justify-between mb-4">
-        <h2 style={{ fontSize: '1rem', fontWeight: 700, fontFamily: 'Syne, sans-serif' }}>Férias</h2>
+        <h2 style={{ fontSize: '1rem', fontWeight: 700, fontFamily: 'var(--font-hanken), sans-serif' }}>Férias</h2>
         <button onClick={() => setShowModal(true)} className={BTN_PRIMARY}>+ Novo registro</button>
       </div>
 
@@ -647,7 +647,7 @@ function PermissoesTab({
   return (
     <div className="glass-card rounded-2xl p-6 border border-white/5">
       <div className="flex items-center justify-between mb-4">
-        <h2 style={{ fontSize: '1rem', fontWeight: 700, fontFamily: 'Syne, sans-serif' }}>Permissões</h2>
+        <h2 style={{ fontSize: '1rem', fontWeight: 700, fontFamily: 'var(--font-hanken), sans-serif' }}>Permissões</h2>
         <button onClick={() => setShowModal(true)} className={BTN_PRIMARY}>+ Registrar pelo RH</button>
       </div>
 
@@ -795,7 +795,7 @@ function AtrasosTab({
   return (
     <div className="glass-card rounded-2xl p-6 border border-white/5">
       <div className="flex items-center justify-between mb-4">
-        <h2 style={{ fontSize: '1rem', fontWeight: 700, fontFamily: 'Syne, sans-serif' }}>Controle de Atrasos</h2>
+        <h2 style={{ fontSize: '1rem', fontWeight: 700, fontFamily: 'var(--font-hanken), sans-serif' }}>Controle de Atrasos</h2>
         <button onClick={() => setShowUploadModal(true)} className={BTN_PRIMARY}>Importar Biometria</button>
       </div>
 

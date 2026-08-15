@@ -39,7 +39,7 @@ interface Props {
 }
 
 const PERIOD_PALETTES = [
-  ['#c8f542', '#42d9f5', '#f5a742', '#7b61ff', '#f542b9'],
+  ['#c9a24b', '#2e4fe3', '#f5a742', '#7b61ff', '#f542b9'],
   ['#7ab833', '#2491a8', '#c27a1a', '#4a2fc2', '#a8247f'],
   ['#e8ff80', '#80eeff', '#ffe080', '#bba8ff', '#ff80d4'],
   ['#a0c830', '#30b8d8', '#d89030', '#6040b8', '#d8309c'],
@@ -141,12 +141,12 @@ function OverlayBarChart({
     <div style={{ background: 'var(--surface)', border: `1px solid ${storeColor}28`, borderRadius: '12px', padding: '1rem', overflow: 'hidden', borderLeft: `3px solid ${storeColor}` }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }}>
-        <span style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: storeColor, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700 }}>
+        <span style={{ fontSize: '0.62rem', fontFamily: 'var(--font-jetbrains), monospace', color: storeColor, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700 }}>
           {storeLabel}
         </span>
         <div style={{ display: 'flex', gap: '12px' }}>
           {storeSeries.map(s => (
-            <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>
+            <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.62rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)' }}>
               <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: s.color, flexShrink: 0 }} />
               {s.label.replace(`${storeLabel} (`, '').replace(')', '')}
             </div>
@@ -161,7 +161,7 @@ function OverlayBarChart({
         {yTicks.map((v, i) => (
           <g key={i}>
             <line x1={PADL} y1={yPos(v)} x2={W - PADR} y2={yPos(v)} stroke="rgba(255,255,255,0.05)" strokeWidth={1} />
-            <text x={PADL - 5} y={yPos(v) + 4} textAnchor="end" fontSize={9} fill="rgba(255,255,255,0.3)" fontFamily="DM Mono, monospace">{fmtTick(v)}</text>
+            <text x={PADL - 5} y={yPos(v) + 4} textAnchor="end" fontSize={9} fill="rgba(255,255,255,0.3)" fontFamily="var(--font-jetbrains), monospace">{fmtTick(v)}</text>
           </g>
         ))}
 
@@ -198,7 +198,7 @@ function OverlayBarChart({
           const di  = days.indexOf(day)
           const gx  = groupX(di) + (barW * numSeries + barGap * (numSeries - 1)) / 2
           return (
-            <text key={day} x={gx} y={H - PADB + 14} textAnchor="middle" fontSize={9} fill="rgba(255,255,255,0.3)" fontFamily="DM Mono, monospace">
+            <text key={day} x={gx} y={H - PADB + 14} textAnchor="middle" fontSize={9} fill="rgba(255,255,255,0.3)" fontFamily="var(--font-jetbrains), monospace">
               {`D${day}`}
             </text>
           )
@@ -208,7 +208,7 @@ function OverlayBarChart({
       {/* Tooltip */}
       {hoveredDay !== null && (
         <div style={{ marginTop: '6px', padding: '8px 12px', background: 'var(--surface2)', borderRadius: '8px', border: '1px solid var(--border)', display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', fontWeight: 700 }}>
+          <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', fontWeight: 700 }}>
             D{hoveredDay}
           </span>
           {filteredSeries.map(s => {
@@ -216,7 +216,7 @@ function OverlayBarChart({
             if (!pt || pt.value === 0) return (
               <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: s.color, opacity: 0.4 }} />
-                <span style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', opacity: 0.5 }}>
+                <span style={{ fontSize: '0.6rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', opacity: 0.5 }}>
                   {s.label.replace(`${store} (`, '').replace(')', '')}: —
                 </span>
               </div>
@@ -224,7 +224,7 @@ function OverlayBarChart({
             return (
               <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: s.color, flexShrink: 0 }} />
-                <span style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>
+                <span style={{ fontSize: '0.6rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)' }}>
                   {s.label.replace(`${store} (`, '').replace(')', '')}:
                 </span>
                 <span style={{ fontSize: '0.7rem', fontWeight: 700, color: s.color }}>
@@ -409,7 +409,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
 
   const selStyle = {
     background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '6px',
-    color: 'var(--text)', fontFamily: 'DM Mono, monospace', fontSize: '0.72rem',
+    color: 'var(--text)', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.72rem',
     padding: '6px 10px', outline: 'none', cursor: 'pointer',
   }
 
@@ -430,7 +430,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
     })
   }
   function growthColor(pct: number) {
-    if (pct > 0) return '#c8f542'
+    if (pct > 0) return '#c9a24b'
     if (pct < 0) return '#f55442'
     return 'var(--muted)'
   }
@@ -439,7 +439,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
   }
 
   const thBase: React.CSSProperties = {
-    fontFamily: 'DM Mono, monospace', fontSize: '0.58rem', color: 'var(--muted)',
+    fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.58rem', color: 'var(--muted)',
     textTransform: 'uppercase', letterSpacing: '0.07em', padding: '6px 10px',
     whiteSpace: 'nowrap',
   }
@@ -461,7 +461,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
                 background: on ? 'rgba(200,245,66,0.1)' : 'transparent',
                 border: `1px solid ${on ? 'var(--accent)' : 'var(--border)'}`,
                 borderRadius: '6px', color: on ? 'var(--accent)' : 'var(--muted)',
-                fontFamily: 'DM Mono, monospace', fontSize: '0.75rem',
+                fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.75rem',
                 padding: '7px 18px', cursor: 'pointer', fontWeight: on ? 700 : 400,
                 transition: 'all 0.15s',
               }}
@@ -474,7 +474,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
 
       {/* ── Period selector (shared) ─────────────────────────── */}
       <div style={{ marginBottom: '1.5rem' }}>
-        <div style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
+        <div style={{ fontSize: '0.6rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
           Períodos selecionados
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -488,7 +488,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
                   background: on ? 'rgba(200,245,66,0.1)' : 'transparent',
                   border: `1px solid ${on ? 'var(--accent)' : 'var(--border)'}`,
                   borderRadius: '6px', color: on ? 'var(--accent)' : 'var(--muted)',
-                  fontFamily: 'DM Mono, monospace', fontSize: '0.72rem',
+                  fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.72rem',
                   padding: '6px 14px', cursor: 'pointer', transition: 'all 0.15s',
                   fontWeight: on ? 700 : 400,
                 }}
@@ -523,7 +523,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
                   background: viewMode === opt.v ? 'rgba(200,245,66,0.1)' : 'transparent',
                   border: `1px solid ${viewMode === opt.v ? 'var(--accent)' : 'var(--border)'}`,
                   borderRadius: '6px', color: viewMode === opt.v ? 'var(--accent)' : 'var(--muted)',
-                  fontFamily: 'DM Mono, monospace', fontSize: '0.68rem',
+                  fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.68rem',
                   padding: '6px 12px', cursor: 'pointer', fontWeight: viewMode === opt.v ? 700 : 400,
                 }}
               >
@@ -544,7 +544,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
                   background: active ? `${store.color}15` : 'transparent',
                   border: `1px solid ${active ? store.color : 'var(--border)'}`,
                   borderRadius: '6px', color: active ? store.color : 'var(--muted)',
-                  fontFamily: 'DM Mono, monospace', fontSize: '0.65rem',
+                  fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.65rem',
                   padding: '5px 10px', cursor: 'pointer', transition: 'all 0.15s',
                 }}
               >
@@ -565,13 +565,13 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
             const periodTotal = stores.reduce((s, x) => s + x.total, 0)
             return (
               <div key={period.id} style={{ marginBottom: '1.5rem' }}>
-                <div style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--accent)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
+                <div style={{ fontSize: '0.68rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--accent)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
                   {period.label} — {fmtCurrency(periodTotal)} total
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                   {stores.map(s => (
                     <div key={s.store} style={{ background: 'var(--surface)', border: `1px solid ${s.color}28`, borderRadius: '10px', padding: '1rem 1.25rem', borderLeft: `3px solid ${s.color}` }}>
-                      <div style={{ fontSize: '0.58rem', fontFamily: 'DM Mono, monospace', color: s.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px', fontWeight: 700 }}>{s.storeLabel}</div>
+                      <div style={{ fontSize: '0.58rem', fontFamily: 'var(--font-jetbrains), monospace', color: s.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px', fontWeight: 700 }}>{s.storeLabel}</div>
                       <div style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '4px' }}>{fmtCurrency(s.total)}</div>
                       <div style={{ height: '3px', background: 'var(--surface2)', borderRadius: '2px', marginBottom: '8px' }}>
                         <div style={{ height: '100%', width: `${periodTotal > 0 ? (s.total / periodTotal) * 100 : 0}%`, background: s.color, borderRadius: '2px' }} />
@@ -583,7 +583,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
                           { label: 'Part.%',   value: `${periodTotal > 0 ? ((s.total / periodTotal) * 100).toFixed(1) : 0}%` },
                         ].map(k => (
                           <div key={k.label} style={{ flex: 1, background: 'var(--surface2)', borderRadius: '5px', padding: '5px 6px' }}>
-                            <div style={{ fontSize: '0.5rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '2px' }}>{k.label}</div>
+                            <div style={{ fontSize: '0.5rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '2px' }}>{k.label}</div>
                             <div style={{ fontSize: '0.72rem', fontWeight: 700 }}>{k.value}</div>
                           </div>
                         ))}
@@ -600,22 +600,22 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
             <>
               {/* Day range filter */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                <span style={{ fontSize: '0.6rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                   Intervalo
                 </span>
-                <span style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>D</span>
+                <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)' }}>D</span>
                 <input
                   type="number" min={1} max={dayEnd - 1} value={dayStart}
                   onChange={e => setDayStart(Math.max(1, Math.min(dayEnd - 1, Number(e.target.value))))}
-                  style={{ width: '48px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', fontFamily: 'DM Mono, monospace', fontSize: '0.72rem', padding: '5px 6px', outline: 'none', textAlign: 'center' }}
+                  style={{ width: '48px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.72rem', padding: '5px 6px', outline: 'none', textAlign: 'center' }}
                 />
-                <span style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>→ D</span>
+                <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)' }}>→ D</span>
                 <input
                   type="number" min={dayStart + 1} max={31} value={dayEnd}
                   onChange={e => setDayEnd(Math.max(dayStart + 1, Math.min(31, Number(e.target.value))))}
-                  style={{ width: '48px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', fontFamily: 'DM Mono, monospace', fontSize: '0.72rem', padding: '5px 6px', outline: 'none', textAlign: 'center' }}
+                  style={{ width: '48px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.72rem', padding: '5px 6px', outline: 'none', textAlign: 'center' }}
                 />
-                <span style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>
+                <span style={{ fontSize: '0.6rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)' }}>
                   ({dayEnd - dayStart + 1} dias)
                 </span>
                 {[
@@ -628,7 +628,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
                       background: dayStart === p.s && dayEnd === p.e ? 'rgba(200,245,66,0.1)' : 'transparent',
                       border: `1px solid ${dayStart === p.s && dayEnd === p.e ? 'var(--accent)' : 'var(--border)'}`,
                       borderRadius: '6px', color: dayStart === p.s && dayEnd === p.e ? 'var(--accent)' : 'var(--muted)',
-                      fontFamily: 'DM Mono, monospace', fontSize: '0.62rem', padding: '4px 10px', cursor: 'pointer',
+                      fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.62rem', padding: '4px 10px', cursor: 'pointer',
                     }}
                   >
                     {p.label}
@@ -667,13 +667,13 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
                   {yTicks.map((v, i) => (
                     <g key={i}>
                       <line x1={PADL} y1={yPos(v)} x2={W - PADR} y2={yPos(v)} stroke="rgba(255,255,255,0.05)" strokeWidth={1} />
-                      <text x={PADL - 6} y={yPos(v) + 4} textAnchor="end" fontSize={9} fill="rgba(255,255,255,0.3)" fontFamily="DM Mono, monospace">{fmtTick(v)}</text>
+                      <text x={PADL - 6} y={yPos(v) + 4} textAnchor="end" fontSize={9} fill="rgba(255,255,255,0.3)" fontFamily="var(--font-jetbrains), monospace">{fmtTick(v)}</text>
                     </g>
                   ))}
                   {xLabels.map(x => {
                     const xi = xValues.indexOf(x)
                     return (
-                      <text key={String(x)} x={xPos(xi)} y={H - PADB + 14} textAnchor="middle" fontSize={9} fill="rgba(255,255,255,0.3)" fontFamily="DM Mono, monospace">
+                      <text key={String(x)} x={xPos(xi)} y={H - PADB + 14} textAnchor="middle" fontSize={9} fill="rgba(255,255,255,0.3)" fontFamily="var(--font-jetbrains), monospace">
                         {fmtX(x)}
                       </text>
                     )
@@ -704,13 +704,13 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
 
                 {tooltip && (
                   <div style={{ marginTop: '8px', padding: '10px 14px', background: 'var(--surface2)', borderRadius: '8px', border: '1px solid var(--border)', display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginRight: '2px' }}>
+                    <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', marginRight: '2px' }}>
                       {fmtX(xValues[tooltip.xi])}
                     </span>
                     {tooltip.values.filter(v => v.value > 0).map(v => (
                       <div key={v.id} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                         <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: v.color, flexShrink: 0 }} />
-                        <span style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>{v.label}:</span>
+                        <span style={{ fontSize: '0.62rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)' }}>{v.label}:</span>
                         <span style={{ fontSize: '0.72rem', fontWeight: 700, color: v.color }}>
                           {(metric === 'total' || metric === 'avg_ticket') ? fmtCurrency(v.value) : v.value.toLocaleString()}
                         </span>
@@ -723,7 +723,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
               {/* Legend */}
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
                 {series.map(s => (
-                  <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>
+                  <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.68rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)' }}>
                     <svg width={24} height={8}>
                       <line x1={0} y1={4} x2={24} y2={4} stroke={s.color} strokeWidth={2} />
                     </svg>
@@ -737,7 +737,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
           {/* Daily table */}
           {activePeriods.length === 1 && (
             <div>
-              <div style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Detalhe diário</div>
+              <div style={{ fontSize: '0.6rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Detalhe diário</div>
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.76rem' }}>
                   <thead>
@@ -756,14 +756,14 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
                       const dayTotal = row.reduce((s, d) => s + (d ? Number(d.total) : 0), 0)
                       return (
                         <tr key={date} style={{ borderBottom: '1px solid var(--border)' }}>
-                          <td style={{ padding: '5px 8px', fontFamily: 'DM Mono, monospace', fontSize: '0.7rem' }}>
+                          <td style={{ padding: '5px 8px', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.7rem' }}>
                             {(() => { const dt = new Date(date + 'T12:00:00'); return `${dt.getDate()}/${dt.getMonth() + 1}` })()}
                             <span style={{ fontSize: '0.58rem', color: 'var(--muted)', marginLeft: '6px' }}>{fmtCurrency(dayTotal)}</span>
                           </td>
                           {row.flatMap((d, i) => [
-                            <td key={`v${i}`} style={{ padding: '5px 8px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontWeight: 600, color: stores[i].color, fontSize: '0.7rem' }}>{d ? fmtCurrency(Number(d.total)) : '—'}</td>,
-                            <td key={`c${i}`} style={{ padding: '5px 8px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: 'var(--muted)' }}>{d ? d.clients : '—'}</td>,
-                            <td key={`a${i}`} style={{ padding: '5px 8px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: 'var(--muted)' }}>{d ? fmtCurrency(Number(d.avg_ticket)) : '—'}</td>,
+                            <td key={`v${i}`} style={{ padding: '5px 8px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', fontWeight: 600, color: stores[i].color, fontSize: '0.7rem' }}>{d ? fmtCurrency(Number(d.total)) : '—'}</td>,
+                            <td key={`c${i}`} style={{ padding: '5px 8px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.68rem', color: 'var(--muted)' }}>{d ? d.clients : '—'}</td>,
+                            <td key={`a${i}`} style={{ padding: '5px 8px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.68rem', color: 'var(--muted)' }}>{d ? fmtCurrency(Number(d.avg_ticket)) : '—'}</td>,
                           ])}
                         </tr>
                       )
@@ -782,7 +782,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
       {activeSubTab === 'vendedores' && (
         <div>
           {vendorRows.length === 0 ? (
-            <div style={{ padding: '3rem', textAlign: 'center', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: 'var(--muted)' }}>
+            <div style={{ padding: '3rem', textAlign: 'center', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.75rem', color: 'var(--muted)' }}>
               Nenhum dado encontrado para os filtros selecionados.
             </div>
           ) : (
@@ -827,7 +827,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
 
                     return (
                       <tr key={row.vendor_id} style={{ borderBottom: '1px solid var(--border)' }}>
-                        <td style={{ padding: '8px 10px', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: i < 3 ? rankColors[i] : 'var(--muted)', width: '24px' }}>
+                        <td style={{ padding: '8px 10px', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.68rem', color: i < 3 ? rankColors[i] : 'var(--muted)', width: '24px' }}>
                           {i + 1}
                         </td>
                         <td style={{ padding: '8px 10px', fontWeight: 600 }}>
@@ -840,7 +840,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
                         </td>
                         <td style={{ padding: '8px 10px' }}>
                           <span style={{
-                            fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', padding: '2px 7px',
+                            fontSize: '0.6rem', fontFamily: 'var(--font-jetbrains), monospace', padding: '2px 7px',
                             borderRadius: '4px', fontWeight: 500, whiteSpace: 'nowrap',
                             background: col + '22', color: col,
                           }}>
@@ -853,7 +853,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
                           const growth  = prevVal !== null && prevVal > 0 ? ((val - prevVal) / prevVal) * 100 : null
                           const isLatest = pi === sortedPeriodsAsc.length - 1
                           return (
-                            <td key={p.id} style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace' }}>
+                            <td key={p.id} style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace' }}>
                               <span style={{ fontWeight: isLatest ? 700 : 500, fontSize: '0.76rem', color: isLatest ? 'var(--text)' : 'var(--muted)' }}>
                                 {val > 0 ? fmtVal(val) : <span style={{ color: 'var(--muted)', fontSize: '0.65rem' }}>—</span>}
                               </span>
@@ -869,7 +869,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
                           )
                         })}
                         {sortedPeriodsAsc.length > 1 && (
-                          <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace' }}>
+                          <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace' }}>
                             {totalGrowth !== null ? (
                               <span style={{
                                 fontSize: '0.72rem', fontWeight: 700,
@@ -892,7 +892,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
                 {vendorRows.length > 1 && (
                   <tfoot>
                     <tr style={{ borderTop: '2px solid var(--border)' }}>
-                      <td colSpan={3} style={{ padding: '8px 10px', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      <td colSpan={3} style={{ padding: '8px 10px', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.65rem', color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                         Total
                       </td>
                       {sortedPeriodsAsc.map((p, pi) => {
@@ -901,7 +901,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
                         const growth   = prevTotal !== null && prevTotal > 0 ? ((total - prevTotal) / prevTotal) * 100 : null
                         const isLatest = pi === sortedPeriodsAsc.length - 1
                         return (
-                          <td key={p.id} style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace' }}>
+                          <td key={p.id} style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace' }}>
                             <span style={{ fontWeight: 700, fontSize: '0.76rem', color: isLatest ? 'var(--accent)' : 'var(--text)' }}>
                               {fmtVal(total)}
                             </span>
@@ -914,7 +914,7 @@ export default function EvolucaoTab({ data, periods, vendorSummaries, stores }: 
                         )
                       })}
                       {sortedPeriodsAsc.length > 1 && (
-                        <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'DM Mono, monospace' }}>
+                        <td style={{ padding: '8px 10px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace' }}>
                           {(() => {
                             const firstTotal = vendorRows.reduce((s, r) => s + (r.byPeriod.get(sortedPeriodsAsc[0]?.id ?? 0) ?? 0), 0)
                             const lastTotal  = vendorRows.reduce((s, r) => s + (r.byPeriod.get(sortedPeriodsAsc[sortedPeriodsAsc.length - 1]?.id ?? 0) ?? 0), 0)

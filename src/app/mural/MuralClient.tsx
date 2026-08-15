@@ -28,7 +28,7 @@ export default function MuralClient({
       <div className="lg:col-span-2 flex flex-col gap-6">
         <div className="glass-card rounded-2xl p-card-padding border border-white/5 relative overflow-hidden" style={{ minHeight: '320px' }}>
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#2563eb]/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-          <h2 className="text-xl font-bold text-on-surface flex items-center gap-2 mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>
+          <h2 className="text-xl font-bold text-on-surface flex items-center gap-2 mb-6" style={{ fontFamily: 'var(--font-hanken), sans-serif' }}>
             <span style={{ fontSize: '1.2rem' }}>📣</span>
             Mural de Recados
           </h2>
@@ -36,8 +36,8 @@ export default function MuralClient({
           <div className="flex flex-col gap-4">
             <div className="bg-surface-container-high/50 p-4 rounded-xl border border-white/5" style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1rem' }}>
               <div className="flex items-center justify-between mb-2">
-                <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: '#2563eb', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Importante</span>
-                <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>Hoje, 09:00</span>
+                <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', color: '#2563eb', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Importante</span>
+                <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)' }}>Hoje, 09:00</span>
               </div>
               <p style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.5 }}>
                 A nova política de bônus por canal já está em vigor. Verifiquem a aba de Regras de Comissão para entender os novos tetos.
@@ -46,8 +46,8 @@ export default function MuralClient({
             
             <div className="bg-surface-container-high/50 p-4 rounded-xl border border-white/5" style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1rem' }}>
               <div className="flex items-center justify-between mb-2">
-                <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: '#f5a742', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>RH</span>
-                <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>Ontem, 14:30</span>
+                <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', color: '#f5a742', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>RH</span>
+                <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)' }}>Ontem, 14:30</span>
               </div>
               <p style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.5 }}>
                 Lembramos que o prazo para solicitar férias para o próximo trimestre encerra nesta sexta-feira.
@@ -58,7 +58,7 @@ export default function MuralClient({
 
         {/* Ranking de Canais */}
         <div className="glass-card rounded-2xl p-card-padding border border-white/5" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '1.5rem' }}>
-          <h2 className="text-xl font-bold text-on-surface flex items-center gap-2 mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>
+          <h2 className="text-xl font-bold text-on-surface flex items-center gap-2 mb-6" style={{ fontFamily: 'var(--font-hanken), sans-serif' }}>
             <span style={{ fontSize: '1.2rem' }}>🏪</span>
             Ranking de Canais (Mês Atual)
           </h2>
@@ -76,9 +76,9 @@ export default function MuralClient({
                   <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{store.label}</span>
                 </div>
                 {showValues ? (
-                  <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 800, color: '#2563eb' }}>{fmtCurrency(store.total)}</span>
+                  <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontWeight: 800, color: '#2563eb' }}>{fmtCurrency(store.total)}</span>
                 ) : (
-                  <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>Confidencial</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontFamily: 'var(--font-jetbrains), monospace' }}>Confidencial</span>
                 )}
               </div>
             ))}
@@ -91,7 +91,7 @@ export default function MuralClient({
         
         {/* Top 3 Vendas */}
         <div className="glass-card rounded-2xl p-card-padding border border-white/5" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '1.5rem' }}>
-          <h2 className="text-xl font-bold text-on-surface flex items-center gap-2 mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>
+          <h2 className="text-xl font-bold text-on-surface flex items-center gap-2 mb-6" style={{ fontFamily: 'var(--font-hanken), sans-serif' }}>
             <span style={{ fontSize: '1.2rem' }}>🏆</span>
             Top 3 Vendas
           </h2>
@@ -109,7 +109,7 @@ export default function MuralClient({
                 </div>
                 <div>
                   <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{seller.vendor_name}</div>
-                  <div style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '2px' }}>
+                  <div style={{ fontSize: '0.7rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', marginTop: '2px' }}>
                     {showValues ? fmtCurrency(Number(seller.total_sold)) : 'Posição de Destaque'}
                   </div>
                 </div>
@@ -120,7 +120,7 @@ export default function MuralClient({
 
         {/* Aniversariantes */}
         <div className="glass-card rounded-2xl p-card-padding border border-white/5" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '1.5rem' }}>
-          <h2 className="text-xl font-bold text-on-surface flex items-center gap-2 mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>
+          <h2 className="text-xl font-bold text-on-surface flex items-center gap-2 mb-6" style={{ fontFamily: 'var(--font-hanken), sans-serif' }}>
             <span style={{ fontSize: '1.2rem' }}>🎂</span>
             Aniversariantes
           </h2>
@@ -131,7 +131,7 @@ export default function MuralClient({
 
         {/* Top 3 Alunos (Treinamentos) */}
         <div className="glass-card rounded-2xl p-card-padding border border-white/5" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '1.5rem' }}>
-          <h2 className="text-xl font-bold text-on-surface flex items-center gap-2 mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>
+          <h2 className="text-xl font-bold text-on-surface flex items-center gap-2 mb-6" style={{ fontFamily: 'var(--font-hanken), sans-serif' }}>
             <span style={{ fontSize: '1.2rem' }}>🎓</span>
             Top 3 Alunos (LMS)
           </h2>
@@ -154,7 +154,7 @@ export default function MuralClient({
                   </div>
                   <div>
                     <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{aluno.nome}</div>
-                    <div style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '2px' }}>
+                    <div style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', marginTop: '2px' }}>
                       Nível <span style={{ color: '#2563eb', fontWeight: 700 }}>{aluno.nivel}</span> · {aluno.xp} XP
                     </div>
                   </div>

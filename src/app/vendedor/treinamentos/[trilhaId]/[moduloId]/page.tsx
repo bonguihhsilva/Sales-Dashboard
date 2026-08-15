@@ -57,15 +57,15 @@ export default async function ModuloPage({
       <div style={{ padding: '0 2.5rem 3rem', maxWidth: '820px' }}>
 
         <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', marginBottom: '1.75rem' }}>
-          <span style={{ fontSize: '0.6875rem', fontFamily: 'DM Mono, monospace', color: C.muted }}>
+          <span style={{ fontSize: '0.6875rem', fontFamily: 'var(--font-jetbrains), monospace', color: C.muted }}>
             {totalAulas} aulas
           </span>
-          <span style={{ fontSize: '0.6875rem', fontFamily: 'DM Mono, monospace', color: C.amber, fontWeight: 700 }}>
+          <span style={{ fontSize: '0.6875rem', fontFamily: 'var(--font-jetbrains), monospace', color: C.amber, fontWeight: 700 }}>
             +{modulo.xp_reward} XP
           </span>
           {progressoPct > 0 && (
             <span style={{
-              fontSize: '0.6875rem', fontFamily: 'DM Mono, monospace',
+              fontSize: '0.6875rem', fontFamily: 'var(--font-jetbrains), monospace',
               color: progressoPct === 100 ? C.green : C.muted,
             }}>
               {aulasConcluidas}/{totalAulas} concluídas
@@ -94,7 +94,7 @@ export default async function ModuloPage({
         {modulo.aulas.length === 0 ? (
           <div style={{
             textAlign: 'center', padding: '3rem 2rem',
-            color: C.muted, fontFamily: 'DM Mono, monospace', fontSize: '0.875rem',
+            color: C.muted, fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.875rem',
           }}>
             Este módulo ainda não tem aulas.
           </div>
@@ -121,7 +121,7 @@ export default async function ModuloPage({
                       background: aula.concluida ? 'rgba(34,197,94,0.10)' : 'rgba(255,255,255,0.04)',
                       border: `1px solid ${aula.concluida ? 'rgba(34,197,94,0.3)' : C.border}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontFamily: 'DM Mono, monospace', fontSize: '0.6rem',
+                      fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.6rem',
                       color: aula.concluida ? C.green : C.muted, fontWeight: 700, flexShrink: 0,
                     }}>
                       {aula.concluida ? '✓' : String(idx + 1).padStart(2, '0')}
@@ -129,13 +129,13 @@ export default async function ModuloPage({
 
                     <div>
                       <div style={{
-                        fontFamily: 'Syne, sans-serif', fontSize: '0.875rem',
+                        fontFamily: 'var(--font-hanken), sans-serif', fontSize: '0.875rem',
                         fontWeight: 700, color: C.text,
                       }}>
                         {aula.titulo}
                       </div>
                       <div style={{
-                        fontSize: '0.625rem', fontFamily: 'DM Mono, monospace',
+                        fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace',
                         color: C.muted, marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.06em',
                       }}>
                         {tipoIcon(aula.tipo_conteudo)} {aula.tipo_conteudo ?? 'aula'}
@@ -144,7 +144,7 @@ export default async function ModuloPage({
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
-                    <span style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.amber }}>
+                    <span style={{ fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace', color: C.amber }}>
                       +{aula.xp_reward} XP
                     </span>
                     <span style={{ fontSize: '0.75rem', color: C.muted }}>→</span>
@@ -164,7 +164,7 @@ export default async function ModuloPage({
             display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem',
           }}>
             <div>
-              <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.9375rem', color: C.text }}>
+              <div style={{ fontFamily: 'var(--font-hanken), sans-serif', fontWeight: 700, fontSize: '0.9375rem', color: C.text }}>
                 Prova do Módulo
               </div>
               <div style={{ fontSize: '0.6875rem', color: C.muted, marginTop: 3 }}>
@@ -181,7 +181,7 @@ export default async function ModuloPage({
                 color: progressoPct < 100 ? C.muted : C.bg,
                 border: 'none',
                 padding: '0.625rem 1.25rem', borderRadius: '0.5rem',
-                fontWeight: 800, fontFamily: 'Syne, sans-serif',
+                fontWeight: 800, fontFamily: 'var(--font-hanken), sans-serif',
                 fontSize: '0.875rem', textDecoration: 'none', whiteSpace: 'nowrap',
                 pointerEvents: progressoPct < 100 ? 'none' : 'auto',
               }}

@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/ui'
 
 type Store = { id: string; name: string; color: string; ativo: boolean }
 
-const PRESET_COLORS = ['#c8f542', '#42d9f5', '#f5a742', '#7b61ff', '#f87171', '#4ade80', '#60a5fa', '#e879f9']
+const PRESET_COLORS = ['#c9a24b', '#2e4fe3', '#f5a742', '#7b61ff', '#f87171', '#4ade80', '#60a5fa', '#e879f9']
 
 export default function LojasClient({ stores: initial }: { stores: Store[] }) {
   const [stores, setStores] = useState<Store[]>(initial)
@@ -79,7 +79,7 @@ export default function LojasClient({ stores: initial }: { stores: Store[] }) {
                 style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%' }} />
             </div>
 
-            <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 600, color: 'var(--text)', flex: 1, fontSize: 15 }}>
+            <span style={{ fontFamily: 'var(--font-hanken), sans-serif', fontWeight: 600, color: 'var(--text)', flex: 1, fontSize: 15 }}>
               {s.name}
             </span>
 
@@ -102,7 +102,7 @@ export default function LojasClient({ stores: initial }: { stores: Store[] }) {
 
       {/* Add new store */}
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 20 }}>
-        <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--text)', margin: '0 0 16px' }}>
+        <h3 style={{ fontFamily: 'var(--font-hanken), sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--text)', margin: '0 0 16px' }}>
           Nova Loja
         </h3>
 
@@ -134,8 +134,8 @@ export default function LojasClient({ stores: initial }: { stores: Store[] }) {
             onClick={handleCreate}
             disabled={isPending}
             style={{
-              background: 'var(--accent)', color: '#000', border: 'none', borderRadius: 8,
-              padding: '10px 20px', cursor: 'pointer', fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 13
+              background: 'var(--accent)', color: 'var(--on-accent)', border: 'none', borderRadius: 8,
+              padding: '10px 20px', cursor: 'pointer', fontFamily: 'var(--font-hanken), sans-serif', fontWeight: 700, fontSize: 13
             }}
           >
             Adicionar

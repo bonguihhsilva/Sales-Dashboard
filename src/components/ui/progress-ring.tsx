@@ -13,7 +13,7 @@ export function ProgressRing({ value, size = 64, color, label }: ProgressRingPro
   const offset = circumference - (clamped / 100) * circumference
 
   const resolvedColor = color
-    ?? (value >= 100 ? 'hsl(var(--accent))' : value >= 70 ? 'rgb(var(--paje1))' : 'hsl(var(--muted-foreground))')
+    ?? (value >= 100 ? 'var(--accent)' : value >= 70 ? 'hsl(var(--paje1))' : 'var(--muted-color)')
 
   return (
     <div
@@ -28,7 +28,7 @@ export function ProgressRing({ value, size = 64, color, label }: ProgressRingPro
       <svg width={size} height={size} className="-rotate-90">
         <circle
           cx={size / 2} cy={size / 2} r={radius}
-          stroke="hsl(var(--muted))" strokeWidth={stroke} fill="none"
+          stroke="var(--surface2)" strokeWidth={stroke} fill="none"
         />
         <circle
           cx={size / 2} cy={size / 2} r={radius}

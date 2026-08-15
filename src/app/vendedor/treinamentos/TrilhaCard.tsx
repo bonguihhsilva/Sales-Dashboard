@@ -41,7 +41,7 @@ export function TrilhaCard({ trilha }: Props) {
             <span style={{ fontSize: '1.375rem', lineHeight: 1 }}>{trilha.icon}</span>
           )}
           <div style={{
-            fontSize: '0.625rem', fontFamily: 'DM Mono, monospace',
+            fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace',
             textTransform: 'uppercase', letterSpacing: '0.08em',
             padding: '0.25rem 0.5rem', borderRadius: '0.3125rem',
             background: accentBg, border: `1px solid ${accentBorder}`, color: accentHex,
@@ -50,7 +50,7 @@ export function TrilhaCard({ trilha }: Props) {
           </div>
           {trilha.is_global && (
             <div style={{
-              fontSize: '0.5625rem', fontFamily: 'DM Mono, monospace',
+              fontSize: '0.5625rem', fontFamily: 'var(--font-jetbrains), monospace',
               textTransform: 'uppercase', letterSpacing: '0.08em',
               padding: '0.2rem 0.4rem', borderRadius: '0.25rem',
               background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.border}`,
@@ -63,7 +63,7 @@ export function TrilhaCard({ trilha }: Props) {
 
         {/* Título */}
         <div style={{
-          fontFamily: 'Syne, sans-serif',
+          fontFamily: 'var(--font-hanken), sans-serif',
           fontSize: '1.0625rem', fontWeight: 700,
           color: C.text, letterSpacing: '-0.01em', lineHeight: 1.3,
         }}>
@@ -95,13 +95,13 @@ export function TrilhaCard({ trilha }: Props) {
             marginTop: '0.5rem',
           }}>
             <span style={{
-              fontSize: '0.6875rem', fontFamily: 'DM Mono, monospace',
+              fontSize: '0.6875rem', fontFamily: 'var(--font-jetbrains), monospace',
               color: accentHex, fontWeight: 700,
             }}>
               +{trilha.totalXp} XP
             </span>
             <span style={{
-              fontSize: '0.625rem', fontFamily: 'DM Mono, monospace',
+              fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace',
               color: trilha.progressoPct === 100 ? C.green : C.muted,
               textTransform: 'uppercase', letterSpacing: '0.08em',
             }}>

@@ -31,8 +31,8 @@ export function bonusAmount(level: number, bonus1: number, bonus2: number, bonus
 }
 
 export function recencyColor(daysAgo: number): string {
-  if (daysAgo <= 1) return '#c8f542'
-  if (daysAgo <= 3) return '#42d9f5'
+  if (daysAgo <= 1) return '#c9a24b'
+  if (daysAgo <= 3) return '#2e4fe3'
   if (daysAgo <= 7) return '#f5a742'
   return '#6b6f7a'
 }

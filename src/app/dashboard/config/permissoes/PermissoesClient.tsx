@@ -98,7 +98,7 @@ export default function PermissoesClient({ gerentes: initial }: { gerentes: Gere
                 borderLeft: selected === g.id ? '3px solid var(--accent)' : '3px solid transparent',
                 transition: 'background .1s',
               }}>
-                <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 600, color: 'var(--text)', fontSize: 14 }}>{g.name}</div>
+                <div style={{ fontFamily: 'var(--font-hanken), sans-serif', fontWeight: 600, color: 'var(--text)', fontSize: 14 }}>{g.name}</div>
                 <div style={{ color: 'var(--muted)', fontSize: 12, marginTop: 2 }}>{activeCount} permiss{activeCount === 1 ? 'ão' : 'ões'}</div>
               </div>
             )
@@ -109,12 +109,12 @@ export default function PermissoesClient({ gerentes: initial }: { gerentes: Gere
         {gerente && (
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: 20, display: 'flex', flexDirection: 'column', gap: 0 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 15, color: 'var(--text)' }}>
+              <span style={{ fontFamily: 'var(--font-hanken), sans-serif', fontWeight: 700, fontSize: 15, color: 'var(--text)' }}>
                 {gerente.name}
               </span>
               <button onClick={handleSave} disabled={saving} style={{
-                background: 'var(--accent)', color: '#000', border: 'none', borderRadius: 8,
-                padding: '8px 18px', cursor: 'pointer', fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 13
+                background: 'var(--accent)', color: 'var(--on-accent)', border: 'none', borderRadius: 8,
+                padding: '8px 18px', cursor: 'pointer', fontFamily: 'var(--font-hanken), sans-serif', fontWeight: 700, fontSize: 13
               }}>
                 {saving ? 'Salvando…' : 'Salvar'}
               </button>

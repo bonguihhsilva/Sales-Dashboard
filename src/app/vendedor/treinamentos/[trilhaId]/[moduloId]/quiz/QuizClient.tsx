@@ -72,10 +72,10 @@ export default function QuizClient({ questoes, trilhaId, moduloId }: Props) {
           <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>
             {resultado.aprovado ? '🎉' : '📚'}
           </div>
-          <h2 style={{ fontSize: '1.5rem', fontFamily: 'Syne, sans-serif', fontWeight: 800, margin: '0 0 0.5rem', color: resultado.aprovado ? C.green : C.red }}>
+          <h2 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-hanken), sans-serif', fontWeight: 800, margin: '0 0 0.5rem', color: resultado.aprovado ? C.green : C.red }}>
             {resultado.aprovado ? 'Aprovado!' : 'Continue estudando'}
           </h2>
-          <p style={{ color: C.muted, fontFamily: 'DM Mono, monospace', fontSize: '0.875rem' }}>
+          <p style={{ color: C.muted, fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.875rem' }}>
             {resultado.pontuacao}% de acerto · {acertosCount} de {questoes.length} corretas
           </p>
         </div>
@@ -129,7 +129,7 @@ export default function QuizClient({ questoes, trilhaId, moduloId }: Props) {
                     padding: '0.625rem 0.875rem',
                     fontSize: '0.8125rem', color: C.muted, lineHeight: 1.55,
                   }}>
-                    <span style={{ color: C.gold, fontWeight: 700, fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Explicação — </span>
+                    <span style={{ color: C.gold, fontWeight: 700, fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Explicação — </span>
                     {g.explicacao}
                   </div>
                 )}
@@ -149,7 +149,7 @@ export default function QuizClient({ questoes, trilhaId, moduloId }: Props) {
                 border: `1px solid ${C.border}`,
                 padding: '0.625rem 1.25rem', borderRadius: '0.5rem',
                 fontWeight: 700, cursor: 'pointer', fontSize: '0.875rem',
-                fontFamily: 'Syne, sans-serif',
+                fontFamily: 'var(--font-hanken), sans-serif',
               }}
             >
               Tentar novamente
@@ -162,7 +162,7 @@ export default function QuizClient({ questoes, trilhaId, moduloId }: Props) {
               background: C.gold, color: C.bg, border: 'none',
               padding: '0.625rem 1.25rem', borderRadius: '0.5rem',
               fontWeight: 800, cursor: 'pointer', fontSize: '0.875rem',
-              fontFamily: 'Syne, sans-serif',
+              fontFamily: 'var(--font-hanken), sans-serif',
             }}
           >
             Voltar para a Trilha
@@ -218,7 +218,7 @@ export default function QuizClient({ questoes, trilhaId, moduloId }: Props) {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: C.muted }}>
+        <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-jetbrains), monospace', color: C.muted }}>
           {Object.keys(respostas).length} / {questoes.length} respondidas
         </span>
         <button
@@ -229,7 +229,7 @@ export default function QuizClient({ questoes, trilhaId, moduloId }: Props) {
             background: Object.keys(respostas).length < questoes.length ? C.surface2 : C.gold,
             color: Object.keys(respostas).length < questoes.length ? C.muted : C.bg,
             border: 'none', padding: '0.75rem 1.5rem', borderRadius: '0.5rem',
-            fontWeight: 800, fontSize: '0.9375rem', fontFamily: 'Syne, sans-serif',
+            fontWeight: 800, fontSize: '0.9375rem', fontFamily: 'var(--font-hanken), sans-serif',
             cursor: Object.keys(respostas).length < questoes.length ? 'default' : 'pointer',
             transition: 'all 0.15s',
           }}
