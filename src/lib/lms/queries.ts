@@ -1,4 +1,19 @@
 import { createClient } from '@/lib/supabase/server'
+import { categoriaDe } from '@/app/vendedor/treinamentos/categorias'
+
+// Categorias liberadas pro vendedor (null = todas). Fonte: profiles.categorias_permitidas,
+// setado pelo gerente em /dashboard/usuarios (ex: nao mostrar Skin Care pra vendedor de Informatica).
+async function getCategoriasPermitidas(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string
+): Promise<string[] | null> {
+  const { data } = await supabase
+    .from('profiles')
+    .select('categorias_permitidas')
+    .eq('id', userId)
+    .maybeSingle()
+  return data?.categorias_permitidas ?? null
+}
 
 // ── Tipos ─────────────────────────────────────────────────────
 
@@ -76,13 +91,20 @@ export interface QuestaoProva {
 export async function getCatalogo(userId: string): Promise<CatalogoTrilha[]> {
   const supabase = await createClient()
 
-  const { data: trilhas, error } = await supabase
-    .from('trilhas')
-    .select('id, titulo, descricao, icon, cor, is_global, ordem')
-    .eq('ativa', true)
-    .order('ordem', { ascending: true })
+  const [{ data: trilhasRaw, error }, categoriasPermitidas] = await Promise.all([
+    supabase
+      .from('trilhas')
+      .select('id, titulo, descricao, icon, cor, is_global, ordem')
+      .eq('ativa', true)
+      .order('ordem', { ascending: true }),
+    getCategoriasPermitidas(supabase, userId),
+  ])
 
-  if (error || !trilhas) return []
+  if (error || !trilhasRaw) return []
+
+  const trilhas = categoriasPermitidas
+    ? trilhasRaw.filter(t => categoriasPermitidas.includes(categoriaDe(t.titulo)))
+    : trilhasRaw
 
   const trilhaIds = trilhas.map(t => t.id)
   if (trilhaIds.length === 0) return []
@@ -187,6 +209,11 @@ export async function getTrilha(
 
   if (error || !trilha) return null
 
+  const categoriasPermitidas = await getCategoriasPermitidas(supabase, userId)
+  if (categoriasPermitidas && !categoriasPermitidas.includes(categoriaDe(trilha.titulo))) {
+    return null
+  }
+
   const { data: modulosRaw } = await supabase
     .from('modulos')
     .select('id, titulo, descricao, ordem, xp_reward, aprovacao_minima')
@@ -288,6 +315,18 @@ export async function getModulo(
     .single()
 
   if (error || !modulo) return null
+
+  const categoriasPermitidas = await getCategoriasPermitidas(supabase, userId)
+  if (categoriasPermitidas) {
+    const { data: trilha } = await supabase
+      .from('trilhas')
+      .select('titulo')
+      .eq('id', modulo.trilha_id)
+      .single()
+    if (!trilha || !categoriasPermitidas.includes(categoriaDe(trilha.titulo))) {
+      return null
+    }
+  }
 
   // Busca aulas e prova em paralelo
   const [aulasResult, provaResult] = await Promise.all([

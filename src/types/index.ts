@@ -11,6 +11,7 @@ export interface Profile {
   data_admissao: string | null
   ativo: boolean
   created_at: string
+  categorias_permitidas: string[] | null
 }
 
 export interface Period {

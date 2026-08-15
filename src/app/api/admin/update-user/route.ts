@@ -63,6 +63,16 @@ export async function POST(req: NextRequest) {
     ? (body.vendor_id ? body.vendor_id : null)
     : undefined
 
+  let categorias_permitidas: string[] | null | undefined
+  if (body.categorias_permitidas !== undefined) {
+    const parsed = z.array(z.string().min(1).max(60)).max(20).nullable().safeParse(body.categorias_permitidas)
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Categorias permitidas invalidas' }, { status: 400 })
+    }
+    // Array vazio == restringir tudo nao faz sentido pra UI (checkbox "todas" manda null) — normaliza.
+    categorias_permitidas = parsed.data && parsed.data.length > 0 ? parsed.data : null
+  }
+
   if (!userId) {
     return NextResponse.json({ error: 'userId obrigatorio' }, { status: 400 })
   }
@@ -112,6 +122,7 @@ export async function POST(req: NextRequest) {
   if (store !== undefined) patch.store = store
   if (ativo !== undefined) patch.ativo = ativo
   if (vendor_id !== undefined) patch.vendor_id = vendor_id
+  if (categorias_permitidas !== undefined) patch.categorias_permitidas = categorias_permitidas
   if (Object.keys(patch).length > 0) {
     const { error: profError } = await admin
       .from('profiles')

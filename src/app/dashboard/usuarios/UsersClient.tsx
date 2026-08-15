@@ -49,6 +49,7 @@ import {
   SelectItem,
 } from '@/components/ui/select'
 import { ASSIGNABLE_ROLES } from '@/lib/auth/roles'
+import { CATEGORIAS } from '@/app/vendedor/treinamentos/categorias'
 import type { UserRow } from './page'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -115,6 +116,8 @@ export default function UsersClient({
   const [editStore, setEditStore] = useState(STORE_OPTIONS[0].value)
   const [editAtivo, setEditAtivo] = useState(true)
   const [editVendorId, setEditVendorId] = useState('')
+  // null = ve todas as categorias (default)
+  const [editCategorias, setEditCategorias] = useState<string[] | null>(null)
 
   // Sincronizar campos do Sheet de edicao quando editingUser mudar
   useEffect(() => {
@@ -128,6 +131,7 @@ export default function UsersClient({
       setEditStore(editingUser.store ?? STORE_OPTIONS[0].value)
       setEditAtivo(editingUser.ativo)
       setEditVendorId(editingUser.vendor_id ?? '')
+      setEditCategorias(editingUser.categorias_permitidas)
       setError(null)
     }
   }, [editingUser])
@@ -228,6 +232,7 @@ export default function UsersClient({
           role: editRole,
           store: editStore,
           vendor_id: editVendorId.trim() || null,
+          categorias_permitidas: editRole === 'vendedor' ? editCategorias : null,
         }),
       })
       const data = await res.json()
@@ -629,6 +634,46 @@ export default function UsersClient({
                 />
                 <p className="text-xs text-muted-foreground">
                   Código do vendedor no sistema CEC. Necessário para calcular comissões.
+                </p>
+              </div>
+            )}
+
+            {editRole === 'vendedor' && (
+              <div className="flex flex-col gap-1.5">
+                <Label>Treinamentos visíveis</Label>
+                <div className="flex flex-col gap-1.5 rounded-md border border-border p-3">
+                  <label className="flex items-center gap-2 text-sm font-medium">
+                    <input
+                      type="checkbox"
+                      checked={editCategorias === null}
+                      onChange={(e) => setEditCategorias(e.target.checked ? null : [])}
+                    />
+                    Todas as categorias
+                  </label>
+                  {editCategorias !== null && (
+                    <div className="ml-1 flex flex-col gap-1 border-t border-border pt-2">
+                      {CATEGORIAS.map((cat) => (
+                        <label key={cat.nome} className="flex items-center gap-2 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={editCategorias.includes(cat.nome)}
+                            onChange={(e) =>
+                              setEditCategorias((prev) => {
+                                const list = prev ?? []
+                                return e.target.checked
+                                  ? [...list, cat.nome]
+                                  : list.filter((c) => c !== cat.nome)
+                              })
+                            }
+                          />
+                          {cat.icon} {cat.nome}
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Restrinja para o vendedor ver só as categorias relevantes pro cargo dele.
                 </p>
               </div>
             )}
