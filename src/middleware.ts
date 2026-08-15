@@ -77,7 +77,7 @@ const GERENTE_PERM_RULES: Array<{ test: (p: string) => boolean; perm: Permission
 // Rotas publicas - sem auth check. /convite permite acesso sem sessao.
 // /redefinir-senha precisa ser publica: o ?code= da URL so vira sessao no client
 // (exchangeCodeForSession), e o middleware roda no servidor antes desse JS rodar.
-const PUBLIC_PREFIXES = ['/login', '/esqueci-senha', '/redefinir-senha', '/convite', '/api/admin/accept-invite', '/landing', '/api/v1']
+const PUBLIC_PREFIXES = ['/login', '/esqueci-senha', '/redefinir-senha', '/auth/confirmar', '/convite', '/api/admin/accept-invite', '/landing', '/api/v1']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
