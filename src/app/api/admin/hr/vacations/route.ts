@@ -1,24 +1,18 @@
-import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient as createServerClient } from '@/lib/supabase/server'
+import { getTenantContext } from '@/lib/auth/tenant'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { WithProfileName } from '@/types'
 
 export async function GET() {
-  const caller = await createServerClient()
-  const { data: { user } } = await caller.auth.getUser()
+  const { user, profile } = await getTenantContext()
   if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-  const { data: profile } = await caller.from('profiles').select('role, tenant_id').eq('id', user.id).single()
-  if (!profile || !['adm', 'gerente', 'super_admin'].includes(profile.role)) {
+  if (!['adm', 'gerente', 'super_admin'].includes(profile?.role || '')) {
     return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
   }
 
-  const admin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  )
+  const admin = createAdminClient()
 
-  const { data: employees } = await caller.from('profiles').select('id').eq('tenant_id', profile.tenant_id)
+  const { data: employees } = await admin.from('profiles').select('id').eq('tenant_id', profile.tenant_id)
   const uids = (employees ?? []).map(e => e.id)
 
   const { data, error } = await admin
@@ -39,19 +33,13 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const caller = await createServerClient()
-  const { data: { user } } = await caller.auth.getUser()
+  const { user, profile } = await getTenantContext()
   if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-  const { data: profile } = await caller.from('profiles').select('role, tenant_id').eq('id', user.id).single()
-  if (!profile || !['adm', 'gerente', 'super_admin'].includes(profile.role)) {
+  if (!['adm', 'gerente', 'super_admin'].includes(profile?.role || '')) {
     return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
   }
 
-  const admin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  )
+  const admin = createAdminClient()
 
   const body: {
     user_id: string
@@ -61,7 +49,7 @@ export async function POST(req: NextRequest) {
   } = await req.json()
 
   // Validar se o funcionário pertence ao mesmo tenant
-  const { data: employeeProfile } = await caller.from('profiles').select('tenant_id').eq('id', body.user_id).single()
+  const { data: employeeProfile } = await admin.from('profiles').select('tenant_id').eq('id', body.user_id).single()
   if (!employeeProfile || employeeProfile.tenant_id !== profile.tenant_id) {
     return NextResponse.json({ error: 'Funcionário não pertence à sua organização' }, { status: 403 })
   }
@@ -81,4 +69,3 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json(vacation)
 }
-
