@@ -58,3 +58,56 @@ export async function updateProductCost(
   revalidatePath('/dashboard/compras')
   return { ok: true, unit_cost: unitCost }
 }
+
+export type UpdateAttrsResult = { ok: true } | { ok: false; error: string }
+
+export type ProductAttrs = {
+  brand: string | null
+  category: string | null
+  model: string | null
+  color: string | null
+}
+
+/**
+ * Grava marca/categoria/modelo/cor manuais do produto (não vêm do catálogo).
+ * Reusa product_costs como overlay por SKU — upsert com apenas estas colunas
+ * não toca unit_cost/source/name em linha existente (semântica de
+ * ON CONFLICT DO UPDATE SET só nas colunas do payload).
+ */
+export async function updateProductAttributes(
+  productCode: string,
+  attrs: ProductAttrs
+): Promise<UpdateAttrsResult> {
+  const { user, profile } = await getTenantContext()
+  if (!user || !profile) return { ok: false, error: 'Nao autenticado' }
+  if (!CAN_EDIT_COST.includes(profile.role)) return { ok: false, error: 'Acesso negado' }
+  if (!profile.tenant_id) return { ok: false, error: 'Perfil sem tenant' }
+
+  const code = productCode.trim()
+  if (!code) return { ok: false, error: 'Codigo do produto obrigatorio' }
+
+  const clean = (v: string | null) => (v && v.trim() !== '' ? v.trim() : null)
+
+  const adminDb = createAdminClient()
+  const { error } = await adminDb
+    .from('product_costs')
+    .upsert(
+      {
+        tenant_id: profile.tenant_id,
+        product_code: code,
+        brand: clean(attrs.brand),
+        category: clean(attrs.category),
+        model: clean(attrs.model),
+        color: clean(attrs.color),
+      },
+      { onConflict: 'tenant_id,product_code' }
+    )
+
+  if (error) {
+    console.error('updateProductAttributes falhou:', error.message)
+    return { ok: false, error: 'Falha ao salvar atributos' }
+  }
+
+  revalidatePath('/dashboard/compras')
+  return { ok: true }
+}

@@ -8,6 +8,11 @@ export interface InventoryMetric {
   tenant_id: string
   product_code: string
   product_name: string | null
+  brand: string | null
+  category: string | null
+  model: string | null
+  color: string | null
+  sale_price: number | null
   current_qty: number | null
   last_snapshot_date: string | null
   snapshot_staleness_days: number | null
@@ -48,6 +53,10 @@ export interface RankingRow {
   tenant_id: string
   product_code: string
   product_name: string | null
+  brand: string | null
+  category: string | null
+  model: string | null
+  color: string | null
   store: string | null
   qty_sold: number
   revenue: number

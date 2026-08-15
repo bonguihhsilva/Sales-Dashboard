@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { updateProductCost } from './actions'
+import { updateProductCost, updateProductAttributes } from './actions'
 import { KpiCard } from '@/components/ui'
 import type { InventoryMetric, AbcRow, RankingRow, InventorySummary, MovementClass } from './types'
 
@@ -41,6 +41,17 @@ const num = (v: number | null | undefined, d = 1) =>
   v === null || v === undefined ? '—' : Number(v).toFixed(d)
 const pct = (v: number | null | undefined) =>
   v === null || v === undefined ? '—' : `${(Number(v) * 100).toFixed(0)}%`
+
+// Sugestão de compra = repor até dar N dias de cobertura, usando o próprio
+// `ads` (venda média/dia) como previsão de demanda — já é o dado mais
+// confiável que temos, sem prazo de entrega por fornecedor no schema ainda.
+// ponytail: cobertura-alvo fixa em 14d; virar constante editável por loja/SKU
+// quando compras pedir lead time real por fornecedor.
+const TARGET_COVER_DAYS = 14
+const suggestedQty = (m: InventoryMetric): number | null => {
+  if (m.current_qty === null || m.ads <= 0) return null
+  return Math.max(0, Math.ceil(m.ads * TARGET_COVER_DAYS - m.current_qty))
+}
 
 export default function ComprasClient({
   tab, store, stores, metrics, abc, ranking, summary, canEditCost,
@@ -148,7 +159,7 @@ export default function ComprasClient({
         />
       )}
 
-      {tab === 'estoque' && <Estoque metrics={metrics} abcByCode={abcByCode} />}
+      {tab === 'estoque' && <Estoque metrics={metrics} abcByCode={abcByCode} canEdit={canEditCost} />}
 
       {tab === 'abc' && <CurvaAbc abc={abc} metrics={metrics} />}
 
@@ -181,23 +192,32 @@ function VisaoGeral({
         {alertas.length === 0 ? (
           <Empty>Nenhum item em risco de ruptura.</Empty>
         ) : (
-          <Table head={['Produto', { label: 'Estoque', align: 'right' }, { label: 'Venda/dia', align: 'right' }, { label: 'Cobertura', align: 'right' }, 'Situação']}>
-            {alertas.map(m => (
-              <tr key={m.product_code} className="hover:bg-white/[0.03] transition-colors">
-                <Td><strong>{m.product_name ?? m.product_code}</strong><div className="text-on-surface-variant font-mono text-[0.6875rem]">{m.product_code}</div></Td>
-                <Td className="text-right font-mono">{m.current_qty === null ? '—' : num(m.current_qty, 0)}</Td>
-                <Td className="text-right font-mono">{num(m.ads, 2)}</Td>
-                <Td className="text-right font-mono">{m.dos === null ? '—' : `${num(m.dos)} dias`}</Td>
-                <Td>
-                  {m.is_stockout_now ? (
-                    <Badge className="bg-error/20 text-error">Sem estoque</Badge>
-                  ) : (
-                    <Badge className="bg-tertiary-container text-on-tertiary-container">Repor</Badge>
-                  )}
-                </Td>
-              </tr>
-            ))}
-          </Table>
+          <>
+            <Table head={['Produto', { label: 'Estoque', align: 'right' }, { label: 'Venda/dia', align: 'right' }, { label: 'Cobertura', align: 'right' }, { label: 'Comprar', align: 'right' }, 'Situação']}>
+              {alertas.map(m => {
+                const sugestao = suggestedQty(m)
+                return (
+                  <tr key={m.product_code} className="hover:bg-white/[0.03] transition-colors">
+                    <Td><strong>{m.product_name ?? m.product_code}</strong><div className="text-on-surface-variant font-mono text-[0.6875rem]">{m.product_code}</div></Td>
+                    <Td className="text-right font-mono">{m.current_qty === null ? '—' : num(m.current_qty, 0)}</Td>
+                    <Td className="text-right font-mono">{num(m.ads, 2)}</Td>
+                    <Td className="text-right font-mono">{m.dos === null ? '—' : `${num(m.dos)} dias`}</Td>
+                    <Td className="text-right font-mono font-bold">{sugestao === null ? '—' : sugestao}</Td>
+                    <Td>
+                      {m.is_stockout_now ? (
+                        <Badge className="bg-error/20 text-error">Sem estoque</Badge>
+                      ) : (
+                        <Badge className="bg-tertiary-container text-on-tertiary-container">Repor</Badge>
+                      )}
+                    </Td>
+                  </tr>
+                )
+              })}
+            </Table>
+            <p className="mt-3 text-label-sm text-on-surface-variant">
+              Sugestão de compra: repõe até {TARGET_COVER_DAYS} dias de cobertura, projetando pela venda média diária atual.
+            </p>
+          </>
         )}
       </Card>
 
@@ -271,16 +291,50 @@ function Ranking({
 // ── Estoque ────────────────────────────────────────────────────────────────
 
 function Estoque({
-  metrics, abcByCode,
+  metrics, abcByCode, canEdit,
 }: {
   metrics: InventoryMetric[]
   abcByCode: Map<string, AbcRow>
+  canEdit: boolean
 }) {
   const [q, setQ] = useState('')
+  const [brand, setBrand] = useState('')
+  const [category, setCategory] = useState('')
+  const [model, setModel] = useState('')
+  const [color, setColor] = useState('')
+  const [costMin, setCostMin] = useState('')
+  const [costMax, setCostMax] = useState('')
+  const [saleMin, setSaleMin] = useState('')
+  const [saleMax, setSaleMax] = useState('')
+
+  // Listas de opções derivadas dos dados reais — nada de valores hardcoded,
+  // o comprador só vê o que já foi cadastrado em algum SKU.
+  const distinct = (key: 'brand' | 'category' | 'model' | 'color') =>
+    Array.from(new Set(metrics.map(m => m[key]).filter((v): v is string => Boolean(v)))).sort()
+  const brands = useMemo(() => distinct('brand'), [metrics])
+  const categories = useMemo(() => distinct('category'), [metrics])
+  const models = useMemo(() => distinct('model'), [metrics])
+  const colors = useMemo(() => distinct('color'), [metrics])
+
+  const toNum = (s: string) => (s.trim() === '' ? null : Number(s.replace(',', '.')))
+  const cMin = toNum(costMin), cMax = toNum(costMax)
+  const sMin = toNum(saleMin), sMax = toNum(saleMax)
+
   const filtered = metrics.filter(m => {
     const t = `${m.product_code} ${m.product_name ?? ''}`.toLowerCase()
-    return t.includes(q.toLowerCase())
+    if (!t.includes(q.toLowerCase())) return false
+    if (brand && m.brand !== brand) return false
+    if (category && m.category !== category) return false
+    if (model && m.model !== model) return false
+    if (color && m.color !== color) return false
+    if (cMin !== null && (m.unit_cost === null || m.unit_cost < cMin)) return false
+    if (cMax !== null && (m.unit_cost === null || m.unit_cost > cMax)) return false
+    if (sMin !== null && (m.sale_price === null || m.sale_price < sMin)) return false
+    if (sMax !== null && (m.sale_price === null || m.sale_price > sMax)) return false
+    return true
   })
+
+  const hasFilters = brand || category || model || color || costMin || costMax || saleMin || saleMax
 
   return (
     <Card
@@ -295,17 +349,62 @@ function Estoque({
         />
       }
     >
+      <div className="flex flex-wrap gap-2 mb-4">
+        <FilterSelect label="Marca" value={brand} options={brands} onChange={setBrand} />
+        <FilterSelect label="Categoria" value={category} options={categories} onChange={setCategory} />
+        <FilterSelect label="Modelo" value={model} options={models} onChange={setModel} />
+        <FilterSelect label="Cor" value={color} options={colors} onChange={setColor} />
+        <input
+          value={costMin}
+          onChange={e => setCostMin(e.target.value)}
+          placeholder="Custo mín."
+          inputMode="decimal"
+          className="bg-surface-variant text-on-surface rounded-lg px-3 py-2 text-label-sm border border-white/10 w-28"
+        />
+        <input
+          value={costMax}
+          onChange={e => setCostMax(e.target.value)}
+          placeholder="Custo máx."
+          inputMode="decimal"
+          className="bg-surface-variant text-on-surface rounded-lg px-3 py-2 text-label-sm border border-white/10 w-28"
+        />
+        <input
+          value={saleMin}
+          onChange={e => setSaleMin(e.target.value)}
+          placeholder="Venda mín."
+          inputMode="decimal"
+          className="bg-surface-variant text-on-surface rounded-lg px-3 py-2 text-label-sm border border-white/10 w-28"
+        />
+        <input
+          value={saleMax}
+          onChange={e => setSaleMax(e.target.value)}
+          placeholder="Venda máx."
+          inputMode="decimal"
+          className="bg-surface-variant text-on-surface rounded-lg px-3 py-2 text-label-sm border border-white/10 w-28"
+        />
+        {hasFilters && (
+          <button
+            onClick={() => { setBrand(''); setCategory(''); setModel(''); setColor(''); setCostMin(''); setCostMax(''); setSaleMin(''); setSaleMax('') }}
+            className="px-3 py-2 text-label-sm text-on-surface-variant hover:text-on-surface"
+          >
+            Limpar filtros
+          </button>
+        )}
+      </div>
+
       {filtered.length === 0 ? (
         <Empty>Nenhum produto encontrado.</Empty>
       ) : (
-        <Table head={['Produto', { label: 'Qtd', align: 'right' }, { label: 'Custo', align: 'right' }, { label: 'Valor', align: 'right' }, { label: 'Giro', align: 'right' }, { label: 'Cobertura', align: 'right' }, 'ABC', 'Classe', 'Snapshot']}>
+        <Table head={['Produto', 'Atributos', { label: 'Qtd', align: 'right' }, { label: 'Custo', align: 'right' }, { label: 'Venda', align: 'right' }, { label: 'Valor', align: 'right' }, { label: 'Giro', align: 'right' }, { label: 'Cobertura', align: 'right' }, 'ABC', 'Classe', 'Snapshot']}>
           {filtered.map(m => {
             const a = abcByCode.get(m.product_code)
             return (
               <tr key={m.product_code} className="hover:bg-white/[0.03] transition-colors">
                 <Td><strong>{m.product_name ?? m.product_code}</strong><div className="text-on-surface-variant font-mono text-[0.6875rem]">{m.product_code}</div></Td>
+                <Td><AttrsCell m={m} canEdit={canEdit} /></Td>
                 <Td className="text-right font-mono">{m.current_qty === null ? <Unknown /> : num(m.current_qty, 0)}</Td>
                 <Td className="text-right font-mono">{m.has_cost ? money(m.unit_cost) : <Unknown />}</Td>
+                <Td className="text-right font-mono">{money(m.sale_price)}</Td>
                 <Td className="text-right font-mono font-bold">{money(m.stock_value)}</Td>
                 <Td className="text-right font-mono">{num(m.turnover_annualized, 1)}</Td>
                 <Td className="text-right font-mono">{m.dos === null ? '—' : `${num(m.dos)} d`}</Td>
@@ -318,6 +417,89 @@ function Estoque({
         </Table>
       )}
     </Card>
+  )
+}
+
+function FilterSelect({
+  label, value, options, onChange,
+}: {
+  label: string
+  value: string
+  options: string[]
+  onChange: (v: string) => void
+}) {
+  return (
+    <select
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      className="bg-surface-variant text-on-surface rounded-lg px-3 py-2 text-label-sm border border-white/10"
+    >
+      <option value="">{label}</option>
+      {options.map(o => (
+        <option key={o} value={o}>{o}</option>
+      ))}
+    </select>
+  )
+}
+
+// Edição inline de marca/categoria/modelo/cor — mesmo padrão de custo:
+// dirty-tracking local, salva só quando o comprador confirma.
+function AttrsCell({ m, canEdit }: { m: InventoryMetric; canEdit: boolean }) {
+  const [open, setOpen] = useState(false)
+  const [brand, setBrand] = useState(m.brand ?? '')
+  const [category, setCategory] = useState(m.category ?? '')
+  const [model, setModel] = useState(m.model ?? '')
+  const [color, setColor] = useState(m.color ?? '')
+  const [msg, setMsg] = useState<string | null>(null)
+  const [pending, startTransition] = useTransition()
+
+  const tags = [m.brand, m.category, m.model, m.color].filter(Boolean)
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="text-left text-label-sm text-on-surface-variant hover:text-on-surface"
+      >
+        {tags.length > 0 ? tags.join(' · ') : (canEdit ? 'Adicionar' : '—')}
+      </button>
+    )
+  }
+
+  const save = () => {
+    setMsg(null)
+    startTransition(async () => {
+      const res = await updateProductAttributes(m.product_code, {
+        brand: brand || null,
+        category: category || null,
+        model: model || null,
+        color: color || null,
+      })
+      setMsg(res.ok ? 'Salvo' : res.error)
+      if (res.ok) setOpen(false)
+    })
+  }
+
+  return (
+    <div className="flex flex-col gap-1 w-44">
+      <input value={brand} onChange={e => setBrand(e.target.value)} disabled={!canEdit || pending} placeholder="Marca"
+        className="bg-surface-variant text-on-surface font-mono text-[0.6875rem] rounded px-2 py-1 border border-white/10 disabled:opacity-50" />
+      <input value={category} onChange={e => setCategory(e.target.value)} disabled={!canEdit || pending} placeholder="Categoria"
+        className="bg-surface-variant text-on-surface font-mono text-[0.6875rem] rounded px-2 py-1 border border-white/10 disabled:opacity-50" />
+      <input value={model} onChange={e => setModel(e.target.value)} disabled={!canEdit || pending} placeholder="Modelo"
+        className="bg-surface-variant text-on-surface font-mono text-[0.6875rem] rounded px-2 py-1 border border-white/10 disabled:opacity-50" />
+      <input value={color} onChange={e => setColor(e.target.value)} disabled={!canEdit || pending} placeholder="Cor"
+        className="bg-surface-variant text-on-surface font-mono text-[0.6875rem] rounded px-2 py-1 border border-white/10 disabled:opacity-50" />
+      <div className="flex gap-2 items-center">
+        {canEdit && (
+          <button onClick={save} disabled={pending} className="px-2 py-1 rounded bg-primary-container text-on-primary-container font-mono text-[0.6875rem] disabled:opacity-50">
+            {pending ? '...' : 'Salvar'}
+          </button>
+        )}
+        <button onClick={() => setOpen(false)} className="text-[0.6875rem] text-on-surface-variant">fechar</button>
+      </div>
+      {msg && <span className="font-mono text-[0.6875rem] text-on-surface-variant">{msg}</span>}
+    </div>
   )
 }
 
