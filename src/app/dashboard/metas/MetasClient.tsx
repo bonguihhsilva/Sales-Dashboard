@@ -191,7 +191,7 @@ export default function MetasClient({ periods, goals, stores }: { periods: Perio
         <button
           onClick={() => setShowNewVendor(true)}
           disabled={periods.length === 0}
-          className="flex items-center gap-2 bg-[#c8f542] hover:bg-[#c8f542]/90 text-[#0b1326] font-bold px-4 py-2.5 rounded-xl text-xs font-sans transition-all active:scale-95 shadow-lg shadow-[#c8f542]/10 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+          className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-4 py-2.5 rounded-xl text-xs font-sans transition-all active:scale-95 shadow-lg shadow-primary/10 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
         >
           + Adicionar Vendedor
         </button>
@@ -212,7 +212,7 @@ export default function MetasClient({ periods, goals, stores }: { periods: Perio
 
       {/* ── Banner Informativo ─────────────────────────────────────────── */}
       <div className="flex items-start gap-3 p-4 rounded-xl text-xs font-mono bg-surface-container/50 border border-border/50 text-muted-foreground">
-        <span className="text-[#c8f542] font-bold shrink-0">ℹ</span>
+        <span className="text-primary font-bold shrink-0">ℹ</span>
         <span>
           Metas calculadas automaticamente: média dos 3 meses anteriores ×{' '}
           <strong className="text-foreground">1,20</strong> (1ª Meta),{' '}
@@ -320,7 +320,7 @@ export default function MetasClient({ periods, goals, stores }: { periods: Perio
                                   : isZero
                                   ? 'text-red-400/70 font-medium'
                                   : isBonus
-                                  ? 'text-[#c8f542] font-semibold'
+                                  ? 'text-primary font-semibold'
                                   : 'text-foreground font-medium'
                               }`}
                             >
@@ -389,7 +389,7 @@ export default function MetasClient({ periods, goals, stores }: { periods: Perio
               </button>
               <button
                 onClick={createPeriod}
-                className="flex-[2] bg-[#c8f542] hover:bg-[#c8f542]/90 text-[#0b1326] font-bold py-2.5 rounded-xl text-xs font-sans transition-all active:scale-95"
+                className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-2.5 rounded-xl text-xs font-sans transition-all active:scale-95"
               >
                 Criar Período
               </button>
@@ -511,7 +511,7 @@ export default function MetasClient({ periods, goals, stores }: { periods: Perio
               <button
                 onClick={addVendorGoal}
                 disabled={!nvId || !nvName || !nvMeta1 || !nvMeta2 || !nvMeta3}
-                className="flex-[2] bg-[#c8f542] hover:bg-[#c8f542]/90 text-[#0b1326] font-bold py-2.5 rounded-xl text-xs font-sans transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-2.5 rounded-xl text-xs font-sans transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Adicionar
               </button>
@@ -586,7 +586,7 @@ export default function MetasClient({ periods, goals, stores }: { periods: Perio
               </button>
               <button
                 onClick={saveGoal}
-                className="flex-[2] bg-[#c8f542] hover:bg-[#c8f542]/90 text-[#0b1326] font-bold py-2.5 rounded-xl text-xs font-sans transition-all active:scale-95"
+                className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-2.5 rounded-xl text-xs font-sans transition-all active:scale-95"
               >
                 Salvar Metas
               </button>

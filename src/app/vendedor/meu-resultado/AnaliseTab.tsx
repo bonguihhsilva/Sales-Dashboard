@@ -94,7 +94,7 @@ export default function AnaliseTab({
           { label: 'Total de Itens', value: totalItems.toLocaleString(),      color: 'var(--muted)' },
         ].map(k => (
           <div key={k.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.1rem 1.25rem' }}>
-            <div style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>{k.label}</div>
+            <div style={{ fontSize: '0.62rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>{k.label}</div>
             <div style={{ fontSize: '1.5rem', fontWeight: 800, color: k.color }}>{k.value}</div>
           </div>
         ))}
@@ -105,10 +105,10 @@ export default function AnaliseTab({
 
         {/* Metas */}
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' }}>
-          <div style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>Infográfico de Metas</div>
+          <div style={{ fontSize: '0.7rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>Infográfico de Metas</div>
           {[
-            { label: '1ª Meta', target: meta1, bonus: bonus1, pct: pctM1, col: '#c8f542', reached: lvl >= 1 },
-            { label: '2ª Meta', target: meta2, bonus: bonus2, pct: pctM2, col: '#42d9f5', reached: lvl >= 2 },
+            { label: '1ª Meta', target: meta1, bonus: bonus1, pct: pctM1, col: '#c9a24b', reached: lvl >= 1 },
+            { label: '2ª Meta', target: meta2, bonus: bonus2, pct: pctM2, col: '#2e4fe3', reached: lvl >= 2 },
             { label: '3ª Meta', target: meta3, bonus: bonus3, pct: pctM3, col: '#f5a742', reached: lvl >= 3 },
           ].map(m => (
             <div key={m.label} style={{ marginBottom: '1.1rem' }}>
@@ -116,7 +116,7 @@ export default function AnaliseTab({
                 <span style={{ fontSize: '0.75rem', fontWeight: 600, color: m.reached ? m.col : 'var(--text)' }}>
                   {m.reached ? '✓ ' : ''}{m.label}
                 </span>
-                <span style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>
+                <span style={{ fontSize: '0.7rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)' }}>
                   {m.target > 0 ? `${fmtCurrency(m.target)} • +R$${m.bonus}` : 'Não configurada'}
                 </span>
               </div>
@@ -127,7 +127,7 @@ export default function AnaliseTab({
                   borderRadius: '4px', transition: 'width 0.6s ease',
                 }} />
               </div>
-              <div style={{ textAlign: 'right', fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: m.reached ? m.col : 'var(--muted)', marginTop: '3px' }}>
+              <div style={{ textAlign: 'right', fontSize: '0.62rem', fontFamily: 'var(--font-jetbrains), monospace', color: m.reached ? m.col : 'var(--muted)', marginTop: '3px' }}>
                 {m.pct}%
               </div>
             </div>
@@ -136,7 +136,7 @@ export default function AnaliseTab({
 
         {/* Share de Clientes */}
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' }}>
-          <div style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>Share de Clientes</div>
+          <div style={{ fontSize: '0.7rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>Share de Clientes</div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', marginBottom: '1.25rem' }}>
             <div style={{ position: 'relative', width: '90px', height: '90px', flexShrink: 0 }}>
@@ -165,7 +165,7 @@ export default function AnaliseTab({
                       {s.label}
                     </span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', fontWeight: 700 }}>
+                      <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-jetbrains), monospace', fontWeight: 700 }}>
                         {s.value} <span style={{ color: 'var(--muted)', fontWeight: 400 }}>({s.pct}%)</span>
                       </span>
                       {/* Botão expandir */}
@@ -178,7 +178,7 @@ export default function AnaliseTab({
                           borderRadius: '6px',
                           padding: '2px 8px',
                           fontSize: '0.6rem',
-                          fontFamily: 'DM Mono, monospace',
+                          fontFamily: 'var(--font-jetbrains), monospace',
                           fontWeight: 700,
                           cursor: 'pointer',
                           transition: 'all 0.15s',
@@ -200,11 +200,11 @@ export default function AnaliseTab({
           {/* Frequência */}
           <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             <div style={{ background: 'var(--surface2)', borderRadius: '8px', padding: '10px 12px' }}>
-              <div style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '4px' }}>Compras/cliente</div>
+              <div style={{ fontSize: '0.62rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '4px' }}>Compras/cliente</div>
               <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{uniqueClients > 0 ? (totalOrders / uniqueClients).toFixed(1) : '0'}x</div>
             </div>
             <div style={{ background: 'var(--surface2)', borderRadius: '8px', padding: '10px 12px' }}>
-              <div style={{ fontSize: '0.62rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '4px' }}>Valor/cliente</div>
+              <div style={{ fontSize: '0.62rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '4px' }}>Valor/cliente</div>
               <div style={{ fontSize: '1.1rem', fontWeight: 800, color }}>{uniqueClients > 0 ? fmtCurrency(sold / uniqueClients) : '—'}</div>
             </div>
           </div>
@@ -231,7 +231,7 @@ export default function AnaliseTab({
               <span style={{
                 background: `${segmentColor}22`, color: segmentColor,
                 padding: '2px 8px', borderRadius: '10px',
-                fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', fontWeight: 700,
+                fontSize: '0.68rem', fontFamily: 'var(--font-jetbrains), monospace', fontWeight: 700,
               }}>
                 {segmentData.length} clientes
               </span>
@@ -251,7 +251,7 @@ export default function AnaliseTab({
                 <tr style={{ background: 'var(--surface2)', borderBottom: '1px solid var(--border)' }}>
                   {['#', 'Cliente', 'Total Comprado', 'Visitas', 'Ticket Médio', 'Última Compra'].map(h => (
                     <th key={h} style={{
-                      padding: '10px 16px', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem',
+                      padding: '10px 16px', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.65rem',
                       fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase',
                       letterSpacing: '0.05em', textAlign: h === '#' || h === 'Cliente' ? 'left' : 'right',
                       whiteSpace: 'nowrap',
@@ -262,20 +262,20 @@ export default function AnaliseTab({
               <tbody>
                 {segmentData.slice(0, 10).map((c, i) => (
                   <tr key={c.client_id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '10px 16px', fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: 'var(--muted)' }}>
+                    <td style={{ padding: '10px 16px', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.68rem', color: 'var(--muted)' }}>
                       {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
                     </td>
                     <td style={{ padding: '10px 16px', fontWeight: 600, color: 'var(--text)' }}>{c.client_name}</td>
-                    <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: segmentColor }}>
+                    <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', fontWeight: 700, color: segmentColor }}>
                       {fmtCurrency(c.total_spent)}
                     </td>
-                    <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>
+                    <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)' }}>
                       {c.visit_days}x
                     </td>
-                    <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: 'DM Mono, monospace', color: 'var(--text)' }}>
+                    <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--text)' }}>
                       {fmtCurrency(c.avg_ticket)}
                     </td>
-                    <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: c.days_since_last <= 7 ? '#10b981' : c.days_since_last <= 14 ? '#f5a742' : 'var(--muted)' }}>
+                    <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.75rem', color: c.days_since_last <= 7 ? '#10b981' : c.days_since_last <= 14 ? '#f5a742' : 'var(--muted)' }}>
                       {c.last_purchase}
                       <span style={{ fontSize: '0.62rem', color: 'var(--muted)', marginLeft: '4px' }}>
                         ({c.days_since_last}d atrás)
@@ -285,7 +285,7 @@ export default function AnaliseTab({
                 ))}
                 {segmentData.length === 0 && (
                   <tr>
-                    <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.8rem' }}>
+                    <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.8rem' }}>
                       Nenhum cliente {segmentLabel.toLowerCase()} encontrado neste período.
                     </td>
                   </tr>
@@ -301,17 +301,17 @@ export default function AnaliseTab({
 
         {/* Top Produtos */}
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' }}>
-          <div style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>Top Produtos por Faturamento</div>
+          <div style={{ fontSize: '0.7rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>Top Produtos por Faturamento</div>
           {topProducts.map((p, i) => (
             <div key={p.product_name} style={{ marginBottom: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', minWidth: '16px' }}>#{i + 1}</span>
+                  <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', minWidth: '16px' }}>#{i + 1}</span>
                   <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>{p.product_name}</span>
                 </div>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>{p.qty} un.</span>
-                  <span style={{ fontSize: '0.82rem', fontFamily: 'DM Mono, monospace', fontWeight: 700, color }}>{fmtCurrency(p.total)}</span>
+                  <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)' }}>{p.qty} un.</span>
+                  <span style={{ fontSize: '0.82rem', fontFamily: 'var(--font-jetbrains), monospace', fontWeight: 700, color }}>{fmtCurrency(p.total)}</span>
                 </div>
               </div>
               <div style={{ height: '6px', background: 'var(--surface2)', borderRadius: '3px', overflow: 'hidden' }}>
@@ -323,7 +323,7 @@ export default function AnaliseTab({
 
         {/* Categorias */}
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' }}>
-          <div style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>Mix por Categoria</div>
+          <div style={{ fontSize: '0.7rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>Mix por Categoria</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {cats.map((c, i) => (
               <div key={c.name}>
@@ -332,7 +332,7 @@ export default function AnaliseTab({
                     <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', background: CAT_COLORS[i % CAT_COLORS.length] }} />
                     <span style={{ fontSize: '0.78rem', fontWeight: 500 }}>{c.name}</span>
                   </div>
-                  <span style={{ fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: CAT_COLORS[i % CAT_COLORS.length], fontWeight: 700 }}>{c.pct}%</span>
+                  <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-jetbrains), monospace', color: CAT_COLORS[i % CAT_COLORS.length], fontWeight: 700 }}>{c.pct}%</span>
                 </div>
                 <div style={{ height: '5px', background: 'var(--surface2)', borderRadius: '3px', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${c.pct}%`, background: CAT_COLORS[i % CAT_COLORS.length], borderRadius: '3px' }} />
@@ -344,7 +344,7 @@ export default function AnaliseTab({
       </div>
 
       {items && items.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '1rem', fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', background: 'var(--surface2)', borderRadius: '8px' }}>
+        <div style={{ textAlign: 'center', padding: '1rem', fontSize: '0.75rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', background: 'var(--surface2)', borderRadius: '8px' }}>
           Nenhum item vendido registrado neste período.
         </div>
       )}

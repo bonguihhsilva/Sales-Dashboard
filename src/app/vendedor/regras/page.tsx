@@ -107,7 +107,7 @@ export default async function VendedorRegrasPage() {
                   }}>
                     {icon}
                   </div>
-                  <span style={{ fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase' }}>
+                  <span style={{ fontSize: '0.6rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase' }}>
                     #{i + 1}
                   </span>
                 </div>
@@ -119,7 +119,7 @@ export default async function VendedorRegrasPage() {
                     <span style={{
                       background: col.bg, color: col.text, border: `1px solid ${col.border}`,
                       padding: '4px 12px', borderRadius: '20px',
-                      fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', fontWeight: 700,
+                      fontSize: '0.75rem', fontFamily: 'var(--font-jetbrains), monospace', fontWeight: 700,
                     }}>
                       {valorFormatado}
                     </span>
@@ -137,7 +137,7 @@ export default async function VendedorRegrasPage() {
         <div style={{
           marginTop: '2rem', padding: '1rem 1.5rem', borderRadius: '10px',
           background: 'var(--surface2)', border: '1px solid var(--border)',
-          fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', lineHeight: 1.6,
+          fontSize: '0.75rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', lineHeight: 1.6,
         }}>
           ℹ️ As regras acima são definidas pela gestão e podem variar conforme o período. Em caso de dúvidas, consulte seu gerente.
         </div>

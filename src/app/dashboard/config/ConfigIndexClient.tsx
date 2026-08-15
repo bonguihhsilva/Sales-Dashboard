@@ -39,7 +39,7 @@ export default function ConfigIndexClient({ tenant, storesCount, gerentesCount }
   const [editing, setEditing] = useState(false)
   const [moeda, setMoeda] = useState(tenant?.moeda_padrao ?? 'USD')
   const [locale, setLocale] = useState(tenant?.locale ?? 'es-PY')
-  const [cor, setCor] = useState(tenant?.cor_primaria ?? '#c8f542')
+  const [cor, setCor] = useState(tenant?.cor_primaria ?? '#c9a24b')
   const [pct, setPct] = useState(String((tenant?.commission_pct_default ?? 0.003) * 100))
   const [growthPct, setGrowthPct] = useState(String((tenant?.meta_growth_pct_default ?? 0.20) * 100))
   const [bonus1, setBonus1] = useState(String(tenant?.bonus1_default ?? 100))
@@ -92,7 +92,7 @@ export default function ConfigIndexClient({ tenant, storesCount, gerentesCount }
               display: 'flex', flexDirection: 'column', gap: 8
             }}>
               <span style={{ fontSize: 28 }}>{c.icon}</span>
-              <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, color: 'var(--text)', fontSize: 15 }}>{c.label}</span>
+              <span style={{ fontFamily: 'var(--font-hanken), sans-serif', fontWeight: 700, color: 'var(--text)', fontSize: 15 }}>{c.label}</span>
               <span style={{ color: 'var(--muted)', fontSize: 13 }}>{c.desc}</span>
             </div>
           </Link>
@@ -108,7 +108,7 @@ export default function ConfigIndexClient({ tenant, storesCount, gerentesCount }
         ].map(s => (
           <div key={s.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '16px 20px' }}>
             <div style={{ color: 'var(--muted)', fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 }}>{s.label}</div>
-            <div style={{ fontFamily: 'DM Mono, monospace', fontWeight: 700, fontSize: 22, color: 'var(--accent)', marginTop: 4 }}>{s.value}</div>
+            <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontWeight: 700, fontSize: 22, color: 'var(--accent)', marginTop: 4 }}>{s.value}</div>
           </div>
         ))}
       </div>
@@ -116,16 +116,16 @@ export default function ConfigIndexClient({ tenant, storesCount, gerentesCount }
       {/* Tenant config form */}
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h2 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 16, margin: 0, color: 'var(--text)' }}>
+          <h2 style={{ fontFamily: 'var(--font-hanken), sans-serif', fontWeight: 700, fontSize: 16, margin: 0, color: 'var(--text)' }}>
             Configurações Gerais
           </h2>
           <button
             onClick={() => editing ? handleSave() : setEditing(true)}
             disabled={saving}
             style={{
-              background: editing ? 'var(--accent)' : 'var(--surface2)', color: editing ? '#000' : 'var(--text)',
+              background: editing ? 'var(--accent)' : 'var(--surface2)', color: editing ? 'var(--on-accent)' : 'var(--text)',
               border: 'none', borderRadius: 8, padding: '8px 18px', cursor: 'pointer',
-              fontFamily: 'Syne, sans-serif', fontWeight: 600, fontSize: 13
+              fontFamily: 'var(--font-hanken), sans-serif', fontWeight: 600, fontSize: 13
             }}
           >
             {saving ? 'Salvando…' : editing ? 'Salvar' : 'Editar'}
@@ -142,7 +142,7 @@ export default function ConfigIndexClient({ tenant, storesCount, gerentesCount }
                 {Object.entries(MOEDA_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
             ) : (
-              <span style={{ color: 'var(--text)', fontFamily: 'DM Mono, monospace' }}>{MOEDA_LABELS[moeda] ?? moeda}</span>
+              <span style={{ color: 'var(--text)', fontFamily: 'var(--font-jetbrains), monospace' }}>{MOEDA_LABELS[moeda] ?? moeda}</span>
             )}
           </div>
 
@@ -155,7 +155,7 @@ export default function ConfigIndexClient({ tenant, storesCount, gerentesCount }
                 {Object.entries(LOCALE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
             ) : (
-              <span style={{ color: 'var(--text)', fontFamily: 'DM Mono, monospace' }}>{LOCALE_LABELS[locale] ?? locale}</span>
+              <span style={{ color: 'var(--text)', fontFamily: 'var(--font-jetbrains), monospace' }}>{LOCALE_LABELS[locale] ?? locale}</span>
             )}
           </div>
 
@@ -166,7 +166,7 @@ export default function ConfigIndexClient({ tenant, storesCount, gerentesCount }
               <input type="number" step="0.01" min="0" max="100" value={pct} onChange={e => setPct(e.target.value)}
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--text)' }} />
             ) : (
-              <span style={{ color: 'var(--text)', fontFamily: 'DM Mono, monospace' }}>{parseFloat(pct).toFixed(2)}%</span>
+              <span style={{ color: 'var(--text)', fontFamily: 'var(--font-jetbrains), monospace' }}>{parseFloat(pct).toFixed(2)}%</span>
             )}
           </div>
 
@@ -177,7 +177,7 @@ export default function ConfigIndexClient({ tenant, storesCount, gerentesCount }
               <input type="number" step="0.01" min="0" max="500" value={growthPct} onChange={e => setGrowthPct(e.target.value)}
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--text)' }} />
             ) : (
-              <span style={{ color: 'var(--text)', fontFamily: 'DM Mono, monospace' }}>{parseFloat(growthPct).toFixed(2)}%</span>
+              <span style={{ color: 'var(--text)', fontFamily: 'var(--font-jetbrains), monospace' }}>{parseFloat(growthPct).toFixed(2)}%</span>
             )}
           </div>
 
@@ -194,7 +194,7 @@ export default function ConfigIndexClient({ tenant, storesCount, gerentesCount }
                   style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--text)' }} />
               </div>
             ) : (
-              <span style={{ color: 'var(--text)', fontFamily: 'DM Mono, monospace' }}>${bonus1} / ${bonus2} / ${bonus3}</span>
+              <span style={{ color: 'var(--text)', fontFamily: 'var(--font-jetbrains), monospace' }}>${bonus1} / ${bonus2} / ${bonus3}</span>
             )}
           </div>
 
@@ -205,12 +205,12 @@ export default function ConfigIndexClient({ tenant, storesCount, gerentesCount }
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <input type="color" value={cor} onChange={e => setCor(e.target.value)}
                   style={{ width: 36, height: 36, borderRadius: 6, border: 'none', cursor: 'pointer' }} />
-                <span style={{ color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: 13 }}>{cor}</span>
+                <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13 }}>{cor}</span>
               </div>
             ) : (
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <div style={{ width: 20, height: 20, borderRadius: 4, background: cor }} />
-                <span style={{ color: 'var(--text)', fontFamily: 'DM Mono, monospace', fontSize: 13 }}>{cor}</span>
+                <span style={{ color: 'var(--text)', fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13 }}>{cor}</span>
               </div>
             )}
           </div>

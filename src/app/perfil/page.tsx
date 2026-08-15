@@ -73,7 +73,7 @@ export default async function PerfilPage() {
             </div>
             <div>
               <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>{profile?.name || 'Usuário'}</h2>
-              <div style={{ display: 'inline-block', background: 'var(--surface2)', padding: '4px 12px', borderRadius: '4px', fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '8px' }}>
+              <div style={{ display: 'inline-block', background: 'var(--surface2)', padding: '4px 12px', borderRadius: '4px', fontSize: '0.75rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '8px' }}>
                 {role.replace('_', ' ')}
               </div>
             </div>
@@ -84,7 +84,7 @@ export default async function PerfilPage() {
             <div style={{ background: 'var(--surface2)', padding: '1.25rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid var(--border)' }}>
               <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '1.5rem', opacity: 0.8 }}>mail</span>
               <div>
-                <label style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>E-mail</label>
+                <label style={{ fontSize: '0.7rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>E-mail</label>
                 <div style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text)' }}>{user?.email || 'vendedor@teste.com'}</div>
               </div>
             </div>
@@ -92,7 +92,7 @@ export default async function PerfilPage() {
             <div style={{ background: 'var(--surface2)', padding: '1.25rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid var(--border)' }}>
               <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '1.5rem', opacity: 0.8 }}>work</span>
               <div>
-                <label style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>Cargo</label>
+                <label style={{ fontSize: '0.7rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>Cargo</label>
                 <div style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text)', textTransform: 'capitalize' }}>{role.replace('_', ' ')}</div>
               </div>
             </div>
@@ -100,7 +100,7 @@ export default async function PerfilPage() {
             <div style={{ background: 'var(--surface2)', padding: '1.25rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid var(--border)' }}>
               <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '1.5rem', opacity: 0.8 }}>domain</span>
               <div>
-                <label style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>Telefone Corporativo</label>
+                <label style={{ fontSize: '0.7rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>Telefone Corporativo</label>
                 <div style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text)' }}>{profile?.telefone_corporativo || 'Não informado'}</div>
               </div>
             </div>
@@ -108,7 +108,7 @@ export default async function PerfilPage() {
             <div style={{ background: 'var(--surface2)', padding: '1.25rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid var(--border)' }}>
               <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '1.5rem', opacity: 0.8 }}>smartphone</span>
               <div>
-                <label style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>Telefone Pessoal</label>
+                <label style={{ fontSize: '0.7rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>Telefone Pessoal</label>
                 <div style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text)' }}>{profile?.telefone_pessoal || 'Não informado'}</div>
               </div>
             </div>
@@ -116,7 +116,7 @@ export default async function PerfilPage() {
             <div style={{ background: 'var(--surface2)', padding: '1.25rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid var(--border)' }}>
               <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '1.5rem', opacity: 0.8 }}>cake</span>
               <div>
-                <label style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>Data de Nascimento</label>
+                <label style={{ fontSize: '0.7rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>Data de Nascimento</label>
                 <div style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text)' }}>{profile?.data_nascimento || 'Não informada'}</div>
               </div>
             </div>
@@ -124,7 +124,7 @@ export default async function PerfilPage() {
             <div style={{ background: 'var(--surface2)', padding: '1.25rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid var(--border)' }}>
               <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '1.5rem', opacity: 0.8 }}>calendar_month</span>
               <div>
-                <label style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>Início na Empresa</label>
+                <label style={{ fontSize: '0.7rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>Início na Empresa</label>
                 <div style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text)' }}>
                   {profile?.data_admissao ? new Date(profile.data_admissao).toLocaleDateString('pt-BR') : 'Não informada'}
                 </div>
@@ -134,7 +134,7 @@ export default async function PerfilPage() {
             <div style={{ background: 'var(--surface2)', padding: '1.25rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid var(--border)' }}>
               <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '1.5rem', opacity: 0.8 }}>store</span>
               <div>
-                <label style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>Loja / Unidade</label>
+                <label style={{ fontSize: '0.7rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>Loja / Unidade</label>
                 <div style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text)' }}>{profile?.store || 'Matriz'}</div>
               </div>
             </div>
@@ -143,7 +143,7 @@ export default async function PerfilPage() {
               <div style={{ background: 'var(--surface2)', padding: '1.25rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid var(--border)' }}>
                 <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '1.5rem', opacity: 0.8 }}>badge</span>
                 <div>
-                  <label style={{ fontSize: '0.7rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>ID Vendedor</label>
+                  <label style={{ fontSize: '0.7rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>ID Vendedor</label>
                   <div style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text)' }}>{profile?.vendor_id || 'N/A'}</div>
                 </div>
               </div>

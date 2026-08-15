@@ -183,7 +183,7 @@ export default function DelayUploadModal({ open, onOpenChange, onSuccess, profil
               style={{ display: 'none' }}
               id="delay-upload"
             />
-            <label htmlFor="delay-upload" style={{ cursor: 'pointer', background: 'var(--accent)', color: '#000', padding: '8px 16px', borderRadius: '6px', fontWeight: 600 }}>
+            <label htmlFor="delay-upload" style={{ cursor: 'pointer', background: 'var(--accent)', color: 'var(--on-accent)', padding: '8px 16px', borderRadius: '6px', fontWeight: 600 }}>
               {loading ? 'Lendo...' : 'Selecionar Arquivo'}
             </label>
           </div>
@@ -239,7 +239,7 @@ export default function DelayUploadModal({ open, onOpenChange, onSuccess, profil
               <button 
                 onClick={handleImport}
                 disabled={loading}
-                style={{ padding: '8px 16px', background: 'var(--accent)', color: '#000', borderRadius: '6px', fontWeight: 600, border: 'none', opacity: loading ? 0.7 : 1 }}
+                style={{ padding: '8px 16px', background: 'var(--accent)', color: 'var(--on-accent)', borderRadius: '6px', fontWeight: 600, border: 'none', opacity: loading ? 0.7 : 1 }}
               >
                 {loading ? 'Importando...' : 'Confirmar Importação'}
               </button>

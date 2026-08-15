@@ -51,7 +51,7 @@ export function CategoriaCard({ resumo }: Props) {
         </div>
         {vazia ? (
           <span style={{
-            fontSize: '0.5625rem', fontFamily: 'DM Mono, monospace',
+            fontSize: '0.5625rem', fontFamily: 'var(--font-jetbrains), monospace',
             textTransform: 'uppercase', letterSpacing: '0.08em',
             padding: '0.25rem 0.5rem', borderRadius: '0.3125rem',
             background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.border}`,
@@ -66,7 +66,7 @@ export function CategoriaCard({ resumo }: Props) {
 
       {/* Nome */}
       <div style={{
-        fontFamily: 'Syne, sans-serif', fontSize: '1.125rem', fontWeight: 700,
+        fontFamily: 'var(--font-hanken), sans-serif', fontSize: '1.125rem', fontWeight: 700,
         color: C.text, letterSpacing: '-0.01em', lineHeight: 1.25,
       }}>
         {nome}
@@ -75,14 +75,14 @@ export function CategoriaCard({ resumo }: Props) {
       {/* Meta / progresso */}
       {vazia ? (
         <div style={{
-          fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: C.muted,
+          fontSize: '0.75rem', fontFamily: 'var(--font-jetbrains), monospace', color: C.muted,
         }}>
           Trilhas em produção
         </div>
       ) : (
         <>
           <div style={{
-            fontSize: '0.75rem', fontFamily: 'DM Mono, monospace', color: C.muted,
+            fontSize: '0.75rem', fontFamily: 'var(--font-jetbrains), monospace', color: C.muted,
             display: 'flex', gap: '0.75rem', flexWrap: 'wrap',
           }}>
             <span>{trilhaCount} trilha{trilhaCount === 1 ? '' : 's'}</span>
@@ -106,13 +106,13 @@ export function CategoriaCard({ resumo }: Props) {
               marginTop: '0.5rem',
             }}>
               <span style={{
-                fontSize: '0.6875rem', fontFamily: 'DM Mono, monospace',
+                fontSize: '0.6875rem', fontFamily: 'var(--font-jetbrains), monospace',
                 color: cor, fontWeight: 700,
               }}>
                 {totalXp} XP
               </span>
               <span style={{
-                fontSize: '0.625rem', fontFamily: 'DM Mono, monospace',
+                fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace',
                 color: concluidas === trilhaCount ? C.green : C.muted,
                 textTransform: 'uppercase', letterSpacing: '0.08em',
               }}>

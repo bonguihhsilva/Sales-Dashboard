@@ -55,7 +55,7 @@ export default async function TreinamentosAdminPage({
   const tabLink = (t: string) => `/dashboard/treinamentos${t === 'conteudo' ? '' : `?tab=${t}`}`
   const tabStyle = (t: string): React.CSSProperties => ({
     padding: '0.5rem 1rem', borderRadius: '0.5rem', fontSize: '0.8125rem', fontWeight: 700,
-    fontFamily: 'Syne, sans-serif', textDecoration: 'none', cursor: 'pointer',
+    fontFamily: 'var(--font-hanken), sans-serif', textDecoration: 'none', cursor: 'pointer',
     background: activeTab === t ? C.gold : 'transparent',
     color: activeTab === t ? C.bg : C.muted,
     border: `1px solid ${activeTab === t ? C.gold : C.border}`,
@@ -98,8 +98,8 @@ export default async function TreinamentosAdminPage({
               { label: 'Vendedores', value: vendedores?.length ?? 0, color: C.green },
             ].map(k => (
               <div key={k.label} style={{ background: C.elevated, border: `1px solid ${C.border}`, borderRadius: '0.75rem', padding: '0.875rem 1rem' }}>
-                <div style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.09em', color: C.muted, marginBottom: 4 }}>{k.label}</div>
-                <div style={{ fontSize: '1.375rem', fontWeight: 800, fontFamily: 'DM Mono, monospace', color: k.color }}>{k.value}</div>
+                <div style={{ fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace', textTransform: 'uppercase', letterSpacing: '0.09em', color: C.muted, marginBottom: 4 }}>{k.label}</div>
+                <div style={{ fontSize: '1.375rem', fontWeight: 800, fontFamily: 'var(--font-jetbrains), monospace', color: k.color }}>{k.value}</div>
               </div>
             ))}
           </div>
@@ -109,7 +109,7 @@ export default async function TreinamentosAdminPage({
             {/* Trilhas overview */}
             <div style={{ background: C.elevated, border: `1px solid ${C.border}`, borderRadius: '0.875rem', overflow: 'hidden' }}>
               <div style={{ padding: '0.625rem 1rem', borderBottom: `1px solid ${C.border}` }}>
-                <span style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.09em', color: C.muted, fontWeight: 600 }}>Conteúdo disponível</span>
+                <span style={{ fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace', textTransform: 'uppercase', letterSpacing: '0.09em', color: C.muted, fontWeight: 600 }}>Conteúdo disponível</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {(trilhas || []).map((trilha, i) => {
@@ -125,13 +125,13 @@ export default async function TreinamentosAdminPage({
                         {trilha.icon && <span style={{ fontSize: '1rem' }}>{trilha.icon}</span>}
                         <div>
                           <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: C.text }}>{trilha.titulo}</div>
-                          <div style={{ fontSize: '0.625rem', color: C.muted, fontFamily: 'DM Mono, monospace' }}>{modCount} módulos</div>
+                          <div style={{ fontSize: '0.625rem', color: C.muted, fontFamily: 'var(--font-jetbrains), monospace' }}>{modCount} módulos</div>
                         </div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
-                        <span style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.amber, fontWeight: 700 }}>+{xp} XP</span>
+                        <span style={{ fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace', color: C.amber, fontWeight: 700 }}>+{xp} XP</span>
                         <Link href={`/vendedor/treinamentos/${trilha.id}`} className="lms-chip" style={{
-                          fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.muted,
+                          fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace', color: C.muted,
                           textDecoration: 'none', border: `1px solid ${C.border}`, borderRadius: '0.375rem',
                           padding: '0.25rem 0.5rem',
                         }}>Ver →</Link>
@@ -141,7 +141,7 @@ export default async function TreinamentosAdminPage({
                 })}
                 {(trilhas || []).length === 0 && (
                   <div style={{ padding: '2rem', textAlign: 'center' }}>
-                    <p style={{ color: C.muted, fontSize: '0.75rem', fontFamily: 'DM Mono, monospace' }}>Nenhuma trilha cadastrada ainda.</p>
+                    <p style={{ color: C.muted, fontSize: '0.75rem', fontFamily: 'var(--font-jetbrains), monospace' }}>Nenhuma trilha cadastrada ainda.</p>
                   </div>
                 )}
               </div>
@@ -150,11 +150,11 @@ export default async function TreinamentosAdminPage({
             {/* Progresso dos vendedores */}
             <div style={{ background: C.elevated, border: `1px solid ${C.border}`, borderRadius: '0.875rem', overflow: 'hidden' }}>
               <div style={{ padding: '0.625rem 1rem', borderBottom: `1px solid ${C.border}` }}>
-                <span style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.09em', color: C.muted, fontWeight: 600 }}>XP por vendedor</span>
+                <span style={{ fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace', textTransform: 'uppercase', letterSpacing: '0.09em', color: C.muted, fontWeight: 600 }}>XP por vendedor</span>
               </div>
               {(!vendedores || vendedores.length === 0) ? (
                 <div style={{ padding: '2rem', textAlign: 'center' }}>
-                  <p style={{ color: C.muted, fontSize: '0.75rem', fontFamily: 'DM Mono, monospace' }}>Nenhum vendedor cadastrado.</p>
+                  <p style={{ color: C.muted, fontSize: '0.75rem', fontFamily: 'var(--font-jetbrains), monospace' }}>Nenhum vendedor cadastrado.</p>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -172,9 +172,9 @@ export default async function TreinamentosAdminPage({
                             <span style={{ fontSize: '0.75rem', color: C.text, fontWeight: v.xp > 0 ? 600 : 400 }}>{v.name}</span>
                             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                               {v.nivel > 0 && (
-                                <span style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.muted }}>Nv {v.nivel}</span>
+                                <span style={{ fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace', color: C.muted }}>Nv {v.nivel}</span>
                               )}
-                              <span style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: v.xp > 0 ? C.amber : C.muted, fontWeight: 700 }}>{v.xp} XP</span>
+                              <span style={{ fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace', color: v.xp > 0 ? C.amber : C.muted, fontWeight: 700 }}>{v.xp} XP</span>
                             </div>
                           </div>
                           <div style={{ height: 3, background: 'rgba(255,255,255,0.05)', borderRadius: 2, overflow: 'hidden' }}>
@@ -187,7 +187,7 @@ export default async function TreinamentosAdminPage({
               )}
               {(!gamificacao || gamificacao.length === 0) && vendedores && vendedores.length > 0 && (
                 <div style={{ padding: '0.5rem 1rem', borderTop: `1px solid ${C.border}` }}>
-                  <p style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.muted, margin: 0 }}>
+                  <p style={{ fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace', color: C.muted, margin: 0 }}>
                     Progresso zerado — vendedores ainda não iniciaram os treinamentos.
                   </p>
                 </div>

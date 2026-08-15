@@ -213,15 +213,15 @@ export default async function MeuResultadoPage({
             href="/mural"
             style={{
               display: 'flex', alignItems: 'center', gap: '8px',
-              background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)',
-              padding: '6px 12px', borderRadius: '6px', textDecoration: 'none', color: '#3b82f6',
+              background: 'rgba(201,162,75,0.1)', border: '1px solid rgba(201,162,75,0.3)',
+              padding: '6px 12px', borderRadius: '6px', textDecoration: 'none', color: '#c9a24b',
               transition: 'all 0.2s'
             }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>campaign</span>
             <div style={{ textAlign: 'left' }}>
-              <div style={{ fontSize: '0.6rem', fontFamily: 'var(--font-jetbrains), monospace', color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Acessar</div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#3b82f6' }}>Mural da Empresa</div>
+              <div style={{ fontSize: '0.6rem', fontFamily: 'var(--font-jetbrains), monospace', color: '#c9a24b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Acessar</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#c9a24b' }}>Mural da Empresa</div>
             </div>
           </a>
           <Link

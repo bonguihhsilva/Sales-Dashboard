@@ -33,8 +33,8 @@ export default function ClientHistoryModal({ clientId, clientName, initialTab, o
     byProduct.set(k, cur)
   }
 
-  const th = { textAlign: 'left' as const, padding: '8px', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.62rem' }
-  const td = { padding: '8px', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem' }
+  const th = { textAlign: 'left' as const, padding: '8px', color: 'var(--muted)', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.62rem' }
+  const td = { padding: '8px', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.75rem' }
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -45,11 +45,11 @@ export default function ClientHistoryModal({ clientId, clientName, initialTab, o
         </div>
         <div style={{ display: 'flex', gap: '6px', padding: '12px 18px 0' }}>
           {([['ultima','Última nota'],['todas','Todas as notas'],['produtos','Produtos comprados']] as const).map(([k, l]) => (
-            <button key={k} onClick={() => setTab(k)} style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', padding: '5px 12px', borderRadius: '7px 7px 0 0', cursor: 'pointer', border: '1px solid var(--border)', borderBottom: 'none', background: tab === k ? 'var(--surface)' : 'transparent', color: tab === k ? 'var(--text)' : 'var(--muted)' }}>{l}</button>
+            <button key={k} onClick={() => setTab(k)} style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.7rem', padding: '5px 12px', borderRadius: '7px 7px 0 0', cursor: 'pointer', border: '1px solid var(--border)', borderBottom: 'none', background: tab === k ? 'var(--surface)' : 'transparent', color: tab === k ? 'var(--text)' : 'var(--muted)' }}>{l}</button>
           ))}
         </div>
         <div style={{ padding: '1rem 1.5rem', overflowY: 'auto', flex: 1 }}>
-          {loading ? <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)', fontFamily: 'DM Mono, monospace' }}>Carregando…</div>
+          {loading ? <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)', fontFamily: 'var(--font-jetbrains), monospace' }}>Carregando…</div>
           : tab === 'produtos' ? (
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead><tr style={{ borderBottom: '1px solid var(--border)' }}><th style={th}>PRODUTO</th><th style={{ ...th, textAlign: 'right' }}>QTD TOTAL</th><th style={{ ...th, textAlign: 'right' }}>VEZES</th></tr></thead>

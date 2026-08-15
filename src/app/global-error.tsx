@@ -14,7 +14,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
 
   return (
     <html lang="pt" className="dark">
-      <body style={{ margin: 0, background: '#0b1326', color: '#e8edf7', fontFamily: 'system-ui, sans-serif' }}>
+      <body style={{ margin: 0, background: '#0a0a0b', color: '#e8edf7', fontFamily: 'system-ui, sans-serif' }}>
         <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
           <div style={{ maxWidth: 420, textAlign: 'center' }}>
             <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12 }}>Falha crítica</h1>
@@ -27,7 +27,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
             <button
               onClick={reset}
               style={{
-                background: '#c8f542', color: '#0b1326', fontWeight: 700,
+                background: '#c9a24b', color: '#0a0a0b', fontWeight: 700,
                 padding: '10px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', fontSize: 13,
               }}
             >

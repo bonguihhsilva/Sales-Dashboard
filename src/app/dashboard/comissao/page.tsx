@@ -21,10 +21,10 @@ export default async function ComissaoPage({
 
   if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) {
     return (
-      <div style={{ padding: '2rem', color: 'red', fontFamily: 'monospace' }}>
+      <div className="p-8 text-error font-mono">
         Acesso Negado. Seu perfil ({effectiveRole}) não tem permissão para acessar esta página.
-        <br/><br/>
-        <a href="/dashboard" style={{ color: 'white', textDecoration: 'underline' }}>Voltar ao Dashboard</a>
+        <br /><br />
+        <a href="/dashboard" className="text-foreground underline">Voltar ao Dashboard</a>
       </div>
     )
   }

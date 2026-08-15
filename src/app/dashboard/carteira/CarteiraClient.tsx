@@ -10,7 +10,7 @@ import { findCategoryGaps, CATEGORY_UNIVERSE, type CategoryMix } from '@/lib/car
 
 type Filter = 'all' | Segment
 
-const CAT_COLORS = ['#3b82f6', '#10b981', '#f5a742', '#8b5cf6', '#06b6d4', '#f43f5e']
+const CAT_COLORS = ['#c9a24b', '#10b981', '#2e4fe3', '#8b5cf6', '#06b6d4', '#f43f5e']
 
 // ── Shared UI primitives (mirrors app/vendedor/meu-resultado/MeuRHTab.tsx) ──
 const TH_STYLE = 'font-mono text-[0.65rem] uppercase tracking-wider py-3 px-4 text-muted-foreground font-semibold whitespace-nowrap border-b border-white/5'
@@ -99,7 +99,7 @@ export default function CarteiraClient({ clients, color, periodId }: { clients: 
       <div className="flex items-center gap-1.5 flex-wrap mb-4">
         {pills.map(p => {
           const on  = filter === p.key
-          const col = p.key === 'all' ? '#3b82f6' : SEGMENT_COLORS[p.key as Segment]
+          const col = p.key === 'all' ? '#c9a24b' : SEGMENT_COLORS[p.key as Segment]
           return (
             <button
               key={p.key}

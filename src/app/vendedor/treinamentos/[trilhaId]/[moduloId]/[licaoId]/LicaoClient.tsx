@@ -172,7 +172,7 @@ export default function LicaoClient({
     <div style={{ padding: '1.5rem 1.25rem 3rem', maxWidth: '820px', margin: '0 auto' }}>
       {/* Contador */}
       <div style={{
-        fontFamily: 'DM Mono, monospace', fontSize: '0.8rem', color: C.muted,
+        fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.8rem', color: C.muted,
         letterSpacing: '0.05em', marginBottom: '1rem'
       }}>
         {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
@@ -229,7 +229,7 @@ export default function LicaoClient({
                 borderRadius: '12px', display: 'flex', alignItems: 'center',
                 justifyContent: 'center', border: `1px solid ${C.border}`,
               }}>
-                <span style={{ color: C.muted, fontFamily: 'DM Mono, monospace' }}>
+                <span style={{ color: C.muted, fontFamily: 'var(--font-jetbrains), monospace' }}>
                   Video Player: {current.videoUrl}
                 </span>
               </div>
@@ -306,7 +306,7 @@ export default function LicaoClient({
               border: jaConcluida ? `1px solid ${C.border}` : 'none',
               padding: '14px 32px', borderRadius: '10px', fontWeight: 800,
               cursor: loading ? 'default' : 'pointer', fontSize: '1rem',
-              fontFamily: 'Syne, sans-serif',
+              fontFamily: 'var(--font-hanken), sans-serif',
             }}
           >
             {loading ? 'Salvando...' : jaConcluida ? 'Voltar para o Módulo' : 'Concluir Lição ✓'}
@@ -338,7 +338,7 @@ export default function LicaoClient({
         }
         .lms-prose > * { margin: 0; }
         .lms-prose h1, .lms-prose h2, .lms-prose h3 {
-          font-family: 'DM Mono', monospace;
+          font-family: var(--font-jetbrains), monospace;
           color: ${C.gold};
           letter-spacing: -0.01em;
           line-height: 1.3;
@@ -360,9 +360,9 @@ export default function LicaoClient({
         }
         .lms-prose li { color: ${C.muted}; padding-left: 0.2rem; }
         .lms-prose ul li::marker { color: ${C.gold}; }
-        .lms-prose ol li::marker { color: ${C.gold}; font-family: 'DM Mono', monospace; }
+        .lms-prose ol li::marker { color: ${C.gold}; font-family: var(--font-jetbrains), monospace; }
         .lms-prose code {
-          font-family: 'DM Mono', monospace;
+          font-family: var(--font-jetbrains), monospace;
           background: ${C.surface2};
           color: ${C.text};
           padding: 0.1em 0.4em;
@@ -370,7 +370,7 @@ export default function LicaoClient({
           font-size: 0.9em;
         }
         .lms-prose pre {
-          font-family: 'DM Mono', monospace;
+          font-family: var(--font-jetbrains), monospace;
           background: ${C.surface2};
           border: 1px solid ${C.border};
           border-radius: 10px;
@@ -397,7 +397,7 @@ export default function LicaoClient({
         .lms-prose th {
           background: ${C.surface2};
           color: ${C.text};
-          font-family: 'DM Mono', monospace;
+          font-family: var(--font-jetbrains), monospace;
           font-weight: 600;
           font-size: 0.8rem;
           text-transform: uppercase;
@@ -416,7 +416,7 @@ export default function LicaoClient({
 
 const slideTitleStyle: React.CSSProperties = {
   margin: 0,
-  fontFamily: 'DM Mono, monospace',
+  fontFamily: 'var(--font-jetbrains), monospace',
   fontSize: 'clamp(1.25rem, 4vw, 1.6rem)',
   fontWeight: 600,
   color: C.gold,

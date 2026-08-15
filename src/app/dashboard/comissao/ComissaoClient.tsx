@@ -185,7 +185,7 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
       {unlinkedCount > 0 && (
         <div style={{ background: '#f5a74215', border: '1px solid #f5a74244', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span className="material-symbols-outlined" style={{ color: '#f5a742', fontSize: '18px' }}>warning</span>
-          <span style={{ fontSize: '0.78rem', fontFamily: 'DM Mono, monospace', color: '#f5a742' }}>
+          <span style={{ fontSize: '0.78rem', fontFamily: 'var(--font-jetbrains), monospace', color: '#f5a742' }}>
             {unlinkedCount} vendedor{unlinkedCount > 1 ? 'es' : ''} sem conta vinculada — comissões não serão calculadas para eles. Configure o código CEC em <a href="/dashboard/usuarios" style={{ textDecoration: 'underline' }}>Usuários</a>.
           </span>
         </div>
@@ -252,7 +252,7 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
                 )}
                 {['Vendedor', 'Loja', 'Vendido', 'Com%', 'Base', 'Bônus', 'Total', 'Status', ''].map(h => (
                   <th key={h} style={{
-                    padding: '10px 14px', textAlign: 'left', fontFamily: 'DM Mono, monospace',
+                    padding: '10px 14px', textAlign: 'left', fontFamily: 'var(--font-jetbrains), monospace',
                     fontSize: '0.65rem', color: 'var(--muted)', fontWeight: 500,
                     textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap',
                   }}>{h}</th>
@@ -262,7 +262,7 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
             <tbody>
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={canApprove && hasCalculated ? 10 : 9} style={{ padding: '32px', textAlign: 'center', color: 'var(--muted)', fontFamily: 'DM Mono, monospace', fontSize: '0.72rem' }}>
+                  <td colSpan={canApprove && hasCalculated ? 10 : 9} style={{ padding: '32px', textAlign: 'center', color: 'var(--muted)', fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.72rem' }}>
                     Sem dados para o período selecionado
                   </td>
                 </tr>
@@ -292,7 +292,7 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
                             onChange={(e) => handleSelectOne(row.comissao!.id, e.target.checked)}
                           />
                         ) : (
-                          <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', paddingLeft: '4px' }}>
+                          <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', paddingLeft: '4px' }}>
                             {isCalculated ? '✓' : '—'}
                           </span>
                         )}
@@ -303,43 +303,43 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
                     </td>
                     <td style={{ padding: '12px 14px' }}>
                       <span style={{
-                        fontSize: '0.65rem', fontFamily: 'DM Mono, monospace',
+                        fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace',
                         padding: '2px 7px', borderRadius: '4px',
                         background: storeColor + '22', color: storeColor,
                       }}>
                         {storeLabel}
                       </span>
                     </td>
-                    <td style={{ padding: '12px 14px', fontFamily: 'DM Mono, monospace', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '12px 14px', fontFamily: 'var(--font-jetbrains), monospace', whiteSpace: 'nowrap' }}>
                       {fmtCurrency(row.total_sold)}
                     </td>
-                    <td style={{ padding: '12px 14px', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>
+                    <td style={{ padding: '12px 14px', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)' }}>
                       {comPct}%
                     </td>
-                    <td style={{ padding: '12px 14px', fontFamily: 'DM Mono, monospace', whiteSpace: 'nowrap', color: isCalculated ? 'var(--text)' : 'var(--muted)' }}>
+                    <td style={{ padding: '12px 14px', fontFamily: 'var(--font-jetbrains), monospace', whiteSpace: 'nowrap', color: isCalculated ? 'var(--text)' : 'var(--muted)' }}>
                       {fmtCurrency(base)}
                     </td>
-                    <td style={{ padding: '12px 14px', fontFamily: 'DM Mono, monospace', whiteSpace: 'nowrap', color: bonus > 0 ? 'var(--meta1)' : 'var(--muted)' }}>
+                    <td style={{ padding: '12px 14px', fontFamily: 'var(--font-jetbrains), monospace', whiteSpace: 'nowrap', color: bonus > 0 ? 'var(--meta1)' : 'var(--muted)' }}>
                       {fmtCurrency(bonus)}
                     </td>
-                    <td style={{ padding: '12px 14px', fontFamily: 'DM Mono, monospace', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '12px 14px', fontFamily: 'var(--font-jetbrains), monospace', fontWeight: 700, whiteSpace: 'nowrap' }}>
                       {fmtCurrency(total)}
                     </td>
                     <td style={{ padding: '12px 14px' }}>
                       {!isCalculated ? (
                         row.profile_id === null ? (
-                          <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', padding: '3px 8px', borderRadius: '4px', background: '#f5a74222', color: '#f5a742' }}>
+                          <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', padding: '3px 8px', borderRadius: '4px', background: '#f5a74222', color: '#f5a742' }}>
                             sem conta
                           </span>
                         ) : (
-                          <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)' }}>—</span>
+                          <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)' }}>—</span>
                         )
                       ) : row.comissao!.aprovado ? (
-                        <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', padding: '3px 8px', borderRadius: '4px', background: '#22c55e22', color: '#22c55e' }}>
+                        <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', padding: '3px 8px', borderRadius: '4px', background: '#22c55e22', color: '#22c55e' }}>
                           aprovado
                         </span>
                       ) : (
-                        <span style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', padding: '3px 8px', borderRadius: '4px', background: '#f5a74222', color: '#f5a742' }}>
+                        <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', padding: '3px 8px', borderRadius: '4px', background: '#f5a74222', color: '#f5a742' }}>
                           pendente
                         </span>
                       )}
@@ -349,14 +349,14 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
                         row.comissao!.aprovado ? (
                           <button
                             onClick={() => handleAprovar(row.comissao!.id, false)}
-                            style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', padding: '4px 8px', borderRadius: '4px', background: '#ef444422', color: '#ef4444', border: '1px solid #ef444444', cursor: 'pointer' }}
+                            style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', padding: '4px 8px', borderRadius: '4px', background: '#ef444422', color: '#ef4444', border: '1px solid #ef444444', cursor: 'pointer' }}
                           >
                             Rejeitar
                           </button>
                         ) : (
                           <button
                             onClick={() => handleAprovar(row.comissao!.id, true)}
-                            style={{ fontSize: '0.65rem', fontFamily: 'DM Mono, monospace', padding: '4px 8px', borderRadius: '4px', background: '#22c55e22', color: '#22c55e', border: '1px solid #22c55e44', cursor: 'pointer' }}
+                            style={{ fontSize: '0.65rem', fontFamily: 'var(--font-jetbrains), monospace', padding: '4px 8px', borderRadius: '4px', background: '#22c55e22', color: '#22c55e', border: '1px solid #22c55e44', cursor: 'pointer' }}
                           >
                             Aprovar
                           </button>
@@ -372,7 +372,7 @@ export default function ComissaoClient({ vendorRows, periodId, role, stores }: P
       </div>
 
       {!hasCalculated && rows.length > 0 && (
-        <p style={{ fontSize: '0.68rem', fontFamily: 'DM Mono, monospace', color: 'var(--muted)', marginTop: '10px' }}>
+        <p style={{ fontSize: '0.68rem', fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--muted)', marginTop: '10px' }}>
           Valores acima são uma prévia baseada em vendor_summary. Clique em &quot;Calcular Período&quot; para registrar e habilitar aprovações.
         </p>
       )}

@@ -42,13 +42,13 @@ export default async function TreinamentosPage({
       borderRadius: '0.75rem', padding: '0.75rem 1.25rem',
     }}>
       <div style={{ textAlign: 'right' }}>
-        <div style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>XP disponível</div>
-        <div style={{ fontSize: '1.25rem', fontWeight: 700, fontFamily: 'DM Mono, monospace', color: C.amber, marginTop: 2 }}>{totalXP}</div>
+        <div style={{ fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>XP disponível</div>
+        <div style={{ fontSize: '1.25rem', fontWeight: 700, fontFamily: 'var(--font-jetbrains), monospace', color: C.amber, marginTop: 2 }}>{totalXP}</div>
       </div>
       <div style={{ width: '1px', background: C.border }} />
       <div style={{ textAlign: 'right' }}>
-        <div style={{ fontSize: '0.625rem', fontFamily: 'DM Mono, monospace', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Concluídas</div>
-        <div style={{ fontSize: '1.25rem', fontWeight: 700, fontFamily: 'DM Mono, monospace', color: C.green, marginTop: 2 }}>{concluidas}/{trilhas.length}</div>
+        <div style={{ fontSize: '0.625rem', fontFamily: 'var(--font-jetbrains), monospace', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Concluídas</div>
+        <div style={{ fontSize: '1.25rem', fontWeight: 700, fontFamily: 'var(--font-jetbrains), monospace', color: C.green, marginTop: 2 }}>{concluidas}/{trilhas.length}</div>
       </div>
     </div>
   )
@@ -129,7 +129,7 @@ function CategoriaView({
           href="/vendedor/treinamentos"
           style={{
             display: 'inline-flex', alignItems: 'center', gap: '0.375rem',
-            fontFamily: 'DM Mono, monospace', fontSize: '0.75rem',
+            fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.75rem',
             color: C.muted, textDecoration: 'none',
             textTransform: 'uppercase', letterSpacing: '0.08em',
           }}
@@ -149,7 +149,7 @@ function CategoriaView({
       {trilhas.length === 0 ? (
         <div style={{
           textAlign: 'center', padding: '4rem 2rem',
-          color: C.muted, fontFamily: 'DM Mono, monospace', fontSize: '0.875rem',
+          color: C.muted, fontFamily: 'var(--font-jetbrains), monospace', fontSize: '0.875rem',
         }}>
           Nenhuma trilha nesta categoria ainda.
         </div>
