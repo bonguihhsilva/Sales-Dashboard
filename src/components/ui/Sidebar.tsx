@@ -5,33 +5,36 @@ import { usePathname } from 'next/navigation'
 import { LogoutButton } from '@/components/ui'
 import { TenantSwitcher } from './TenantSwitcher'
 import { useState } from 'react'
+import { hasModule, type TenantModule, type TenantModules } from '@/lib/modules'
 
-export function Sidebar({ role, name, tenants = [], activeTenantId }: { role: string, name: string, tenants?: Array<{ id: string; nome: string }>, activeTenantId?: string | null }) {
+type NavLink = { href: string; label: string; icon: string; mod?: TenantModule }
+
+export function Sidebar({ role, name, tenants = [], activeTenantId, modules }: { role: string, name: string, tenants?: Array<{ id: string; nome: string }>, activeTenantId?: string | null, modules?: Partial<TenantModules> | null }) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
 
-  const adminLinks = [
+  const adminLinks: NavLink[] = [
     { href: '/dashboard', label: 'Visão Geral', icon: 'dashboard' },
     { href: '/dashboard/metas', label: 'Metas', icon: 'flag' },
-    { href: '/dashboard/comissao', label: 'Comissões', icon: 'payments' },
+    { href: '/dashboard/comissao', label: 'Comissões', icon: 'payments', mod: 'comissao' as const },
     { href: '/dashboard/regras-comissao', label: 'Regras', icon: 'rule' },
     { href: '/dashboard/mapeamento', label: 'Mapeamento', icon: 'map' },
-    { href: '/dashboard/treinamentos', label: 'Treinamentos', icon: 'school' },
-    { href: '/dashboard/relatorios', label: 'Relatórios', icon: 'summarize' },
-    { href: '/dashboard/rh', label: 'Recursos Humanos', icon: 'groups' },
+    { href: '/dashboard/treinamentos', label: 'Treinamentos', icon: 'school', mod: 'treinamentos' as const },
+    { href: '/dashboard/relatorios', label: 'Relatórios', icon: 'summarize', mod: 'relatorios' as const },
+    { href: '/dashboard/rh', label: 'Recursos Humanos', icon: 'groups', mod: 'rh' as const },
     { href: '/dashboard/usuarios', label: 'Usuários', icon: 'manage_accounts' },
   ]
 
-  const vendorLinks = [
+  const vendorLinks: NavLink[] = [
     { href: '/vendedor/meu-resultado', label: 'Meu Resultado', icon: 'payments' },
-    { href: '/vendedor/treinamentos', label: 'Treinamentos', icon: 'school' },
+    { href: '/vendedor/treinamentos', label: 'Treinamentos', icon: 'school', mod: 'treinamentos' as const },
     { href: '/vendedor/regras', label: 'Regras de Comissão', icon: 'rule' },
-    { href: '/vendedor/rh', label: 'Recursos Humanos', icon: 'groups' },
+    { href: '/vendedor/rh', label: 'Recursos Humanos', icon: 'groups', mod: 'rh' as const },
   ]
 
   // Role 'compras' ve apenas seu proprio setor — sem comissao, RH ou
   // performance nominal de vendedor (D-04/D-05 da Fase 09).
-  const comprasLinks = [
+  const comprasLinks: NavLink[] = [
     { href: '/dashboard/compras', label: 'Compras', icon: 'inventory_2' },
   ]
 
@@ -42,8 +45,10 @@ export function Sidebar({ role, name, tenants = [], activeTenantId }: { role: st
 
   // adm/gerente/super_admin acessam o setor de compras pelo menu completo.
   if (role !== 'vendedor' && role !== 'compras') {
-    links.push({ href: '/dashboard/compras', label: 'Compras', icon: 'inventory_2' })
+    links.push({ href: '/dashboard/compras', label: 'Compras', icon: 'inventory_2', mod: 'compras' as const })
   }
+
+  const visibleLinks = links.filter(l => !l.mod || hasModule(modules, l.mod))
 
   if (role === 'super_admin') {
     links.push({ href: '/dashboard/super-admin', label: 'Super Admin', icon: 'admin_panel_settings' })
@@ -78,7 +83,7 @@ export function Sidebar({ role, name, tenants = [], activeTenantId }: { role: st
         </div>
 
         <nav className="flex-grow space-y-1">
-          {links.map(link => {
+          {visibleLinks.map(link => {
             const isActive = pathname === link.href || (link.href !== '/dashboard' && pathname.startsWith(link.href + '/'))
             return (
               <div key={link.href} className="px-2">

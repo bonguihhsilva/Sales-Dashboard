@@ -5,6 +5,7 @@ import { LMS as C } from '@/lib/lms/theme'
 import { PageHeader } from '@/components/ui'
 import Link from 'next/link'
 import AdminLmsClient from './AdminLmsClient'
+import { hasModule } from '@/lib/modules'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,6 +19,7 @@ export default async function TreinamentosAdminPage({
 
   const role = profile.role || 'vendedor'
   if (role === 'vendedor') redirect('/vendedor/treinamentos')
+  if (!hasModule(profile.modules, 'treinamentos')) redirect('/dashboard')
 
   const { tab } = await searchParams
   const activeTab = tab === 'progresso' ? 'progresso' : 'conteudo'

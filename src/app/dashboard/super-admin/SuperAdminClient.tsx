@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { DataTable } from '@/components/ui/data-table'
-import { createTenant, toggleTenantStatus } from './actions'
+import { createTenant, toggleTenantStatus, updateTenantModules } from './actions'
+import { TENANT_MODULES, MODULE_LABELS, DEFAULT_MODULES, type TenantModules } from '@/lib/modules'
 
 export type TenantRow = {
   id: string
@@ -15,10 +16,45 @@ export type TenantRow = {
   ativo: boolean
   cor_primaria: string | null
   user_count?: number
+  modules?: Partial<TenantModules> | null
 }
 
 import { useRouter } from 'next/navigation'
 import { switchTenantAction } from './tenant-actions'
+
+function TenantModulesCell({ tenant }: { tenant: TenantRow }) {
+  const [modules, setModules] = useState<TenantModules>({ ...DEFAULT_MODULES, ...(tenant.modules ?? {}) })
+  const [saving, setSaving] = useState(false)
+
+  async function toggle(mod: typeof TENANT_MODULES[number]) {
+    const next = { ...modules, [mod]: !modules[mod] }
+    setModules(next)
+    setSaving(true)
+    await updateTenantModules(tenant.id, next)
+    setSaving(false)
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {TENANT_MODULES.map(mod => (
+        <button
+          key={mod}
+          type="button"
+          disabled={saving}
+          onClick={() => toggle(mod)}
+          title={MODULE_LABELS[mod]}
+          className={`text-xs px-2 py-1 rounded-full border transition-colors ${
+            modules[mod]
+              ? 'bg-primary text-primary-foreground border-primary'
+              : 'bg-transparent text-muted-foreground border-border'
+          }`}
+        >
+          {MODULE_LABELS[mod]}
+        </button>
+      ))}
+    </div>
+  )
+}
 
 export default function SuperAdminClient({ tenants }: { tenants: TenantRow[] }) {
   const [loading, setLoading] = useState(false)
@@ -74,6 +110,17 @@ export default function SuperAdminClient({ tenants }: { tenants: TenantRow[] }) 
               <Input id="color" name="color" placeholder="Ex: #3B82F6" />
             </div>
           </div>
+          <div className="flex flex-col gap-2">
+            <Label>Módulos habilitados</Label>
+            <div className="flex flex-wrap gap-4">
+              {TENANT_MODULES.map(mod => (
+                <label key={mod} className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" name={`module_${mod}`} defaultChecked={DEFAULT_MODULES[mod]} />
+                  {MODULE_LABELS[mod]}
+                </label>
+              ))}
+            </div>
+          </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="flex justify-end mt-2">
             <Button type="submit" disabled={loading}>
@@ -113,6 +160,11 @@ export default function SuperAdminClient({ tenants }: { tenants: TenantRow[] }) 
                   {r.ativo ? 'Ativo' : 'Inativo'}
                 </Badge>
               )
+            },
+            {
+              key: 'modules',
+              header: 'Módulos',
+              render: (r) => <TenantModulesCell tenant={r} />
             },
             {
               key: 'actions',

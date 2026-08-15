@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { PageHeader } from '@/components/ui'
 import ComprasClient from './ComprasClient'
 import type { InventoryMetric, AbcRow, RankingRow, InventorySummary } from './types'
+import { hasModule } from '@/lib/modules'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,6 +18,7 @@ export default async function ComprasPage({
   const { user, profile } = await getTenantContext()
   if (!user || !profile) redirect('/login')
   if (!ALLOWED.includes(profile.role)) redirect('/vendedor/meu-resultado')
+  if (!hasModule(profile.modules, 'compras')) redirect('/dashboard')
 
   // super_admin sem tenant "incorporado" nao tem escopo de dados — nao e erro,
   // e o estado neutro do seletor. Explica o passo exato em vez de so avisar.

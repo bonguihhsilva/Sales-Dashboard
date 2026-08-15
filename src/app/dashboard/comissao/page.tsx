@@ -5,6 +5,8 @@ import PeriodSelector from '../PeriodSelector'
 import ComissaoClient, { type VendorRow } from './ComissaoClient'
 import ExportButton from '../ExportButton'
 import { PageHeader } from '@/components/ui'
+import { hasModule } from '@/lib/modules'
+import { redirect } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,6 +28,7 @@ export default async function ComissaoPage({
       </div>
     )
   }
+  if (!hasModule(profile.modules, 'comissao')) redirect('/dashboard')
 
   const tenantId = profile.tenant_id
 
