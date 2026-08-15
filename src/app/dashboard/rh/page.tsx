@@ -5,13 +5,15 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import RHClient from './RHClient'
 import { PageHeader } from '@/components/ui'
+import { hasModule } from '@/lib/modules'
 
 export default async function RHPage() {
   const { user, profile } = await getTenantContext()
   if (!user) redirect('/login')
-  
+
   const effectiveRole = profile.role
   if (!['adm', 'gerente', 'super_admin'].includes(effectiveRole)) redirect('/vendedor/meu-resultado')
+  if (!hasModule(profile.modules, 'rh')) redirect('/dashboard')
 
   const admin = createAdminClient()
 

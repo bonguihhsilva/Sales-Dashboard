@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import type { TenantModules } from '@/lib/modules'
 
 export async function getTenantContext() {
   const supabase = await createClient()
@@ -32,13 +33,24 @@ export async function getTenantContext() {
     }
   }
 
+  let modules: Partial<TenantModules> | null = null
+  if (activeTenantId) {
+    const { data: tenant } = await supabase
+      .from('tenants')
+      .select('modules')
+      .eq('id', activeTenantId)
+      .single()
+    modules = (tenant?.modules as Partial<TenantModules> | null) ?? null
+  }
+
   return {
     user,
     profile: {
       ...profile,
       role,
       tenant_id: activeTenantId,
-      original_tenant_id: profile?.tenant_id // Guarda o tenant real do perfil
+      original_tenant_id: profile?.tenant_id, // Guarda o tenant real do perfil
+      modules,
     }
   }
 }

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { PageHeader } from '@/components/ui'
 import MeuRHTab, { type HRDelay } from '../meu-resultado/MeuRHTab'
 import type { HRFreeDay, HRAbsence, HRVacation, HRPermission } from '@/types'
+import { hasModule } from '@/lib/modules'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,6 +13,12 @@ export default async function VendedorRHPage() {
   // if (!user) redirect('/login')
   const userId = user?.id
   if (!userId) redirect('/login')
+
+  const { data: profile } = await supabase.from('profiles').select('tenant_id').eq('id', userId).single()
+  if (profile?.tenant_id) {
+    const { data: tenant } = await supabase.from('tenants').select('modules').eq('id', profile.tenant_id).single()
+    if (!hasModule(tenant?.modules, 'rh')) redirect('/vendedor/meu-resultado')
+  }
 
   const [
     { data: hrFreeDays },

@@ -3,6 +3,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { TENANT_MODULES, DEFAULT_MODULES, type TenantModules } from '@/lib/modules'
 
 export async function createTenant(formData: FormData) {
   const supabase = await createClient()
@@ -26,6 +27,11 @@ export async function createTenant(formData: FormData) {
     return { error: 'Nome e Slug são obrigatórios.' }
   }
 
+  const modules: TenantModules = { ...DEFAULT_MODULES }
+  for (const key of TENANT_MODULES) {
+    modules[key] = formData.get(`module_${key}`) === 'on'
+  }
+
   const adminDb = createAdminClient()
 
   // Verifica se o slug já existe
@@ -40,6 +46,7 @@ export async function createTenant(formData: FormData) {
     slug: slug.toLowerCase().replace(/[^a-z0-9-]/g, '-'),
     cor_primaria: color || null,
     ativo: true,
+    modules,
   })
 
   if (insertError) {
@@ -64,6 +71,25 @@ export async function toggleTenantStatus(id: string, active: boolean) {
 
   const adminDb = createAdminClient()
   const { error } = await adminDb.from('tenants').update({ ativo: active }).eq('id', id)
+
+  if (error) return { error: error.message }
+  revalidatePath('/dashboard/super-admin')
+  return { success: true }
+}
+
+export async function updateTenantModules(id: string, modules: TenantModules) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { error: 'Não autorizado.' }
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'super_admin') {
+    return { error: 'Permissão negada.' }
+  }
+
+  const adminDb = createAdminClient()
+  const { error } = await adminDb.from('tenants').update({ modules }).eq('id', id)
 
   if (error) return { error: error.message }
   revalidatePath('/dashboard/super-admin')

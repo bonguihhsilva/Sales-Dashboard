@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getTenantContext } from '@/lib/auth/tenant'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { TENANT_MODULES, DEFAULT_MODULES, type TenantModules } from '@/lib/modules'
 
 /**
  * POST /api/admin/onboard-tenant
@@ -16,7 +17,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Acesso restrito a super_admin' }, { status: 403 })
 
   const body = await req.json()
-  const { nome, slug, moeda_padrao = 'USD', locale = 'es-PY', lojas, adm_email } = body
+  const { nome, slug, moeda_padrao = 'USD', locale = 'es-PY', lojas, adm_email, modules } = body
+
+  const resolvedModules: TenantModules = { ...DEFAULT_MODULES }
+  if (modules && typeof modules === 'object') {
+    for (const key of TENANT_MODULES) {
+      if (typeof modules[key] === 'boolean') resolvedModules[key] = modules[key]
+    }
+  }
 
   if (!nome?.trim())      return NextResponse.json({ error: 'nome obrigatório' },      { status: 400 })
   if (!slug?.trim())      return NextResponse.json({ error: 'slug obrigatório' },      { status: 400 })
@@ -35,7 +43,7 @@ export async function POST(req: NextRequest) {
   // 2. Create tenant
   const { data: tenant, error: tenantErr } = await admin
     .from('tenants')
-    .insert({ nome: nome.trim(), slug: slug.trim(), ativo: true, moeda_padrao, locale })
+    .insert({ nome: nome.trim(), slug: slug.trim(), ativo: true, moeda_padrao, locale, modules: resolvedModules })
     .select('id')
     .single()
 

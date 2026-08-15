@@ -24,7 +24,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       >
         Pular para o conteúdo
       </a>
-      <Sidebar role={role} name={userName} tenants={tenants} activeTenantId={profile.tenant_id} />
+      <Sidebar role={role} name={userName} tenants={tenants} activeTenantId={profile.tenant_id} modules={profile.modules} />
       <main id="main-content" className="lg:ml-[280px] pt-14 lg:pt-0 min-h-screen bg-background">
         {children}
       </main>

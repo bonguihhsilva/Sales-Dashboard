@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/ui'
 import { TrilhaCard } from './TrilhaCard'
 import { CategoriaCard } from './CategoriaCard'
 import { CATEGORIAS, resumoCategorias, trilhasDaCategoria } from './categorias'
+import { hasModule } from '@/lib/modules'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,6 +20,12 @@ export default async function TreinamentosPage({
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  const { data: profile } = await supabase.from('profiles').select('tenant_id').eq('id', user.id).single()
+  if (profile?.tenant_id) {
+    const { data: tenant } = await supabase.from('tenants').select('modules').eq('id', profile.tenant_id).single()
+    if (!hasModule(tenant?.modules, 'treinamentos')) redirect('/vendedor/meu-resultado')
+  }
 
   const trilhas = await getCatalogo(user.id)
 
