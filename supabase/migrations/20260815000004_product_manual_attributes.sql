@@ -126,8 +126,7 @@ computed AS (
   LEFT JOIN prod_name pn ON pn.tenant_id = u.tenant_id AND pn.product_code = u.product_code
 )
 SELECT
-  tenant_id, product_code, product_name, brand, category, model, color,
-  sale_price, current_qty, last_snapshot_date,
+  tenant_id, product_code, product_name, current_qty, last_snapshot_date,
   snapshot_staleness_days, stock_status, unit_cost, has_cost, stock_value,
   qty_sold_short, qty_sold_long, revenue_short, revenue_long, profit_long,
   ads, dos, (dos / 7) AS wos, turnover, turnover_annualized,
@@ -139,7 +138,9 @@ SELECT
     WHEN has_snapshot IS NULL AND qty_sold_long = 0 THEN NULL
     ELSE 'normal'
   END AS movement_class,
-  window_days, long_window_days
+  window_days, long_window_days,
+  -- colunas novas no fim: CREATE OR REPLACE VIEW não deixa inserir no meio
+  brand, category, model, color, sale_price
 FROM computed;
 
 REVOKE ALL ON public.product_inventory_metrics FROM anon, authenticated;
@@ -168,12 +169,13 @@ SELECT
   si.tenant_id,
   si.product_code,
   COALESCE(pc.name, pn.name, si.product_code) AS product_name,
-  pc.brand, pc.category, pc.model, pc.color,
   om.store,
   sum(si.qty)          AS qty_sold,
   sum(si.total_price)  AS revenue,
   sum(si.total_profit) AS profit,
-  st.l                 AS window_days
+  st.l                 AS window_days,
+  -- colunas novas no fim: CREATE OR REPLACE VIEW não deixa inserir no meio
+  pc.brand, pc.category, pc.model, pc.color
 FROM sale_items si
 JOIN order_meta om ON om.tenant_id = si.tenant_id AND om.order_ref = si.order_id
 JOIN settings st   ON st.tenant_id = si.tenant_id
