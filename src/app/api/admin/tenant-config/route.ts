@@ -14,7 +14,7 @@ export async function GET() {
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('tenants')
-    .select('id, nome, slug, plano, cor_primaria, moeda_padrao, locale, commission_pct_default, criado_em')
+    .select('id, nome, slug, plano, cor_primaria, moeda_padrao, locale, commission_pct_default, meta_growth_pct_default, bonus1_default, bonus2_default, bonus3_default, criado_em')
     .eq('id', profile.tenant_id)
     .single()
 
@@ -39,6 +39,16 @@ export async function PATCH(req: NextRequest) {
   if (body.commission_pct_default !== undefined) {
     const pct = parseFloat(body.commission_pct_default)
     if (!isNaN(pct) && pct >= 0 && pct <= 1) patch.commission_pct_default = pct
+  }
+  if (body.meta_growth_pct_default !== undefined) {
+    const growth = parseFloat(body.meta_growth_pct_default)
+    if (!isNaN(growth) && growth >= 0 && growth <= 5) patch.meta_growth_pct_default = growth
+  }
+  for (const key of ['bonus1_default', 'bonus2_default', 'bonus3_default'] as const) {
+    if (body[key] !== undefined) {
+      const v = parseFloat(body[key])
+      if (!isNaN(v) && v >= 0) patch[key] = v
+    }
   }
 
   if (Object.keys(patch).length === 0)

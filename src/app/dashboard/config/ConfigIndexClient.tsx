@@ -13,6 +13,10 @@ type Tenant = {
   moeda_padrao: string
   locale: string
   commission_pct_default: number
+  meta_growth_pct_default: number
+  bonus1_default: number
+  bonus2_default: number
+  bonus3_default: number
 }
 
 interface Props {
@@ -37,6 +41,10 @@ export default function ConfigIndexClient({ tenant, storesCount, gerentesCount }
   const [locale, setLocale] = useState(tenant?.locale ?? 'es-PY')
   const [cor, setCor] = useState(tenant?.cor_primaria ?? '#c8f542')
   const [pct, setPct] = useState(String((tenant?.commission_pct_default ?? 0.003) * 100))
+  const [growthPct, setGrowthPct] = useState(String((tenant?.meta_growth_pct_default ?? 0.20) * 100))
+  const [bonus1, setBonus1] = useState(String(tenant?.bonus1_default ?? 100))
+  const [bonus2, setBonus2] = useState(String(tenant?.bonus2_default ?? 150))
+  const [bonus3, setBonus3] = useState(String(tenant?.bonus3_default ?? 200))
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
 
@@ -51,6 +59,10 @@ export default function ConfigIndexClient({ tenant, storesCount, gerentesCount }
         moeda_padrao: moeda,
         locale,
         commission_pct_default: parseFloat(pct) / 100,
+        meta_growth_pct_default: parseFloat(growthPct) / 100,
+        bonus1_default: parseFloat(bonus1),
+        bonus2_default: parseFloat(bonus2),
+        bonus3_default: parseFloat(bonus3),
       }),
     })
     const json = await res.json()
@@ -155,6 +167,34 @@ export default function ConfigIndexClient({ tenant, storesCount, gerentesCount }
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--text)' }} />
             ) : (
               <span style={{ color: 'var(--text)', fontFamily: 'DM Mono, monospace' }}>{parseFloat(pct).toFixed(2)}%</span>
+            )}
+          </div>
+
+          {/* Crescimento de meta (auto, sobre média de 3 meses) */}
+          <div>
+            <label style={{ color: 'var(--muted)', fontSize: 12, display: 'block', marginBottom: 6 }}>Crescimento de meta auto (%)</label>
+            {editing ? (
+              <input type="number" step="0.01" min="0" max="500" value={growthPct} onChange={e => setGrowthPct(e.target.value)}
+                style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--text)' }} />
+            ) : (
+              <span style={{ color: 'var(--text)', fontFamily: 'DM Mono, monospace' }}>{parseFloat(growthPct).toFixed(2)}%</span>
+            )}
+          </div>
+
+          {/* Bônus padrão M1/M2/M3 */}
+          <div>
+            <label style={{ color: 'var(--muted)', fontSize: 12, display: 'block', marginBottom: 6 }}>Bônus padrão (M1 / M2 / M3)</label>
+            {editing ? (
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input type="number" min="0" value={bonus1} onChange={e => setBonus1(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--text)' }} />
+                <input type="number" min="0" value={bonus2} onChange={e => setBonus2(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--text)' }} />
+                <input type="number" min="0" value={bonus3} onChange={e => setBonus3(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--text)' }} />
+              </div>
+            ) : (
+              <span style={{ color: 'var(--text)', fontFamily: 'DM Mono, monospace' }}>${bonus1} / ${bonus2} / ${bonus3}</span>
             )}
           </div>
 

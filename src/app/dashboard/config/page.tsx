@@ -14,7 +14,7 @@ export default async function ConfigPage() {
 
   const [{ data: tenant }, { count: storesCount }, { count: gerentesCount }] =
     await Promise.all([
-      admin.from('tenants').select('id, nome, slug, plano, cor_primaria, moeda_padrao, locale, commission_pct_default').eq('id', profile.tenant_id).single(),
+      admin.from('tenants').select('id, nome, slug, plano, cor_primaria, moeda_padrao, locale, commission_pct_default, meta_growth_pct_default, bonus1_default, bonus2_default, bonus3_default').eq('id', profile.tenant_id).single(),
       admin.from('stores').select('*', { count: 'exact', head: true }).eq('tenant_id', profile.tenant_id).eq('ativo', true),
       admin.from('profiles').select('*', { count: 'exact', head: true }).eq('tenant_id', profile.tenant_id).eq('role', 'gerente'),
     ])
