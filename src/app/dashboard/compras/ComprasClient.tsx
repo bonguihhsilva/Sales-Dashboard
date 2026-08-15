@@ -192,30 +192,32 @@ function VisaoGeral({
         {alertas.length === 0 ? (
           <Empty>Nenhum item em risco de ruptura.</Empty>
         ) : (
-          <Table head={['Produto', { label: 'Estoque', align: 'right' }, { label: 'Venda/dia', align: 'right' }, { label: 'Cobertura', align: 'right' }, { label: 'Comprar', align: 'right' }, 'Situação']}>
-            {alertas.map(m => {
-              const sugestao = suggestedQty(m)
-              return (
-                <tr key={m.product_code} className="hover:bg-white/[0.03] transition-colors">
-                  <Td><strong>{m.product_name ?? m.product_code}</strong><div className="text-on-surface-variant font-mono text-[0.6875rem]">{m.product_code}</div></Td>
-                  <Td className="text-right font-mono">{m.current_qty === null ? '—' : num(m.current_qty, 0)}</Td>
-                  <Td className="text-right font-mono">{num(m.ads, 2)}</Td>
-                  <Td className="text-right font-mono">{m.dos === null ? '—' : `${num(m.dos)} dias`}</Td>
-                  <Td className="text-right font-mono font-bold">{sugestao === null ? '—' : sugestao}</Td>
-                  <Td>
-                    {m.is_stockout_now ? (
-                      <Badge className="bg-error/20 text-error">Sem estoque</Badge>
-                    ) : (
-                      <Badge className="bg-tertiary-container text-on-tertiary-container">Repor</Badge>
-                    )}
-                  </Td>
-                </tr>
-              )
-            })}
-          </Table>
-          <p className="mt-3 text-label-sm text-on-surface-variant">
-            Sugestão de compra: repõe até {TARGET_COVER_DAYS} dias de cobertura, projetando pela venda média diária atual.
-          </p>
+          <>
+            <Table head={['Produto', { label: 'Estoque', align: 'right' }, { label: 'Venda/dia', align: 'right' }, { label: 'Cobertura', align: 'right' }, { label: 'Comprar', align: 'right' }, 'Situação']}>
+              {alertas.map(m => {
+                const sugestao = suggestedQty(m)
+                return (
+                  <tr key={m.product_code} className="hover:bg-white/[0.03] transition-colors">
+                    <Td><strong>{m.product_name ?? m.product_code}</strong><div className="text-on-surface-variant font-mono text-[0.6875rem]">{m.product_code}</div></Td>
+                    <Td className="text-right font-mono">{m.current_qty === null ? '—' : num(m.current_qty, 0)}</Td>
+                    <Td className="text-right font-mono">{num(m.ads, 2)}</Td>
+                    <Td className="text-right font-mono">{m.dos === null ? '—' : `${num(m.dos)} dias`}</Td>
+                    <Td className="text-right font-mono font-bold">{sugestao === null ? '—' : sugestao}</Td>
+                    <Td>
+                      {m.is_stockout_now ? (
+                        <Badge className="bg-error/20 text-error">Sem estoque</Badge>
+                      ) : (
+                        <Badge className="bg-tertiary-container text-on-tertiary-container">Repor</Badge>
+                      )}
+                    </Td>
+                  </tr>
+                )
+              })}
+            </Table>
+            <p className="mt-3 text-label-sm text-on-surface-variant">
+              Sugestão de compra: repõe até {TARGET_COVER_DAYS} dias de cobertura, projetando pela venda média diária atual.
+            </p>
+          </>
         )}
       </Card>
 
