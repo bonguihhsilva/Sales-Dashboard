@@ -1040,6 +1040,94 @@ function FeaturesSection() {
   )
 }
 
+// ── Modules Grid ──────────────────────────────────────────────────────────────
+
+const MODULES = [
+  {
+    icon: '👥',
+    title: 'Recursos Humanos',
+    desc: 'Cadastro de colaboradores, documentos e dados de RH centralizados por loja.',
+  },
+  {
+    icon: '🛒',
+    title: 'Compras',
+    desc: 'Controle de pedidos e fornecedores integrado ao painel administrativo.',
+  },
+  {
+    icon: '🎓',
+    title: 'Treinamentos (LMS)',
+    desc: 'Trilhas, módulos, quiz e gamificação por XP — vendedor aprende e evolui dentro do próprio sistema.',
+  },
+  {
+    icon: '📣',
+    title: 'Mural de Comunicados',
+    desc: 'Avisos e comunicados internos visíveis para toda a equipe, sem depender de grupo de WhatsApp.',
+  },
+  {
+    icon: '📇',
+    title: 'Carteira de Clientes',
+    desc: 'Histórico de compras, frequência e recência por cliente — por vendedor ou consolidado por loja.',
+  },
+  {
+    icon: '⚙️',
+    title: 'Módulos configuráveis',
+    desc: 'Cada tenant liga ou desliga módulos conforme o plano — comissão, RH, treinamentos, compras e relatórios.',
+  },
+] as const
+
+function ModuleCard({ icon, title, desc }: { icon: string; title: string; desc: string }) {
+  const [hov, setHov] = useState(false)
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: C.elevated, borderRadius: '1.125rem',
+        border: `1px solid ${hov ? 'rgba(201,147,58,0.35)' : C.border}`,
+        padding: '1.75rem', transition: 'border-color 200ms, transform 200ms',
+        transform: hov ? 'translateY(-3px)' : 'none',
+      }}>
+      <div style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>{icon}</div>
+      <div style={{ fontFamily: 'var(--font-hanken)', fontWeight: 700, fontSize: '1.0625rem', color: C.text, marginBottom: '0.5rem' }}>{title}</div>
+      <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '0.875rem', color: C.muted, lineHeight: 1.6, margin: 0 }}>{desc}</p>
+    </div>
+  )
+}
+
+function ModulesSection() {
+  const { ref, inView } = useInView()
+  return (
+    <section ref={ref} style={{ ...sectionPad, background: C.deep, borderTop: `1px solid ${C.border}` }}>
+      <div style={container}>
+        <div style={{
+          textAlign: 'center', marginBottom: 'clamp(3rem, 6vw, 4.5rem)',
+          opacity: inView ? 1 : 0, transform: inView ? 'translateY(0)' : 'translateY(20px)',
+          transition: 'opacity 600ms, transform 600ms',
+        }}>
+          <h2 style={{
+            fontFamily: 'var(--font-hanken)', fontWeight: 700,
+            fontSize: 'clamp(1.75rem, 3vw, 2.5rem)',
+            color: C.text, letterSpacing: '-0.025em', margin: '0 0 1rem',
+          }}>Mais que ranking e comissão.</h2>
+          <p style={{
+            fontFamily: 'var(--font-manrope)', fontSize: '1.0625rem',
+            color: C.muted, lineHeight: 1.6, maxWidth: '54ch', margin: '0 auto',
+          }}>
+            Um sistema de gestão comercial completo — RH, compras, treinamento da equipe e comunicação interna, tudo no mesmo painel.
+          </p>
+        </div>
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.25rem',
+          opacity: inView ? 1 : 0, transform: inView ? 'translateY(0)' : 'translateY(20px)',
+          transition: 'opacity 600ms 120ms, transform 600ms 120ms',
+        }}>
+          {MODULES.map(m => <ModuleCard key={m.title} {...m} />)}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 // ── Product Preview ────────────────────────────────────────────────────────────
 
 function ProductPreview() {
@@ -1582,6 +1670,7 @@ export default function LandingClient() {
       <HeroSection reduced={reduced} onTourOpen={() => setTourOpen(true)} />
       <StatsBand />
       <FeaturesSection />
+      <ModulesSection />
       <ProductPreview />
       <PricingSection />
       <SocialProofSection />
