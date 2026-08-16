@@ -103,7 +103,7 @@ const TOUR_ROLES = [
     id: 'admin' as TourRole,
     title: 'Administrador',
     subtitle: 'Visão completa do negócio',
-    desc: 'Todas as lojas, todos os vendedores, controle de comissões e importação CEC.',
+    desc: 'Todas as lojas, todos os vendedores, controle de comissões e importação de dados.',
     features: ['Dashboard multi-loja', 'Ranking global', 'Motor de comissão', 'Gestão de usuários'],
     icon: '◈',
     color: C.gold,
@@ -132,12 +132,12 @@ const TOUR_CALLOUTS: Record<TourRole, { title: string; desc: string }[]> = {
   admin: [
     { title: 'KPIs consolidados', desc: 'Faturamento total das 3 lojas, ticket médio e comissão calculada automaticamente — sem planilha.' },
     { title: 'Ranking global', desc: 'Performance de cada vendedor ordenada por resultado, com nível de meta e progresso visual.' },
-    { title: 'Gestão completa', desc: 'Usuários, metas por loja, importação CEC e treinamentos LMS — tudo no mesmo painel.' },
+    { title: 'Gestão completa', desc: 'Usuários, metas por loja, importação de dados e treinamentos LMS — tudo no mesmo painel.' },
   ],
   gerente: [
     { title: 'KPIs da sua loja', desc: 'Totais da Jebai separados das outras lojas — faturamento, ticket e comissão do seu time.' },
     { title: 'Ranking da equipe', desc: 'Seus vendedores ordenados por resultado. Identifique quem performa e quem precisa de apoio.' },
-    { title: 'Gestão operacional', desc: 'Upload do CEC, relatórios por período e acompanhamento de metas da equipe.' },
+    { title: 'Gestão operacional', desc: 'Upload de dados, relatórios por período e acompanhamento de metas da equipe.' },
   ],
   vendedor: [
     { title: 'Seu desempenho', desc: 'Seu total vendido, posição no ranking e o valor exato da comissão — sem depender do gerente.' },
@@ -173,7 +173,7 @@ function TourDemoMockup({ role }: { role: TourRole }) {
     ? ['Meu Resultado', 'Meus Clientes', 'Treinamentos']
     : isAdmin
     ? ['Dashboard', 'Vendedores', 'Usuários', 'Treinamentos', 'Configurações']
-    : ['Dashboard', 'Minha Equipe', 'Importar CEC', 'Relatórios']
+    : ['Dashboard', 'Minha Equipe', 'Importar Dados', 'Relatórios']
 
   const purple = '#A78BFA'
   const vendors = isVendedor
@@ -563,7 +563,7 @@ function DashboardMockup({ reduced }: { reduced: boolean }) {
             fontSize: '0.5rem', color: C.gold,
             background: 'rgba(201,147,58,0.12)', padding: '0.2rem 0.5rem',
             borderRadius: '0.25rem', border: `1px solid rgba(201,147,58,0.3)`,
-          }}>Importar CEC</span>
+          }}>Importar Dados</span>
         </div>
       </div>
     </div>
@@ -707,7 +707,7 @@ function HeroSection({ reduced, onTourOpen }: { reduced: boolean; onTourOpen: ()
               fontFamily: 'var(--font-manrope)', fontSize: 'clamp(1rem, 1.5vw, 1.1rem)',
               color: C.muted, lineHeight: 1.7, maxWidth: '52ch', margin: '0 0 2.5rem',
             }}>
-              Ranking em tempo real, motor de comissão configurável e importação direta do CEC.
+              Ranking em tempo real, motor de comissão configurável e importação direta dos seus dados de venda.
               Um painel para as três lojas, zero planilha.
             </p>
 
@@ -907,10 +907,10 @@ function ImportVisual() {
       fontFamily: 'var(--font-jetbrains)',
     }}>
       <div style={{ fontSize: '0.625rem', color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '1.125rem' }}>
-        Importação CEC · Jebai · Jun 2025
+        Importação de Dados · Jebai · Jun 2025
       </div>
       {[
-        { num: '01', label: 'Upload do arquivo HTML exportado do CEC', status: 'done' },
+        { num: '01', label: 'Upload do arquivo exportado do seu sistema de vendas', status: 'done' },
         { num: '02', label: 'Parse automático — 847 registros identificados', status: 'done' },
         { num: '03', label: 'Vinculação aos vendedores cadastrados', status: 'done' },
         { num: '04', label: 'Cálculo automático de comissões e metas', status: 'active' },
@@ -967,9 +967,9 @@ const FEATURES = [
   },
   {
     id: 'importacao',
-    tag: 'Importação CEC',
+    tag: 'Importação de Dados',
     title: 'Do relatório legado ao dashboard em minutos.',
-    body: 'Faça upload do HTML exportado pelo CEC. O parser identifica clientes, vendedores e valores automaticamente. Nenhuma coluna mapeada manualmente.',
+    body: 'Faça upload do relatório exportado pelo seu sistema de vendas. O parser identifica clientes, vendedores e valores automaticamente. Nenhuma coluna mapeada manualmente.',
     Visual: ImportVisual,
     flip: false,
   },
@@ -1190,26 +1190,26 @@ function ProductPreview() {
 
 const PLANS = [
   {
-    name: 'Starter',
-    price: '97',
-    desc: 'Para uma loja que quer sair das planilhas.',
-    features: ['1 loja ativa', 'Importação CEC ilimitada', 'Ranking de vendedores', 'Motor de comissão básico', 'Até 30 vendedores', 'Suporte por e-mail'],
-    cta: 'Começar no Starter',
+    name: 'Básico',
+    price: '249',
+    desc: 'Para quem quer sair das planilhas com um canal só.',
+    features: ['1 canal de vendas', 'Módulo de controle de vendas e metas', 'Importação de dados ilimitada', 'Ranking de vendedores', 'Motor de comissão básico', 'Até 10 usuários', 'Suporte por e-mail'],
+    cta: 'Começar no Básico',
     featured: false,
   },
   {
-    name: 'Profissional',
-    price: '197',
-    desc: 'Multi-loja com comissão configurável e LMS.',
-    features: ['Até 3 lojas ativas', 'Importação CEC ilimitada', 'Ranking unificado multi-loja', 'Motor de comissão avançado', 'Treinamentos LMS + quiz', 'Relatório por período', 'Suporte prioritário'],
+    name: 'Growth',
+    price: '549',
+    desc: 'Multi-canal com módulos configuráveis.',
+    features: ['Até 3 canais de vendas', 'Escolha de até 3 módulos do app', 'Importação de dados ilimitada', 'Ranking unificado multi-canal', 'Motor de comissão avançado', 'Até 25 usuários', 'Suporte prioritário'],
     cta: 'Começar agora',
     featured: true,
   },
   {
     name: 'Enterprise',
     price: null,
-    desc: 'Para redes com necessidades específicas.',
-    features: ['Lojas ilimitadas', 'Integração com sistemas ERP', 'Customização do motor', 'Onboarding dedicado', 'SLA garantido', 'Acesso à API'],
+    desc: 'Recursos modulares, ajustados à sua operação.',
+    features: ['Canais e usuários sob medida', 'Todos os módulos disponíveis', 'Integração com sistemas ERP', 'Customização do motor', 'Onboarding dedicado', 'SLA garantido', 'Acesso à API'],
     cta: 'Falar com a equipe',
     featured: false,
   },
@@ -1369,11 +1369,11 @@ function SocialProofSection() {
 const FAQS = [
   {
     q: 'Preciso mudar o sistema das lojas para usar o GDS Frame?',
-    a: 'Não. O GDS Frame funciona como uma camada acima do sistema atual. Você exporta o relatório HTML do CEC e faz upload — o resto é automático.',
+    a: 'Não. O GDS Frame funciona como uma camada acima do sistema atual. Você exporta o relatório do seu sistema de vendas e faz upload — o resto é automático.',
   },
   {
-    q: 'Como funciona a importação do CEC?',
-    a: 'O sistema faz parse automático do HTML exportado pelo seu sistema de vendas. Identifica clientes, vincula aos vendedores cadastrados e calcula métricas em segundos. Nenhuma coluna mapeada manualmente.',
+    q: 'Como funciona a importação de dados?',
+    a: 'O sistema faz parse automático do relatório exportado pelo seu sistema de vendas. Identifica clientes, vincula aos vendedores cadastrados e calcula métricas em segundos. Nenhuma coluna mapeada manualmente.',
   },
   {
     q: 'Posso configurar as regras de comissão para cada loja separadamente?',
@@ -1384,8 +1384,8 @@ const FAQS = [
     a: 'Sim. Cada vendedor acessa uma visão pessoal com seu ranking, metas, histórico e evolução — sem ver dados dos colegas.',
   },
   {
-    q: 'O sistema funciona para redes com mais de 3 lojas?',
-    a: 'O plano Profissional suporta até 3 lojas. Para redes maiores, oferecemos o plano Enterprise com configuração personalizada.',
+    q: 'O sistema funciona para redes com mais de 3 canais de venda?',
+    a: 'O plano Growth suporta até 3 canais. Para redes maiores, oferecemos o plano Enterprise com configuração personalizada por quantidade de usuários e canais.',
   },
 ]
 
@@ -1509,7 +1509,7 @@ function Footer() {
               fontFamily: 'var(--font-manrope)', fontSize: '0.875rem',
               color: C.muted, lineHeight: 1.65, maxWidth: '38ch', margin: 0,
             }}>
-              Sistema de gestão comercial para lojas de Ciudad del Este. Ranking, comissão e importação CEC em um painel.
+              Sistema de gestão comercial multi-loja. Ranking, comissão e importação de dados em um painel.
             </p>
           </div>
           <div style={{ display: 'flex', gap: '3rem' }}>
