@@ -63,6 +63,23 @@ export default async function MuralPage({
       .map(g => ({ nome: nameById.get(g.usuario_id) ?? '—', xp: Number(g.xp_total), nivel: Number(g.nivel) }))
   }
 
+  const { data: dbAvisos } = await adminDb
+    .from('avisos')
+    .select('id, titulo, mensagem, created_at, autor_id')
+    .eq('tenant_id', profile?.tenant_id)
+    .order('created_at', { ascending: false })
+    .limit(20)
+
+  const avisos = (dbAvisos ?? []).map(a => ({
+    id: a.id as string,
+    titulo: a.titulo as string,
+    mensagem: a.mensagem as string,
+    createdAt: a.created_at as string,
+    autorNome: nameById.get(a.autor_id as string) ?? 'Equipe',
+  }))
+
+  const canPost = jwtRole === 'adm' || jwtRole === 'gerente' || jwtRole === 'super_admin'
+
   // Helper function to navigate back depending on role
   const backLink = showValues ? '/dashboard' : '/vendedor/meu-resultado'
 
@@ -88,6 +105,9 @@ export default async function MuralPage({
           stores={stores}
           showValues={showValues}
           topStudents={topStudents}
+          avisos={avisos}
+          canPost={canPost}
+          tenantId={profile?.tenant_id ?? ''}
         />
       </div>
     </div>
