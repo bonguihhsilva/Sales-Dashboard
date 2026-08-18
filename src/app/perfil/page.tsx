@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { PageHeader } from '@/components/ui'
+import PerfilEditButton from './PerfilEditButton'
 
 export default async function PerfilPage() {
   const supabase = await createClient()
@@ -53,11 +54,18 @@ export default async function PerfilPage() {
         <div style={{ marginBottom: '2rem' }}>
           <PageHeader
             title="Meu Perfil"
-            subtitle="Visualize suas informações de conta"
+            subtitle="Visualize e edite suas informações de conta"
             breadcrumbs={[
               { label: role === 'vendedor' ? 'Meu Resultado' : 'Dashboard', href: backLink },
               { label: 'Meu Perfil' },
             ]}
+            actions={
+              <PerfilEditButton
+                telefoneCorporativo={profile?.telefone_corporativo ?? null}
+                telefonePessoal={profile?.telefone_pessoal ?? null}
+                dataNascimento={profile?.data_nascimento ?? null}
+              />
+            }
           />
         </div>
 

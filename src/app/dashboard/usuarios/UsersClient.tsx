@@ -222,14 +222,19 @@ export default function UsersClient({
     setLoading(true)
     setError(null)
     try {
-      // 1. update-user: name, role, store
+      // 1. update-user: name, role (so quando mudou), store
+      // C-05: enviar role sempre, mesmo sem mudanca, faz o servidor tratar
+      // como pedido de atribuicao e checar a hierarquia de quem pode atribuir
+      // aquele role — bloqueando edicoes triviais (ex: adm editando nome de
+      // outro adm) quando o caller nao tem permissao pra "atribuir" adm.
+      const roleChanged = editRole !== editingUser.role
       const res = await fetch('/api/admin/update-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: editingUser.id,
           name: editName,
-          role: editRole,
+          ...(roleChanged ? { role: editRole } : {}),
           store: editStore,
           vendor_id: editVendorId.trim() || null,
           categorias_permitidas: editRole === 'vendedor' ? editCategorias : null,
