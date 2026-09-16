@@ -1,7 +1,21 @@
 import { describe, it, expect } from 'vitest'
 import { evaluateRules, type RegraComissao, type VendorMetrics } from '@/lib/commission-rules'
 
-const metrics: VendorMetrics = { total_sold: 12000, meta1: 10000, meta2: 15000, meta3: 20000 }
+const baseMetrics: VendorMetrics = {
+  vendor_id: 'v',
+  total_sold: 12000,
+  total_profit: 4800,
+  meta1: 10000,
+  meta2: 15000,
+  meta3: 20000,
+  vendas_por_marca: {},
+  metas_por_marca: {},
+  clientes_ativos: 0,
+  clientes_reativados: 0,
+}
+
+// compat: testes antigos usam campos escalares apenas
+const metrics: VendorMetrics = baseMetrics
 
 function regra(partial: Partial<RegraComissao>): RegraComissao {
   return {
@@ -17,6 +31,7 @@ describe('evaluateRules', () => {
   it('retorna neutro sem regras', () => {
     const r = evaluateRules([], metrics)
     expect(r.commissionPct).toBeNull()
+    expect(r.perMarcas).toEqual({})
     expect(r.extraBonus).toBe(0)
     expect(r.appliedRules).toHaveLength(0)
   })
@@ -112,5 +127,91 @@ describe('evaluateRules', () => {
       metrics,
     )
     expect(r.commissionPct).toBeNull()
+  })
+
+  // ── v0-2: marca, vendedor e unidade ───────────────────────────────
+  it('condição marca casa com volume da marca acima do valor', () => {
+    const r = evaluateRules(
+      [regra({ condicoes: [{ tipo: 'marca', marca: 'Nike', comparador: '>=', valor: 5000 }] })],
+      { ...metrics, vendor_id: 'v', vendas_por_marca: { Nike: 6000 } },
+    )
+    expect(r.commissionPct).toBe(0.05)
+  })
+
+  it('marca não configurada (sem linha) nunca casa', () => {
+    const r = evaluateRules(
+      [regra({ condicoes: [{ tipo: 'marca', marca: 'Nike', comparador: '>=', valor: 5000 }] })],
+      { ...metrics, vendor_id: 'v', vendas_por_marca: {} },
+    )
+    expect(r.commissionPct).toBeNull()
+  })
+
+  it('condição vendedor casa só para o vendedor da regra', () => {
+    const casa = evaluateRules(
+      [regra({ condicoes: [{ tipo: 'vendedor', vendor_id: 'v-1' }] })],
+      { ...metrics, vendor_id: 'v-1' },
+    )
+    expect(casa.commissionPct).toBe(0.05)
+
+    const nao = evaluateRules(
+      [regra({ condicoes: [{ tipo: 'vendedor', vendor_id: 'v-1' }] })],
+      { ...metrics, vendor_id: 'v-2' },
+    )
+    expect(nao.commissionPct).toBeNull()
+  })
+
+  it('meta_marca casa quando vendas da marca >= meta configurada (>0)', () => {
+    const r = evaluateRules(
+      [regra({ condicoes: [{ tipo: 'meta_marca', marca: 'Nike' }] })],
+      { ...metrics, vendor_id: 'v', vendas_por_marca: { Nike: 7000 }, metas_por_marca: { Nike: 5000 } },
+    )
+    expect(r.commissionPct).toBe(0.05)
+  })
+
+  it('meta_marca sem meta configurada (0) nunca casa', () => {
+    const r = evaluateRules(
+      [regra({ condicoes: [{ tipo: 'meta_marca', marca: 'Nike' }] })],
+      { ...metrics, vendor_id: 'v', vendas_por_marca: { Nike: 7000 }, metas_por_marca: {} },
+    )
+    expect(r.commissionPct).toBeNull()
+  })
+
+  it('bonus_por_unidade multiplica pela contagem (cliente_ativo)', () => {
+    const r = evaluateRules(
+      [regra({ acao: { tipo: 'bonus_por_unidade', unidade: 'cliente_ativo', valor_por_unidade: 10 } })],
+      { ...metrics, vendor_id: 'v', clientes_ativos: 7, clientes_reativados: 2 },
+    )
+    expect(r.extraBonus).toBe(70)
+  })
+
+  it('bonus_por_unidade multiplica pela contagem (cliente_reativado)', () => {
+    const r = evaluateRules(
+      [regra({ acao: { tipo: 'bonus_por_unidade', unidade: 'cliente_reativado', valor_por_unidade: 25 } })],
+      { ...metrics, vendor_id: 'v', clientes_ativos: 7, clientes_reativados: 3 },
+    )
+    expect(r.extraBonus).toBe(75)
+  })
+
+  it('comissao_percentual_marca usa base da marca e convive com percentual geral', () => {
+    const r = evaluateRules(
+      [
+        regra({ id: 'g', acao: { tipo: 'comissao_percentual', valor: 3 } }),
+        regra({ id: 'n', prioridade: 2, acao: { tipo: 'comissao_percentual_marca', marca: 'Nike', valor: 5 } }),
+      ],
+      { ...metrics, vendor_id: 'v', vendas_por_marca: { Nike: 2000 } },
+    )
+    expect(r.commissionPct).toBe(0.03)
+    expect(r.perMarcas).toEqual({ Nike: 0.05 })
+  })
+
+  it('comissao_percentual_marca: maior prioridade vence por marca', () => {
+    const r = evaluateRules(
+      [
+        regra({ id: 'a', prioridade: 1, acao: { tipo: 'comissao_percentual_marca', marca: 'Nike', valor: 7 } }),
+        regra({ id: 'b', prioridade: 2, acao: { tipo: 'comissao_percentual_marca', marca: 'Nike', valor: 3 } }),
+      ],
+      { ...metrics, vendor_id: 'v', vendas_por_marca: { Nike: 6000 } },
+    )
+    expect(r.perMarcas).toEqual({ Nike: 0.07 })
   })
 })

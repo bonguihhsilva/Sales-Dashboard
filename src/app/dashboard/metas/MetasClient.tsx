@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import type { GoalBrand } from '@/types'
+import MetasMarcaTab from './MetasMarcaTab'
 
 interface Period {
   id: number
@@ -32,6 +34,13 @@ interface Store {
   color: string
 }
 
+interface VendorOption {
+  id: string
+  name: string | null
+  vendor_id: string
+  store?: string | null
+}
+
 const MONTHS = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
@@ -40,7 +49,24 @@ const MONTHS = [
 const inputCls =
   'w-full bg-background border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl text-sm text-foreground px-3 py-2 outline-none font-mono transition-all'
 
-export default function MetasClient({ periods, goals, stores }: { periods: Period[]; goals: Goal[]; stores: Store[] }) {
+interface MetasClientProps {
+  periods: Period[]
+  goals: Goal[]
+  stores: Store[]
+  goalsBrand?: GoalBrand[]
+  brands?: string[]
+  vendors?: VendorOption[]
+}
+
+export default function MetasClient({
+  periods,
+  goals,
+  stores,
+  goalsBrand = [],
+  brands = [],
+  vendors = [],
+}: MetasClientProps) {
+  const [currentTab, setCurrentTab] = useState<'geral' | 'marca'>('geral')
   const [activePeriod, setActivePeriod] = useState<number>(periods[0]?.id ?? 0)
   const [showNewPeriod, setShowNewPeriod] = useState(false)
   const [showNewVendor, setShowNewVendor] = useState(false)
@@ -156,8 +182,44 @@ export default function MetasClient({ periods, goals, stores }: { periods: Perio
   return (
     <div className="flex flex-col gap-6">
 
-      {/* ── Barra de Controles ─────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* ── Segmented Tabs: Geral vs Marca ─────────────────────────────── */}
+      <div className="flex border-b border-white/5 pb-2 gap-4">
+        <button
+          type="button"
+          onClick={() => setCurrentTab('geral')}
+          className={`pb-2 text-sm font-sans font-bold transition-all ${
+            currentTab === 'geral'
+              ? 'text-primary border-b-2 border-primary'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          🎯 Metas Gerais (Volume)
+        </button>
+        <button
+          type="button"
+          onClick={() => setCurrentTab('marca')}
+          className={`pb-2 text-sm font-sans font-bold transition-all ${
+            currentTab === 'marca'
+              ? 'text-primary border-b-2 border-primary'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          🏷️ Metas por Marca
+        </button>
+      </div>
+
+      {currentTab === 'marca' ? (
+        <MetasMarcaTab
+          periodId={activePeriod}
+          vendors={vendors}
+          brands={brands}
+          initialGoals={goalsBrand}
+          storeColors={storeColors}
+        />
+      ) : (
+        <>
+          {/* ── Barra de Controles ─────────────────────────────────────────── */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-2 bg-surface-container-high border border-border rounded-xl px-3 py-2">
             <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground font-bold whitespace-nowrap">
@@ -593,6 +655,8 @@ export default function MetasClient({ periods, goals, stores }: { periods: Perio
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   )

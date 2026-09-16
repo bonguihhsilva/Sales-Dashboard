@@ -3,11 +3,16 @@ import { PageHeader } from '@/components/ui'
 
 export const dynamic = 'force-dynamic'
 
+type Acao =
+  | { tipo: 'comissao_percentual' | 'bonus_fixo'; valor?: number }
+  | { tipo: 'comissao_percentual_marca'; marca?: string; valor?: number }
+  | { tipo: 'bonus_por_unidade'; unidade?: 'cliente_ativo' | 'cliente_reativado'; valor_por_unidade?: number }
+
 type Regra = {
   id: string
   nome: string
   descricao: string
-  acao: { tipo?: 'comissao_percentual' | 'bonus_fixo'; valor?: number }
+  acao: Acao
   prioridade: number
 }
 
@@ -54,11 +59,31 @@ export default async function VendedorRegrasPage() {
   const ICONS: Record<string, string> = {
     comissao_percentual: '📈',
     bonus_fixo: '🏆',
+    comissao_percentual_marca: '🏷️',
+    bonus_por_unidade: '👥',
   }
 
   const COLORS: Record<string, { bg: string; text: string; border: string }> = {
     comissao_percentual: { bg: '#2563eb22', text: '#2563eb', border: 'rgba(37,99,235,0.3)' },
     bonus_fixo: { bg: '#f5a74222', text: '#f5a742', border: 'rgba(245,167,66,0.3)' },
+    comissao_percentual_marca: { bg: '#10b98122', text: '#10b981', border: 'rgba(16,185,129,0.3)' },
+    bonus_por_unidade: { bg: '#8b5cf622', text: '#8b5cf6', border: 'rgba(139,92,246,0.3)' },
+  }
+
+  function formatarValorAcao(a: Acao): string {
+    if (!a?.tipo) return 'Personalizada'
+    switch (a.tipo) {
+      case 'comissao_percentual':
+        return `${a.valor}% sobre vendas`
+      case 'bonus_fixo':
+        return `R$ ${Number(a.valor || 0).toLocaleString('pt-BR')} de bônus`
+      case 'comissao_percentual_marca':
+        return `${a.valor}% na marca ${a.marca || '—'}`
+      case 'bonus_por_unidade':
+        return `R$ ${Number(a.valor_por_unidade || 0).toLocaleString('pt-BR')} / ${a.unidade === 'cliente_reativado' ? 'cliente reativado' : 'cliente ativo'}`
+      default:
+        return 'Personalizada'
+    }
   }
 
   return (
@@ -83,9 +108,7 @@ export default async function VendedorRegrasPage() {
             const tipo = regra.acao?.tipo || 'bonus_fixo'
             const col = COLORS[tipo] || COLORS['bonus_fixo']
             const icon = ICONS[tipo] || '⭐'
-            const valorFormatado = tipo === 'comissao_percentual'
-              ? `${regra.acao.valor}% sobre vendas`
-              : `R$ ${Number(regra.acao?.valor || 0).toLocaleString('pt-BR')} de bônus`
+            const valorFormatado = formatarValorAcao(regra.acao)
 
             return (
               <div key={regra.id} style={{

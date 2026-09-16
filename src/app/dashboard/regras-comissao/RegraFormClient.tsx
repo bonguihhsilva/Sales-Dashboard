@@ -1,21 +1,29 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { SectionTitle } from '@/components/ui'
 import { toast } from 'sonner'
 
+// v0-2: admitimos os novos tipos sem violar a discrição frouxa do form.
+// O motor (commission-rules.ts) valida o discriminator em runtime.
 type Condicao = {
-  tipo: 'atingimento_meta' | 'volume_venda'
+  tipo: 'atingimento_meta' | 'volume_venda' | 'marca' | 'volume_marca' | 'meta_marca' | 'vendedor'
   meta?: 'meta1' | 'meta2' | 'meta3'
-  comparador: '>=' | '>' | '==' | '<='
+  marca?: string
+  vendor_id?: string
+  comparador?: '>=' | '>' | '==' | '<=' | '<'
   valor?: number | string
+  meta_valor?: number | string
 }
 
 type Acao = {
-  tipo: 'comissao_percentual' | 'bonus_fixo'
-  valor: number | string
+  tipo: 'comissao_percentual' | 'bonus_fixo' | 'comissao_percentual_marca' | 'bonus_por_unidade'
+  valor?: number | string
+  marca?: string
+  unidade?: 'cliente_ativo' | 'cliente_reativado'
+  valor_por_unidade?: number | string
 }
 
 type Regra = {
@@ -29,6 +37,29 @@ type Regra = {
   tenant_id?: string
 }
 
+type VendedorOption = { id: string; name: string | null; vendor_id: string | null }
+
+const CONDICAO_LABELS: Record<Condicao['tipo'], string> = {
+  atingimento_meta: 'Atingimento de Meta',
+  volume_venda: 'Volume de Venda ($)',
+  marca: 'Marca — valor vendido ≥',
+  volume_marca: 'Volume por Marca',
+  meta_marca: 'Meta por Marca',
+  vendedor: 'Vendedor Específico',
+}
+
+const ACAO_LABELS: Record<Acao['tipo'], string> = {
+  comissao_percentual: 'Comissão Percentual (%)',
+  bonus_fixo: 'Bônus Fixo ($)',
+  comissao_percentual_marca: 'Comissão % por Marca',
+  bonus_por_unidade: 'Bônus por Cliente',
+}
+
+function toNum(v: number | string | undefined): number {
+  const n = Number(v ?? 0)
+  return Number.isFinite(n) ? n : 0
+}
+
 export default function RegraFormClient({ regraInicial, tenantId }: { regraInicial?: Regra, tenantId: string }) {
   const router = useRouter()
   const supabase = createClient()
@@ -38,9 +69,22 @@ export default function RegraFormClient({ regraInicial, tenantId }: { regraInici
   const [descricao, setDescricao] = useState(regraInicial?.descricao || '')
   const [ativo, setAtivo] = useState(regraInicial?.ativo ?? true)
   const [prioridade, setPrioridade] = useState(regraInicial?.prioridade || 1)
-  
+
+  const [vendedores, setVendedores] = useState<VendedorOption[]>([])
   const [condicoes, setCondicoes] = useState<Condicao[]>(regraInicial?.condicoes || [])
   const [acao, setAcao] = useState<Acao>(regraInicial?.acao || { tipo: 'comissao_percentual', valor: 0 })
+
+  // Lista de vendedores do tenant p/ condição "vendedor específico".
+  // Se a consulta falhar (RLS) ou não retornar nada, o campo vira texto livre.
+  useEffect(() => {
+    supabase
+      .from('profiles')
+      .select('id,name,vendor_id')
+      .eq('role', 'vendedor')
+      .then(({ data, error }) => {
+        if (!error) setVendedores((data ?? []).filter(p => p.vendor_id != null) as VendedorOption[])
+      })
+  }, [supabase])
 
   const addCondicao = () => {
     setCondicoes([...condicoes, { tipo: 'atingimento_meta', meta: 'meta1', comparador: '>=' }])
@@ -53,8 +97,27 @@ export default function RegraFormClient({ regraInicial, tenantId }: { regraInici
   const updateCondicao = (index: number, key: keyof Condicao, value: string | number) => {
     const newCondicoes = [...condicoes]
     newCondicoes[index] = { ...newCondicoes[index], [key]: value }
+    // Ao trocar o tipo, limpa campos irrelevantes do tipo anterior
+    if (key === 'tipo') {
+      const tipo = value as Condicao['tipo']
+      newCondicoes[index] = { tipo } as Condicao
+      if (tipo === 'meta_marca' || tipo === 'vendedor') {
+        // campos específicos serão preenchidos pela UI
+        if (tipo === 'meta_marca') newCondicoes[index] = { tipo, marca: '' }
+        if (tipo === 'vendedor') newCondicoes[index] = { tipo, vendor_id: '' }
+      }
+    }
     setCondicoes(newCondicoes)
   }
+
+  // Normaliza o payload: números para campos monetários numéricos.
+  const normalizeCondicoes = (conds: Condicao[]): Condicao[] =>
+    conds.map(c => {
+      const out: Condicao = { ...c }
+      if (c.valor != null) out.valor = toNum(c.valor)
+      if (c.meta_valor != null) out.meta_valor = toNum(c.meta_valor)
+      return out
+    })
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -67,8 +130,12 @@ export default function RegraFormClient({ regraInicial, tenantId }: { regraInici
         descricao,
         ativo,
         prioridade: Number(prioridade),
-        condicoes,
-        acao: { ...acao, valor: Number(acao.valor) }
+        condicoes: normalizeCondicoes(condicoes),
+        acao: {
+          ...acao,
+          valor: acao.tipo === 'comissao_percentual' || acao.tipo === 'bonus_fixo' ? toNum(acao.valor) : undefined,
+          valor_por_unidade: acao.tipo === 'bonus_por_unidade' ? toNum(acao.valor_por_unidade) : undefined,
+        }
       }
 
       if (regraInicial?.id) {
@@ -99,6 +166,7 @@ export default function RegraFormClient({ regraInicial, tenantId }: { regraInici
   const inputClass = "w-full bg-background border border-white/10 rounded-xl px-4 py-3 text-on-surface focus:outline-none focus:border-primary transition-colors font-sans text-sm"
   const labelClass = "block text-xs font-mono tracking-widest text-muted-foreground uppercase mb-2"
   const boxClass = "glass-card rounded-2xl p-card-padding border border-white/5 mb-6"
+  const selectClass = `${inputClass} flex-1 min-w-[200px]`
 
   return (
     <form onSubmit={handleSave} className="w-full max-w-3xl mx-auto flex flex-col gap-2">
@@ -139,30 +207,99 @@ export default function RegraFormClient({ regraInicial, tenantId }: { regraInici
           <p className="text-muted-foreground font-mono italic text-sm">Nenhuma condição específica. A regra será aplicada a todas as vendas/vendedores.</p>
         ) : (
           <div className="flex flex-col gap-4">
-            {condicoes.map((cond, idx) => (
+            {condicoes.map((c, idx) => (
               <div key={idx} className="flex flex-wrap gap-4 items-center bg-surface-container-high/50 p-4 rounded-xl border border-white/5">
-                <select className={`${inputClass} flex-1 min-w-[200px]`} value={cond.tipo} onChange={e => updateCondicao(idx, 'tipo', e.target.value)}>
-                  <option value="atingimento_meta">Atingimento de Meta</option>
-                  <option value="volume_venda">Volume de Venda ($)</option>
+                <select className={selectClass} value={c.tipo} onChange={e => updateCondicao(idx, 'tipo', e.target.value)}>
+                  {(Object.keys(CONDICAO_LABELS) as Condicao['tipo'][]).map(t => (
+                    <option key={t} value={t}>{CONDICAO_LABELS[t]}</option>
+                  ))}
                 </select>
-                
-                {cond.tipo === 'atingimento_meta' ? (
-                  <select className={`${inputClass} flex-1 min-w-[150px]`} value={cond.meta} onChange={e => updateCondicao(idx, 'meta', e.target.value)}>
+
+                {c.tipo === 'atingimento_meta' ? (
+                  <select className={selectClass} value={c.meta} onChange={e => updateCondicao(idx, 'meta', e.target.value)}>
                     <option value="meta1">1ª Meta</option>
                     <option value="meta2">2ª Meta</option>
                     <option value="meta3">3ª Meta</option>
                   </select>
                 ) : null}
 
-                <select className={`${inputClass} flex-1 min-w-[200px]`} value={cond.comparador} onChange={e => updateCondicao(idx, 'comparador', e.target.value)}>
-                  <option value=">=">Maior ou igual a</option>
-                  <option value=">">Maior que</option>
-                  <option value="==">Igual a</option>
-                  <option value="<=">Menor ou igual a</option>
-                </select>
+                {/* marca / volume_marca: marca (texto) + comparador + valor */}
+                {c.tipo === 'marca' || c.tipo === 'volume_marca' ? (
+                  <>
+                    <input
+                      type="text"
+                      className={`${inputClass} flex-1 min-w-[140px]`}
+                      placeholder="Marca (ex: Nike)"
+                      value={c.marca || ''}
+                      onChange={e => updateCondicao(idx, 'marca', e.target.value)}
+                    />
+                    <select className={selectClass} value={c.comparador} onChange={e => updateCondicao(idx, 'comparador', e.target.value)}>
+                      <option value=">=">Maior ou igual a</option>
+                      <option value=">">Maior que</option>
+                      <option value="<=">Menor ou igual a</option>
+                      <option value="<">Menor que</option>
+                      <option value="==">Igual a</option>
+                    </select>
+                    <input
+                      type="number"
+                      className={`${inputClass} flex-1 min-w-[140px]`}
+                      placeholder="Valor ($)"
+                      value={c.valor || ''}
+                      onChange={e => updateCondicao(idx, 'valor', parseFloat(e.target.value))}
+                    />
+                    {c.tipo === 'marca' ? (
+                      <span className="text-xs font-mono text-muted-foreground w-full">Casa quando o valor vendido da marca atinge o valor acima.</span>
+                    ) : null}
+                  </>
+                ) : null}
 
-                {cond.tipo === 'volume_venda' ? (
-                  <input type="number" className={`${inputClass} flex-1 min-w-[150px]`} placeholder="Valor ($)" value={cond.valor || ''} onChange={e => updateCondicao(idx, 'valor', parseFloat(e.target.value))} />
+                {/* meta_marca: só a marca (a meta vem de goals_brand) */}
+                {c.tipo === 'meta_marca' ? (
+                  <>
+                    <input
+                      type="text"
+                      className={`${inputClass} flex-1 min-w-[140px]`}
+                      placeholder="Marca (ex: Nike)"
+                      value={c.marca || ''}
+                      onChange={e => updateCondicao(idx, 'marca', e.target.value)}
+                    />
+                    <span className="text-xs font-mono text-muted-foreground w-full">
+                      Casa quando vendas da marca ≥ meta configurada em <strong>Metas por Marca</strong>.
+                    </span>
+                  </>
+                ) : null}
+
+                {/* vendedor: select de vendedores do tenant, com fallback texto */}
+                {c.tipo === 'vendedor' ? (
+                  vendedores.length > 0 ? (
+                    <select className={selectClass} value={c.vendor_id || ''} onChange={e => updateCondicao(idx, 'vendor_id', e.target.value)}>
+                      <option value="">Selecione o vendedor</option>
+                      {vendedores.map(v => (
+                        <option key={v.id} value={v.vendor_id || ''}>{v.name || v.vendor_id}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      className={`${inputClass} flex-1 min-w-[140px]`}
+                      placeholder="ID do vendedor"
+                      value={c.vendor_id || ''}
+                      onChange={e => updateCondicao(idx, 'vendor_id', e.target.value)}
+                    />
+                  )
+                ) : null}
+
+                {c.tipo === 'volume_venda' || c.tipo === 'atingimento_meta' ? (
+                  <select className={selectClass} value={c.comparador} onChange={e => updateCondicao(idx, 'comparador', e.target.value)}>
+                    <option value=">=">Maior ou igual a</option>
+                    <option value=">">Maior que</option>
+                    <option value="==">Igual a</option>
+                    <option value="<=">Menor ou igual a</option>
+                  </select>
+                ) : null}
+
+                {c.tipo === 'volume_venda' ? (
+                  <input type="number" className={`${inputClass} flex-1 min-w-[140px]`} placeholder="Valor ($)" value={c.valor || ''} onChange={e => updateCondicao(idx, 'valor', parseFloat(e.target.value))} />
                 ) : null}
 
                 <button type="button" onClick={() => removeCondicao(idx)} className="text-error hover:bg-error/10 w-10 h-10 rounded-xl flex items-center justify-center transition-colors">
@@ -179,15 +316,48 @@ export default function RegraFormClient({ regraInicial, tenantId }: { regraInici
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <div>
             <label className={labelClass}>Tipo de Ação</label>
-            <select className={inputClass} value={acao.tipo} onChange={e => setAcao({ ...acao, tipo: e.target.value as Acao['tipo'] })}>
-              <option value="comissao_percentual">Comissão Percentual (%)</option>
-              <option value="bonus_fixo">Bônus Fixo ($)</option>
+            <select className={inputClass} value={acao.tipo} onChange={e => setAcao({ tipo: e.target.value as Acao['tipo'] })}>
+              {(Object.keys(ACAO_LABELS) as Acao['tipo'][]).map(t => (
+                <option key={t} value={t}>{ACAO_LABELS[t]}</option>
+              ))}
             </select>
           </div>
-          <div>
-            <label className={labelClass}>Valor</label>
-            <input required type="number" step="0.01" className={inputClass} value={acao.valor} onChange={e => setAcao({ ...acao, valor: e.target.value })} />
-          </div>
+
+          {acao.tipo === 'comissao_percentual' || acao.tipo === 'bonus_fixo' ? (
+            <div>
+              <label className={labelClass}>Valor</label>
+              <input required type="number" step="0.01" className={inputClass} value={acao.valor} onChange={e => setAcao({ ...acao, valor: e.target.value })} />
+            </div>
+          ) : null}
+
+          {acao.tipo === 'comissao_percentual_marca' ? (
+            <>
+              <div>
+                <label className={labelClass}>Marca</label>
+                <input required type="text" className={inputClass} placeholder="Ex: Nike" value={acao.marca || ''} onChange={e => setAcao({ ...acao, marca: e.target.value })} />
+              </div>
+              <div>
+                <label className={labelClass}>Percentual (%)</label>
+                <input required type="number" step="0.01" className={inputClass} value={acao.valor} onChange={e => setAcao({ ...acao, valor: e.target.value })} />
+              </div>
+            </>
+          ) : null}
+
+          {acao.tipo === 'bonus_por_unidade' ? (
+            <>
+              <div>
+                <label className={labelClass}>Unidade</label>
+                <select className={inputClass} value={acao.unidade || 'cliente_ativo'} onChange={e => setAcao({ ...acao, unidade: e.target.value as Acao['unidade'] })}>
+                  <option value="cliente_ativo">Cliente ativo no período</option>
+                  <option value="cliente_reativado">Cliente reativado (6+ meses)</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>Valor por Cliente</label>
+                <input required type="number" step="0.01" className={inputClass} value={acao.valor_por_unidade || ''} onChange={e => setAcao({ ...acao, valor_por_unidade: e.target.value })} />
+              </div>
+            </>
+          ) : null}
         </div>
       </div>
 

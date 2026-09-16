@@ -6,6 +6,12 @@ import { SectionTitle } from '@/components/ui'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
+type Acao =
+  | { tipo: 'comissao_percentual' | 'bonus_fixo'; valor?: number }
+  | { tipo: 'comissao_percentual_marca'; marca?: string; valor?: number }
+  | { tipo: 'bonus_por_unidade'; unidade?: 'cliente_ativo' | 'cliente_reativado'; valor_por_unidade?: number }
+  | null
+
 type Regra = {
   id: string
   nome: string
@@ -13,7 +19,19 @@ type Regra = {
   ativo: boolean
   prioridade: number
   condicoes: unknown
-  acao: { tipo?: 'comissao_percentual' | 'bonus_fixo'; valor?: number } | null
+  acao: Acao
+}
+
+function descricaoAcao(a: Acao): string {
+  if (!a?.tipo) return 'Personalizada'
+  switch (a.tipo) {
+    case 'comissao_percentual': return `${a.valor}% sobre vendas`
+    case 'bonus_fixo': return `Bônus de $${a.valor}`
+    case 'comissao_percentual_marca': return `${a.valor}% na marca ${a.marca || '—'}`
+    case 'bonus_por_unidade':
+      return `Bônus de $${a.valor_por_unidade} por ${a.unidade === 'cliente_reativado' ? 'cliente reativado' : 'cliente ativo'}`
+    default: return 'Personalizada'
+  }
 }
 
 export default function RegrasClient({ regras: initialRegras }: { regras: Regra[] }) {
@@ -108,7 +126,7 @@ export default function RegrasClient({ regras: initialRegras }: { regras: Regra[
                   </div>
                   <div className="text-xs">
                     <strong className="text-muted-foreground mr-2 uppercase tracking-widest font-mono">Ação:</strong>
-                    <span className="text-on-surface-variant">{regra.acao?.tipo === 'comissao_percentual' ? `${regra.acao?.valor}% sobre vendas` : (regra.acao?.tipo === 'bonus_fixo' ? `Bônus de $${regra.acao?.valor}` : 'Personalizada')}</span>
+                    <span className="text-on-surface-variant">{descricaoAcao(regra.acao)}</span>
                   </div>
                 </div>
               </div>

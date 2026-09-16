@@ -40,6 +40,28 @@ export interface Goal {
   commission_type: 'revenue' | 'profit'
 }
 
+export interface GoalBrand {
+  id: string
+  tenant_id: string
+  period_id: number
+  vendor_id: string
+  brand: string
+  meta_valor: number
+  bonus: number
+  created_at?: string
+  updated_at?: string
+}
+
+export interface VendorBrandMetric {
+  tenant_id: string
+  period_id: number
+  vendor_id: string
+  brand: string
+  valor_vendido: number
+  qty: number
+  clientes_ativos: number
+}
+
 export interface Product {
   id: string
   tenant_id: string

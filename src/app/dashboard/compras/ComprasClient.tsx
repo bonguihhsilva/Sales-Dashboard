@@ -146,6 +146,26 @@ export default function ComprasClient({
         ))}
       </div>
 
+      {/* Alerta de SKUs sem marca (obrigatória para regras de comissão por marca) */}
+      {metrics.some(m => !m.brand || m.brand.trim() === '') && (
+        <div className="flex items-center justify-between p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-mono">
+          <div className="flex items-center gap-2">
+            <span>⚠️</span>
+            <span>
+              <strong>{metrics.filter(m => !m.brand || m.brand.trim() === '').length} produto(s)</strong> sem marca cadastrada. A marca é obrigatória para o cálculo de metas por marca.
+            </span>
+          </div>
+          {tab !== 'estoque' && (
+            <button
+              onClick={() => setParam('tab', 'estoque')}
+              className="text-amber-200 underline hover:text-amber-100 font-sans text-xs"
+            >
+              Ver no Estoque
+            </button>
+          )}
+        </div>
+      )}
+
       {tab === 'visao' && (
         <VisaoGeral summary={summary} alertas={alertas} fastMovers={fastMovers} />
       )}
@@ -454,20 +474,32 @@ function AttrsCell({ m, canEdit }: { m: InventoryMetric; canEdit: boolean }) {
   const [pending, startTransition] = useTransition()
 
   const tags = [m.brand, m.category, m.model, m.color].filter(Boolean)
+  const hasBrand = Boolean(m.brand && m.brand.trim() !== '')
 
   if (!open) {
     return (
-      <button
-        onClick={() => setOpen(true)}
-        className="text-left text-label-sm text-on-surface-variant hover:text-on-surface"
-      >
-        {tags.length > 0 ? tags.join(' · ') : (canEdit ? 'Adicionar' : '—')}
-      </button>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <button
+          onClick={() => setOpen(true)}
+          className="text-left text-label-sm text-on-surface-variant hover:text-on-surface"
+        >
+          {tags.length > 0 ? tags.join(' · ') : (canEdit ? 'Adicionar' : '—')}
+        </button>
+        {!hasBrand && (
+          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 whitespace-nowrap">
+            Sem marca
+          </span>
+        )}
+      </div>
     )
   }
 
   const save = () => {
     setMsg(null)
+    if (!brand.trim()) {
+      setMsg('Marca é obrigatória')
+      return
+    }
     startTransition(async () => {
       const res = await updateProductAttributes(m.product_code, {
         brand: brand || null,
@@ -482,8 +514,8 @@ function AttrsCell({ m, canEdit }: { m: InventoryMetric; canEdit: boolean }) {
 
   return (
     <div className="flex flex-col gap-1 w-44">
-      <input value={brand} onChange={e => setBrand(e.target.value)} disabled={!canEdit || pending} placeholder="Marca"
-        className="bg-surface-variant text-on-surface font-mono text-[0.6875rem] rounded px-2 py-1 border border-white/10 disabled:opacity-50" />
+      <input value={brand} onChange={e => setBrand(e.target.value)} disabled={!canEdit || pending} placeholder="Marca (obrigatória)*"
+        className={`bg-surface-variant text-on-surface font-mono text-[0.6875rem] rounded px-2 py-1 border ${!brand.trim() ? 'border-amber-500/50' : 'border-white/10'} disabled:opacity-50`} />
       <input value={category} onChange={e => setCategory(e.target.value)} disabled={!canEdit || pending} placeholder="Categoria"
         className="bg-surface-variant text-on-surface font-mono text-[0.6875rem] rounded px-2 py-1 border border-white/10 disabled:opacity-50" />
       <input value={model} onChange={e => setModel(e.target.value)} disabled={!canEdit || pending} placeholder="Modelo"

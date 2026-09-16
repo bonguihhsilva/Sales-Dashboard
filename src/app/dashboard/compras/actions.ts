@@ -87,6 +87,11 @@ export async function updateProductAttributes(
   if (!code) return { ok: false, error: 'Codigo do produto obrigatorio' }
 
   const clean = (v: string | null) => (v && v.trim() !== '' ? v.trim() : null)
+  const cleanBrand = clean(attrs.brand)
+
+  if (!cleanBrand) {
+    return { ok: false, error: 'A marca é obrigatória para o produto.' }
+  }
 
   const adminDb = createAdminClient()
   const { error } = await adminDb
@@ -95,7 +100,7 @@ export async function updateProductAttributes(
       {
         tenant_id: profile.tenant_id,
         product_code: code,
-        brand: clean(attrs.brand),
+        brand: cleanBrand,
         category: clean(attrs.category),
         model: clean(attrs.model),
         color: clean(attrs.color),

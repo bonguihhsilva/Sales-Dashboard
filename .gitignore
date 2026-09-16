@@ -31,6 +31,8 @@ next-env.d.ts
 
 # tooling
 .claude/
+.hermes/
+.semgrep/
 .playwright-mcp/
 
 # supabase cli (link metadata com project refs)
@@ -38,3 +40,4 @@ supabase/.temp/
 
 # scratch/dev scripts — never commit ad-hoc scripts here
 scratch/
+.vercel
