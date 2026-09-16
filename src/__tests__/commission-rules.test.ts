@@ -99,7 +99,7 @@ describe('evaluateRules', () => {
     expect(r.appliedRules[0].id).toBe('a')
   })
 
-  it('bonus_fixo acumula todos que casam', () => {
+  it('bonus_fixo de regras gerais acumula todos que casam', () => {
     const r = evaluateRules(
       [
         regra({ id: 'a', acao: { tipo: 'bonus_fixo', valor: 100 } }),
@@ -109,6 +109,30 @@ describe('evaluateRules', () => {
     )
     expect(r.extraBonus).toBe(150)
     expect(r.appliedRules).toHaveLength(2)
+  })
+
+  it('bônus de metas escalonadas (atingimento_meta): meta superior substitui meta inferior', () => {
+    const metaRules = [
+      regra({ id: 'm3', prioridade: 1, condicoes: [{ tipo: 'atingimento_meta', meta: 'meta3', comparador: '>=' }], acao: { tipo: 'bonus_fixo', valor: 200 } }),
+      regra({ id: 'm2', prioridade: 2, condicoes: [{ tipo: 'atingimento_meta', meta: 'meta2', comparador: '>=' }], acao: { tipo: 'bonus_fixo', valor: 150 } }),
+      regra({ id: 'm1', prioridade: 3, condicoes: [{ tipo: 'atingimento_meta', meta: 'meta1', comparador: '>=' }], acao: { tipo: 'bonus_fixo', valor: 100 } }),
+      regra({ id: 'vol', prioridade: 4, condicoes: [{ tipo: 'volume_venda', comparador: '>=', valor: 10000 }], acao: { tipo: 'bonus_fixo', valor: 50 } }),
+    ]
+
+    // Atingiu apenas meta 1 (12.000 >= 10.000, mas < 15.000)
+    const r1 = evaluateRules(metaRules, { ...metrics, total_sold: 12000 })
+    expect(r1.extraBonus).toBe(150) // 100 (meta1) + 50 (volume)
+    expect(r1.appliedRules.map(a => a.id)).toEqual(['m1', 'vol'])
+
+    // Atingiu meta 2 (16.000 >= 15.000, mas < 20.000) -> ganha meta 2, substitui meta 1
+    const r2 = evaluateRules(metaRules, { ...metrics, total_sold: 16000 })
+    expect(r2.extraBonus).toBe(200) // 150 (meta2) + 50 (volume)
+    expect(r2.appliedRules.map(a => a.id)).toEqual(['m2', 'vol'])
+
+    // Atingiu meta 3 (22.000 >= 20.000) -> ganha meta 3, substitui meta 1 e 2
+    const r3 = evaluateRules(metaRules, { ...metrics, total_sold: 22000 })
+    expect(r3.extraBonus).toBe(250) // 200 (meta3) + 50 (volume)
+    expect(r3.appliedRules.map(a => a.id)).toEqual(['m3', 'vol'])
   })
 
   it('percentual e bônus combinam', () => {

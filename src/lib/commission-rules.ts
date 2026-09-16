@@ -10,7 +10,11 @@
 //   verdadeiras (condições vazias = casa sempre para o escopo alvo).
 // - acao comissao_percentual: a regra de maior prioridade que casar define o
 //   percentual (substitui goals.commission_pct). Valor em % humano (5 = 5%).
-// - acao bonus_fixo: TODAS as regras que casarem acumulam o bônus.
+// - acao bonus_fixo:
+//   - Para regras de meta escalonada (atingimento_meta): a de maior nível/prioridade
+//     atingida concede o bônus e substitui metas inferiores (ex: bater meta 2 dá o
+//     bônus da meta 2 sem somar indevidamente o da meta 1).
+//   - Para demais regras de bônus fixo (volume geral, marca, etc.): acumulam somando.
 // - acao comissao_percentual_marca: percentual específico de uma marca,
 //   aplicado sobre a base da marca (vendas_por_marca[marca]). Por marca,
 //   a de maior prioridade vence. Coexiste com o percentual geral: o geral
@@ -131,6 +135,7 @@ export function evaluateRules(rules: RegraComissao[], metrics: VendorMetrics): R
   const result: RuleEvaluation = { commissionPct: null, perMarcas: {}, extraBonus: 0, appliedRules: [] }
 
   const ordered = [...rules].sort((a, b) => a.prioridade - b.prioridade)
+  let metaTierBonusAwarded = false
 
   for (const rule of ordered) {
     // 1. Verificação de Escopo (Coletiva vs Individual)
@@ -141,6 +146,14 @@ export function evaluateRules(rules: RegraComissao[], metrics: VendorMetrics): R
 
     // 2. Verificação de Condições (Se...)
     const condicoes = Array.isArray(rule.condicoes) ? rule.condicoes : []
+    const isMetaTierRule = condicoes.some(c => c.tipo === 'atingimento_meta')
+
+    // Se já foi concedido um bônus de atingimento de meta de maior prioridade,
+    // ignora metas inferiores para respeitar o escalonamento (substituição).
+    if (isMetaTierRule && metaTierBonusAwarded && rule.acao?.tipo === 'bonus_fixo') {
+      continue
+    }
+
     const matches = condicoes.every(c => condicaoMatches(c, metrics))
     if (!matches) continue
 
@@ -168,6 +181,9 @@ export function evaluateRules(rules: RegraComissao[], metrics: VendorMetrics): R
       const valor = Number(acao.valor)
       if (!Number.isFinite(valor)) continue
       result.extraBonus += valor
+      if (isMetaTierRule) {
+        metaTierBonusAwarded = true
+      }
       result.appliedRules.push({ id: rule.id, nome: rule.nome, tipo: acao.tipo, valor })
     } else if (acao.tipo === 'bonus_por_unidade') {
       const valor = Number(acao.valor_por_unidade)

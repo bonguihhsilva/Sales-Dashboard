@@ -92,7 +92,15 @@ export async function POST(req: NextRequest) {
   )
 
   // Regras de comissão definidas pelos gerentes do tenant (fonte de verdade).
-  // Sem regras ativas → fallback para goals.commission_pct (comportamento legado).
+  // Se o tenant possui regras configuradas em regras_comissao, elas controlam os bônus
+  // e percentuais. Sem regras cadastradas no tenant → fallback legado para goals.
+  const { count: totalRegrasTenant } = await admin
+    .from('regras_comissao')
+    .select('id', { count: 'exact', head: true })
+    .eq('tenant_id', tenantId)
+
+  const hasDynamicRules = (totalRegrasTenant ?? 0) > 0
+
   const { data: regrasAtivas } = await admin
     .from('regras_comissao')
     .select('id, nome, prioridade, escopo, vendor_id, condicoes, acao')
@@ -175,8 +183,13 @@ export async function POST(req: NextRequest) {
       const comissaoGeralCents = Math.round(baseGeralCents * commissionPct)
       const comissaoBaseCents = comissaoGeralCents + comissaoMarcasCents
 
-      const bonusCents = Math.round(Number(s.bonus_earned) * 100)
-        + Math.round(ruleEval.extraBonus * 100)
+      // Bônus: quando o tenant possui regras cadastradas em regras_comissao,
+      // o bônus vem estritamente das regras ativas avaliadas (ruleEval.extraBonus).
+      // Se as metas 1/2/3 estiverem desativadas pelo gerente, nenhum bônus de meta é pago.
+      // Se o tenant NÃO tiver nenhuma regra cadastrada (modo legado), usa s.bonus_earned de goals.
+      const bonusCents = hasDynamicRules
+        ? Math.round(ruleEval.extraBonus * 100)
+        : Math.round(Number(s.bonus_earned) * 100)
       const totalCents = comissaoBaseCents + bonusCents
 
       const comissao_base = comissaoBaseCents / 100
@@ -197,6 +210,7 @@ export async function POST(req: NextRequest) {
           base_value: Math.round(baseValue * 100) / 100,
           commission_pct: commissionPct,
           commission_pct_source: ruleEval.commissionPct !== null ? 'regras_comissao' : 'goals',
+          bonus_source: hasDynamicRules ? 'regras_comissao' : 'goals',
           regras_aplicadas: ruleEval.appliedRules,
           bonus_regras: Math.round(ruleEval.extraBonus * 100) / 100,
           meta_level: s.meta_level,
