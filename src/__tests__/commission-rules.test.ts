@@ -22,6 +22,8 @@ function regra(partial: Partial<RegraComissao>): RegraComissao {
     id: partial.id ?? 'r1',
     nome: partial.nome ?? 'Regra',
     prioridade: partial.prioridade ?? 1,
+    escopo: partial.escopo ?? 'coletivo',
+    vendor_id: partial.vendor_id ?? null,
     condicoes: partial.condicoes ?? [],
     acao: partial.acao ?? { tipo: 'comissao_percentual', valor: 5 },
   }
@@ -129,7 +131,41 @@ describe('evaluateRules', () => {
     expect(r.commissionPct).toBeNull()
   })
 
-  // ── v0-2: marca, vendedor e unidade ───────────────────────────────
+  // ── Escopo: Coletiva vs Individual ───────────────────────────────
+  it('escopo coletivo aplica para qualquer vendedor', () => {
+    const r = evaluateRules(
+      [regra({ escopo: 'coletivo', acao: { tipo: 'comissao_percentual', valor: 4 } })],
+      { ...metrics, vendor_id: 'vendedor-qualquer' },
+    )
+    expect(r.commissionPct).toBe(0.04)
+  })
+
+  it('escopo individual casa apenas para o vendedor específico definido no escopo', () => {
+    const rules = [
+      regra({ escopo: 'individual', vendor_id: 'v-joao', acao: { tipo: 'comissao_percentual', valor: 6 } }),
+    ]
+
+    const joao = evaluateRules(rules, { ...metrics, vendor_id: 'v-joao' })
+    expect(joao.commissionPct).toBe(0.06)
+
+    const maria = evaluateRules(rules, { ...metrics, vendor_id: 'v-maria' })
+    expect(maria.commissionPct).toBeNull()
+  })
+
+  it('regra individual sobrepõe regra coletiva quando tem maior prioridade', () => {
+    const rules = [
+      regra({ id: 'ind', prioridade: 1, escopo: 'individual', vendor_id: 'v-top', acao: { tipo: 'comissao_percentual', valor: 8 } }),
+      regra({ id: 'col', prioridade: 2, escopo: 'coletivo', acao: { tipo: 'comissao_percentual', valor: 3 } }),
+    ]
+
+    const topVendor = evaluateRules(rules, { ...metrics, vendor_id: 'v-top' })
+    expect(topVendor.commissionPct).toBe(0.08)
+
+    const normalVendor = evaluateRules(rules, { ...metrics, vendor_id: 'v-normal' })
+    expect(normalVendor.commissionPct).toBe(0.03)
+  })
+
+  // ── Marca, metas e unidade ───────────────────────────────
   it('condição marca casa com volume da marca acima do valor', () => {
     const r = evaluateRules(
       [regra({ condicoes: [{ tipo: 'marca', marca: 'Nike', comparador: '>=', valor: 5000 }] })],
@@ -144,20 +180,6 @@ describe('evaluateRules', () => {
       { ...metrics, vendor_id: 'v', vendas_por_marca: {} },
     )
     expect(r.commissionPct).toBeNull()
-  })
-
-  it('condição vendedor casa só para o vendedor da regra', () => {
-    const casa = evaluateRules(
-      [regra({ condicoes: [{ tipo: 'vendedor', vendor_id: 'v-1' }] })],
-      { ...metrics, vendor_id: 'v-1' },
-    )
-    expect(casa.commissionPct).toBe(0.05)
-
-    const nao = evaluateRules(
-      [regra({ condicoes: [{ tipo: 'vendedor', vendor_id: 'v-1' }] })],
-      { ...metrics, vendor_id: 'v-2' },
-    )
-    expect(nao.commissionPct).toBeNull()
   })
 
   it('meta_marca casa quando vendas da marca >= meta configurada (>0)', () => {

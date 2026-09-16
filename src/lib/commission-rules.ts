@@ -3,8 +3,11 @@
 //
 // Semântica:
 // - Regras ativas do tenant, ordenadas por prioridade asc (1 = mais alta).
-// - Uma regra casa quando TODAS as suas condições são verdadeiras
-//   (condições vazias = casa sempre).
+// - Escopo da regra:
+//   - 'coletivo' (padrão): aplica-se a todos os vendedores do tenant.
+//   - 'individual': aplica-se estritamente ao vendor_id especificado.
+// - Uma regra casa quando seu escopo é válido E TODAS as suas condições são
+//   verdadeiras (condições vazias = casa sempre para o escopo alvo).
 // - acao comissao_percentual: a regra de maior prioridade que casar define o
 //   percentual (substitui goals.commission_pct). Valor em % humano (5 = 5%).
 // - acao bonus_fixo: TODAS as regras que casarem acumulam o bônus.
@@ -20,13 +23,15 @@
 // configurada) tratados como 0 — uma regra nunca casa contra dado inexistente
 // (mesma regra da meta zerada: evita comissionar sem categoria configurada).
 
+export type RegraEscopo = 'coletivo' | 'individual'
+
 export type RegraCondicao =
   | { tipo: 'atingimento_meta'; meta: 'meta1' | 'meta2' | 'meta3'; comparador: string }
   | { tipo: 'volume_venda'; comparador: string; valor?: number }
   | { tipo: 'marca'; marca: string; comparador: string; valor?: number }
   | { tipo: 'volume_marca'; marca: string; comparador: string; valor?: number }
   | { tipo: 'meta_marca'; marca: string }
-  | { tipo: 'vendedor'; vendor_id: string }
+  | { tipo: 'vendedor'; vendor_id: string } // compatibilidade defensiva legada
 
 export type RegraAcao =
   | { tipo: 'comissao_percentual'; valor: number }
@@ -37,7 +42,11 @@ export type RegraAcao =
 export interface RegraComissao {
   id: string
   nome: string
+  descricao?: string | null
+  ativo?: boolean
   prioridade: number
+  escopo?: RegraEscopo | string
+  vendor_id?: string | null
   condicoes: RegraCondicao[]
   acao: RegraAcao
 }
@@ -111,6 +120,7 @@ function condicaoMatches(cond: RegraCondicao, m: VendorMetrics): boolean {
       return compare(marcaVol(cond, m), '>=', meta)
     }
     case 'vendedor':
+      // Compatibilidade legada
       return m.vendor_id === cond.vendor_id
     default:
       return false
@@ -123,11 +133,20 @@ export function evaluateRules(rules: RegraComissao[], metrics: VendorMetrics): R
   const ordered = [...rules].sort((a, b) => a.prioridade - b.prioridade)
 
   for (const rule of ordered) {
+    // 1. Verificação de Escopo (Coletiva vs Individual)
+    const isIndividual = rule.escopo === 'individual' || (rule.vendor_id != null && rule.vendor_id.trim() !== '')
+    if (isIndividual && rule.vendor_id && rule.vendor_id !== metrics.vendor_id) {
+      continue
+    }
+
+    // 2. Verificação de Condições (Se...)
     const condicoes = Array.isArray(rule.condicoes) ? rule.condicoes : []
     const matches = condicoes.every(c => condicaoMatches(c, metrics))
     if (!matches) continue
 
+    // 3. Aplicação do Resultado / Ação
     const acao = rule.acao
+    if (!acao) continue
 
     if (acao.tipo === 'comissao_percentual') {
       const valor = Number(acao.valor)

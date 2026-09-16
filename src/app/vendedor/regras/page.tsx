@@ -12,6 +12,8 @@ type Regra = {
   id: string
   nome: string
   descricao: string
+  escopo?: string | null
+  vendor_id?: string | null
   acao: Acao
   prioridade: number
 }
@@ -19,19 +21,47 @@ type Regra = {
 export default async function VendedorRegrasPage() {
   const supabase = await createClient()
 
-  const { data: dbRegras } = await supabase
+  const { data: { user } } = await supabase.auth.getUser()
+  let vendorId: string | null = null
+  let tenantId: string | null = null
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('tenant_id, vendor_id')
+      .eq('id', user.id)
+      .single()
+    vendorId = profile?.vendor_id || null
+    tenantId = profile?.tenant_id || null
+  }
+
+  let query = supabase
     .from('regras_comissao')
     .select('*')
     .eq('ativo', true)
     .order('prioridade', { ascending: true })
 
-  const regras = dbRegras?.length ? dbRegras : [
+  if (tenantId) {
+    query = query.eq('tenant_id', tenantId)
+  }
+
+  const { data: rawRegras } = await query
+
+  // Filtra apenas regras coletivas OU individuais direcionadas ao vendedor logado
+  const filteredRegras = (rawRegras ?? []).filter(r => {
+    const isIndividual = r.escopo === 'individual' || (r.vendor_id != null && r.vendor_id.trim() !== '')
+    if (!isIndividual) return true
+    return vendorId ? r.vendor_id === vendorId : true
+  })
+
+  const regras = filteredRegras.length ? filteredRegras : [
     {
       id: '1',
       nome: 'Comissão Base sobre Vendas',
       descricao: 'Percentual aplicado sobre o total bruto vendido no período, calculado ao final do mês.',
       acao: { tipo: 'comissao_percentual', valor: 3.5 },
       prioridade: 1,
+      escopo: 'coletivo',
     },
     {
       id: '2',
@@ -39,6 +69,7 @@ export default async function VendedorRegrasPage() {
       descricao: 'Bônus fixo concedido ao atingir a primeira meta do mês. Acumulável com a comissão base.',
       acao: { tipo: 'bonus_fixo', valor: 300 },
       prioridade: 2,
+      escopo: 'coletivo',
     },
     {
       id: '3',
@@ -46,6 +77,7 @@ export default async function VendedorRegrasPage() {
       descricao: 'Bônus adicional ao superar a segunda meta. Substitui o bônus da 1ª meta.',
       acao: { tipo: 'bonus_fixo', valor: 600 },
       prioridade: 3,
+      escopo: 'coletivo',
     },
     {
       id: '4',
@@ -53,6 +85,7 @@ export default async function VendedorRegrasPage() {
       descricao: 'Bônus máximo ao atingir a terceira meta do período. Exige consistência de alto desempenho.',
       acao: { tipo: 'bonus_fixo', valor: 1000 },
       prioridade: 4,
+      escopo: 'coletivo',
     },
   ]
 
@@ -109,6 +142,7 @@ export default async function VendedorRegrasPage() {
             const col = COLORS[tipo] || COLORS['bonus_fixo']
             const icon = ICONS[tipo] || '⭐'
             const valorFormatado = formatarValorAcao(regra.acao)
+            const isIndividual = regra.escopo === 'individual' || Boolean(regra.vendor_id)
 
             return (
               <div key={regra.id} style={{
@@ -138,7 +172,23 @@ export default async function VendedorRegrasPage() {
                 {/* Conteúdo */}
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '6px' }}>
-                    <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>{regra.nome}</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>{regra.nome}</h3>
+                      {isIndividual && (
+                        <span style={{
+                          fontSize: '0.65rem',
+                          fontFamily: 'var(--font-jetbrains), monospace',
+                          padding: '2px 8px',
+                          borderRadius: '6px',
+                          background: 'rgba(99, 102, 241, 0.15)',
+                          color: '#818cf8',
+                          border: '1px solid rgba(99, 102, 241, 0.3)',
+                          fontWeight: 700,
+                        }}>
+                          Individual
+                        </span>
+                      )}
+                    </div>
                     <span style={{
                       background: col.bg, color: col.text, border: `1px solid ${col.border}`,
                       padding: '4px 12px', borderRadius: '20px',

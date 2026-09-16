@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
   // Sem regras ativas → fallback para goals.commission_pct (comportamento legado).
   const { data: regrasAtivas } = await admin
     .from('regras_comissao')
-    .select('id, nome, prioridade, condicoes, acao')
+    .select('id, nome, prioridade, escopo, vendor_id, condicoes, acao')
     .eq('tenant_id', tenantId)
     .eq('ativo', true)
   const regras = (regrasAtivas ?? []) as RegraComissao[]
